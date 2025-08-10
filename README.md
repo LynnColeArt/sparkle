@@ -138,6 +138,24 @@ Sparkle is designed for efficiency:
 - Cache-aware CPU kernels
 - Zero-copy operations where possible
 
+## 🤔 Yes, But Why Fortran?
+
+Great question! Here's why Fortran is actually perfect for this:
+
+**Performance**: Fortran compilers generate some of the fastest code on the planet. When you're democratizing compute, every cycle counts.
+
+**Portability**: Fortran runs on everything - supercomputers, laptops, embedded systems. No runtime dependencies, no version hell.
+
+**Stability**: Fortran has been around since 1957. Code written decades ago still compiles. When building infrastructure, stability matters.
+
+**Simplicity**: No manual memory management like C, no complexity explosion like C++. Just clean, fast numerical code.
+
+**Array Native**: Fortran thinks in arrays naturally. Perfect for the kind of parallel computation AI needs.
+
+**Underdog Spirit**: Using Fortran for cutting-edge AI infrastructure? That's exactly the kind of unconventional thinking we need. If we're democratizing AI, why not democratize with a language that's been democratizing scientific computing for 60+ years?
+
+Most importantly: **Fortran doesn't care about being cool**. It just cares about getting the job done. That's the Sparkle philosophy too.
+
 ## 🛡️ License
 
 Sparkle is released under the MIT License. See [LICENSE](LICENSE) for details.
