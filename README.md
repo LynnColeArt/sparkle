@@ -143,23 +143,17 @@ Sparkle is designed for efficiency:
 - Cache-aware CPU kernels
 - Zero-copy operations where possible
 
-## 🤔 Yes, But Why Fortran?
+### 🤔 Yes, But Why Fortran?
 
-Great question! Here's why Fortran is actually perfect for this:
+*(Or: Why Sparkle isn’t written in Rust, Go, or 20 layers of JavaScript)*
 
-**Performance**: Fortran compilers generate some of the fastest code on the planet. When you're democratizing compute, every cycle counts.
+**Performance without bureaucracy** — Fortran’s compilers produce machine code that can go toe-to-toe with Rust, C, or CUDA — but without the 20 layers of “zero-cost” abstractions that mysteriously cost you your whole weekend. Sparkle’s Fortran is clean, modern, and designed to get you to the math without making you negotiate with a borrow checker.
 
-**Portability**: Fortran runs on everything - supercomputers, laptops, embedded systems. No runtime dependencies, no version hell.
+**Portability without pain** — This stuff runs everywhere: supercomputers, laptops, embedded devices. No SDK nightmares, no version hell.
 
-**Stability**: Fortran has been around since 1957. Code written decades ago still compiles. When building infrastructure, stability matters.
+**Readability without ceremony** — Forget the `DO 15 I=1,50` fossils. Sparkle Fortran feels like VB after a spa retreat: whitespace you can breathe in, variable names you don’t have to squint at, and structure that feels like it belongs in this century.
 
-**Simplicity**: No manual memory management like C, no complexity explosion like C++. Just clean, fast numerical code.
-
-**Array Native**: Fortran thinks in arrays naturally. Perfect for the kind of parallel computation AI needs.
-
-**Underdog Spirit**: Using Fortran for cutting-edge AI infrastructure? That's exactly the kind of unconventional thinking we need. If we're democratizing AI, why not democratize with a language that's been democratizing scientific computing for 60+ years?
-
-Most importantly: **Fortran doesn't care about being cool**. It just cares about getting the job done. That's the Sparkle philosophy too.
+**The Original Zero-Cost Abstraction — Now With Curb Appeal** — We kept Fortran’s bare-metal performance and native array handling, and dressed it in modern syntax that actually makes you want to read it.
 
 ## 🛡️ License
 
