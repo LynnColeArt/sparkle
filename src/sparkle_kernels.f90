@@ -3,6 +3,7 @@ module sparkle_kernels
   use sparkle_types
   use sparkle_memory
   use sparkle_mesh_types
+  use sparkle_config
   implicit none
   private
   

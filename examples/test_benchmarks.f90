@@ -116,6 +116,9 @@ program test_benchmarks
     deallocate(kernels)
   end do
   
+  ! Final cleanup
+  if (allocated(devices)) deallocate(devices)
+  
   print *, ""
   print *, "🎯 Key Observations:"
   print *, "─────────────────────"
@@ -260,5 +263,8 @@ contains
     
     result(1) = dot_product(a, b)
   end subroutine dot_product_impl
+  
+  ! NOTE: Memory cleanup is handled in the main loop after each size iteration
+  ! The destroy_memory calls and deallocate(kernels) at lines 113-116 handle cleanup properly
 
 end program test_benchmarks

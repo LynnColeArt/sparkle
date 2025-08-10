@@ -85,6 +85,25 @@ make
 sudo make install
 ```
 
+### Configuration
+
+Sparkle respects your system! Configure thread usage to prevent desktop crashes:
+
+```bash
+# Limit to 14 threads (safe for 16-thread systems)
+export SPARKLE_MAX_CPU_THREADS=14
+
+# Or reserve 2 threads for the system
+export SPARKLE_THREAD_RESERVE=2
+```
+
+In your code:
+```fortran
+type(sparkle_config_type) :: config
+config%max_cpu_threads = 14  ! Use max 14 threads
+call sparkle_set_config(config)
+```
+
 ## 🤝 Contributing Compute
 
 Want to contribute your idle compute to the global mesh? It's as simple as:
