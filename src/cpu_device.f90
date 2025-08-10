@@ -169,14 +169,57 @@ contains
     character(len=32) :: env_value
     integer :: env_status
     
-    ! Get number of cores
-    call get_environment_variable("OMP_NUM_THREADS", env_value, status=env_status)
-    if (env_status == 0 .and. len_trim(env_value) > 0) then
-      read(env_value, *) self%num_threads
-    else
-      ! Default to system CPU count
-      self%num_threads = 1  ! TODO: Get actual core count
-    end if
+    ! Get actual number of CPU cores from /proc/cpuinfo
+    block
+      integer :: unit, iostat, physical_cores, logical_cores
+      character(len=256) :: line, cpu_model
+      logical :: found_model
+      
+      logical_cores = 0
+      physical_cores = 0
+      found_model = .false.
+      
+      open(newunit=unit, file="/proc/cpuinfo", status="old", action="read", iostat=iostat)
+      if (iostat == 0) then
+        do
+          read(unit, '(A)', iostat=iostat) line
+          if (iostat /= 0) exit
+          
+          ! Count logical processors
+          if (index(line, "processor") == 1) then
+            logical_cores = logical_cores + 1
+          end if
+          
+          ! Get CPU model name
+          if (.not. found_model .and. index(line, "model name") > 0) then
+            cpu_model = adjustl(line(index(line, ":") + 2:))
+            found_model = .true.
+          end if
+          
+          ! Count physical cores
+          if (index(line, "cpu cores") > 0) then
+            read(line(index(line, ":") + 2:), *, iostat=iostat) physical_cores
+          end if
+        end do
+        close(unit)
+        
+        self%num_threads = max(1, logical_cores)
+        
+        ! Update device name with actual CPU model
+        if (found_model .and. allocated(self%name)) then
+          deallocate(self%name)
+          self%name = trim(cpu_model)
+        end if
+      else
+        ! Fallback to environment variable
+        call get_environment_variable("OMP_NUM_THREADS", env_value, status=env_status)
+        if (env_status == 0 .and. len_trim(env_value) > 0) then
+          read(env_value, *) self%num_threads
+        else
+          self%num_threads = 1
+        end if
+      end if
+    end block
     
     ! Update capabilities
     self%capabilities%compute_units = self%num_threads
@@ -184,8 +227,32 @@ contains
     self%capabilities%supports_unified_memory = .true.
     self%capabilities%clock_speed_ghz = 2.5  ! Typical modern CPU
     
-    ! Estimate memory (simplified - would use system calls in production)
-    self%capabilities%memory_bytes = 8_int64 * 1024 * 1024 * 1024  ! 8GB default
+    ! Get actual system memory from /proc/meminfo
+    block
+      integer :: unit, iostat
+      character(len=256) :: line
+      integer(int64) :: mem_kb
+      
+      open(newunit=unit, file="/proc/meminfo", status="old", action="read", iostat=iostat)
+      if (iostat == 0) then
+        do
+          read(unit, '(A)', iostat=iostat) line
+          if (iostat /= 0) exit
+          
+          if (index(line, "MemTotal:") == 1) then
+            read(line(10:), *, iostat=iostat) mem_kb
+            if (iostat == 0) then
+              self%capabilities%memory_bytes = mem_kb * 1024_int64
+            end if
+            exit
+          end if
+        end do
+        close(unit)
+      else
+        ! Fallback to 8GB default
+        self%capabilities%memory_bytes = 8_int64 * 1024 * 1024 * 1024
+      end if
+    end block
     
     ! Set instruction set string
     if (self%has_avx512) then

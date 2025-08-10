@@ -2,6 +2,7 @@ module sparkle_discovery
   use sparkle_mesh_types
   use cpu_device_module
   use iso_c_binding
+  use iso_fortran_env, only: int32, int64
   implicit none
   private
   
@@ -142,80 +143,166 @@ contains
     
   end subroutine explain_devices
   
-  ! Try to discover CUDA devices (gracefully handles missing CUDA)
+  ! Try to discover NVIDIA devices through kernel driver
   subroutine try_cuda_discovery(mesh)
     type(mesh_topology), intent(inout) :: mesh
     
-    ! Use conditional compilation or dynamic loading
-    ! For now, we'll create a simple stub that shows the approach
+    logical :: nvidia_gpu_found
+    integer :: unit, iostat, gpu_count, i
+    character(len=256) :: vendor, card_path
     
-    interface
-      function dlopen(filename, flag) bind(C, name="dlopen")
-        import :: c_ptr, c_char, c_int
-        character(c_char), intent(in) :: filename(*)
-        integer(c_int), value :: flag
-        type(c_ptr) :: dlopen
-      end function dlopen
+    nvidia_gpu_found = .false.
+    gpu_count = 0
+    
+    ! Check for NVIDIA GPUs via sysfs (no SDK needed!)
+    do i = 0, 7  ! Check up to 8 cards
+      write(card_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/vendor"
       
-      function dlsym(handle, symbol) bind(C, name="dlsym")
-        import :: c_ptr, c_char
-        type(c_ptr), value :: handle
-        character(c_char), intent(in) :: symbol(*)
-        type(c_ptr) :: dlsym
-      end function dlsym
-    end interface
+      open(newunit=unit, file=trim(card_path), &
+           status="old", action="read", iostat=iostat)
+      if (iostat == 0) then
+        read(unit, '(A)', iostat=iostat) vendor
+        close(unit)
+        
+        ! NVIDIA vendor ID is 0x10de
+        if (index(vendor, "0x10de") > 0 .or. index(vendor, "10de") > 0) then
+          nvidia_gpu_found = .true.
+          gpu_count = gpu_count + 1
+        end if
+      end if
+    end do
     
-    type(c_ptr) :: cuda_lib
-    integer, parameter :: RTLD_LAZY = 1
-    
-    ! Try to load CUDA library
-    cuda_lib = dlopen("libcuda.so"//c_null_char, RTLD_LAZY)
-    
-    if (c_associated(cuda_lib)) then
-      print *, "CUDA runtime detected, scanning for NVIDIA GPUs..."
-      ! Would call cuda_discovery module here if library loads
-      ! use cuda_discovery
-      ! call scan_cuda_devices(mesh)
-      
-      ! For demo, add a message
-      print *, "  (CUDA discovery not yet implemented in this build)"
+    if (nvidia_gpu_found) then
+      print '(A,I0,A)', "Found ", gpu_count, " NVIDIA GPU(s) via kernel driver"
+      print *, "  (NVIDIA GPU support coming soon)"
     else
-      ! CUDA not available - this is fine, not everyone has NVIDIA
-      print *, "No CUDA runtime found (this is normal if you don't have NVIDIA GPUs)"
+      print *, "No NVIDIA GPUs detected (checked kernel driver)"
     end if
     
   end subroutine try_cuda_discovery
   
-  ! Try to discover AMD devices (gracefully handles missing ROCm)
+  ! Try to discover AMD devices through kernel driver
   subroutine try_amd_discovery(mesh)
     type(mesh_topology), intent(inout) :: mesh
     
-    interface
-      function dlopen(filename, flag) bind(C, name="dlopen")
-        import :: c_ptr, c_char, c_int
-        character(c_char), intent(in) :: filename(*)
-        integer(c_int), value :: flag
-        type(c_ptr) :: dlopen
-      end function dlopen
-    end interface
+    logical :: amd_gpu_found
+    integer :: unit, iostat, gpu_count
+    character(len=256) :: line
+    character(len=64) :: vendor, device
     
-    type(c_ptr) :: hip_lib
-    integer, parameter :: RTLD_LAZY = 1
+    amd_gpu_found = .false.
+    gpu_count = 0
     
-    ! Try to load HIP/ROCm library
-    hip_lib = dlopen("libamdhip64.so"//c_null_char, RTLD_LAZY)
-    
-    if (.not. c_associated(hip_lib)) then
-      ! Try alternative name
-      hip_lib = dlopen("libhip_hcc.so"//c_null_char, RTLD_LAZY)
+    ! Check for AMD GPUs via sysfs (no external dependencies!)
+    open(newunit=unit, file="/sys/class/drm/card0/device/vendor", &
+         status="old", action="read", iostat=iostat)
+    if (iostat == 0) then
+      read(unit, '(A)', iostat=iostat) vendor
+      close(unit)
+      
+      ! AMD vendor ID is 0x1002
+      if (index(vendor, "0x1002") > 0 .or. index(vendor, "1002") > 0) then
+        amd_gpu_found = .true.
+        gpu_count = gpu_count + 1
+      end if
     end if
     
-    if (c_associated(hip_lib)) then
-      print *, "ROCm runtime detected, scanning for AMD GPUs..."
-      print *, "  (AMD discovery not yet implemented in this build)"
+    ! Check card1 too (for multi-GPU systems)
+    open(newunit=unit, file="/sys/class/drm/card1/device/vendor", &
+         status="old", action="read", iostat=iostat)
+    if (iostat == 0) then
+      read(unit, '(A)', iostat=iostat) vendor
+      close(unit)
+      
+      if (index(vendor, "0x1002") > 0 .or. index(vendor, "1002") > 0) then
+        amd_gpu_found = .true.
+        gpu_count = gpu_count + 1
+      end if
+    end if
+    
+    if (amd_gpu_found) then
+      print *, "AMD GPU(s) detected via kernel driver"
+      
+      ! Detect actual AMD GPU properties from sysfs
+      block
+        type(device_handle) :: handle
+        integer :: i, card_num
+        character(len=256) :: sysfs_path, mem_info
+        integer(int64) :: vram_bytes
+        
+        card_num = 0
+        do i = 0, 7  ! Check up to 8 cards
+          write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/vendor"
+          open(newunit=unit, file=trim(sysfs_path), status="old", action="read", iostat=iostat)
+          if (iostat == 0) then
+            read(unit, '(A)', iostat=iostat) vendor
+            close(unit)
+            
+            if (index(vendor, "1002") > 0) then
+              ! Found AMD GPU - read its properties
+              handle%id = mesh%num_devices + card_num
+              handle%caps%kind = KIND_AMD
+              
+              ! Read device ID for identification
+              write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/device"
+              open(newunit=unit, file=trim(sysfs_path), status="old", action="read", iostat=iostat)
+              if (iostat == 0) then
+                read(unit, '(A)', iostat=iostat) device
+                close(unit)
+                ! Map device IDs to known GPUs
+                if (index(device, "744c") > 0) then
+                  handle%caps%pci_id = "RX 7900 XT"
+                else if (index(device, "73bf") > 0) then
+                  handle%caps%pci_id = "RX 6900 XT"  
+                else if (index(device, "164e") > 0) then
+                  handle%caps%pci_id = "Raphael APU"
+                else
+                  handle%caps%pci_id = "AMD GPU"
+                end if
+              else
+                handle%caps%pci_id = "AMD GPU"
+              end if
+              
+              ! Read VRAM size from mem_info_vram_total
+              write(sysfs_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/mem_info_vram_total"
+              open(newunit=unit, file=trim(sysfs_path), status="old", action="read", iostat=iostat)
+              if (iostat == 0) then
+                read(unit, *, iostat=iostat) vram_bytes
+                close(unit)
+                if (iostat == 0) then
+                  handle%caps%vram_mb = int(vram_bytes / (1024 * 1024), int32)
+                else
+                  handle%caps%vram_mb = 8192  ! Default 8GB if can't read
+                end if
+              else
+                handle%caps%vram_mb = 8192
+              end if
+              
+              ! TODO: Read actual core count, frequencies from sysfs
+              ! For now, use conservative estimates
+              handle%caps%cores = 60  ! Conservative estimate
+              handle%caps%sm_count = 60
+              handle%caps%mem_bw_gbs = 400.0_rk64  ! Conservative bandwidth
+              handle%caps%peak_gflops = 20000.0_rk64  ! Conservative FLOPS
+              handle%caps%sustained_gflops = 10000.0_rk64
+              handle%caps%unified_mem = .false.
+              handle%caps%p2p_direct = .false.
+              handle%caps%driver_ver = "AMDGPU"
+              handle%healthy = .true.
+              handle%load = 0.0
+              
+              call mesh%add_device(handle)
+              card_num = card_num + 1
+              
+              print '(A,I0,A,A,A,I0,A)', "  Card", i, ": ", &
+                    trim(handle%caps%pci_id), " with ", &
+                    handle%caps%vram_mb, " MB VRAM"
+            end if
+          end if
+        end do
+      end block
     else
-      ! ROCm not available - normal if no AMD GPUs
-      print *, "No ROCm runtime found (this is normal if you don't have AMD GPUs)"
+      print *, "No AMD GPUs detected (checked kernel driver)"
     end if
     
   end subroutine try_amd_discovery
