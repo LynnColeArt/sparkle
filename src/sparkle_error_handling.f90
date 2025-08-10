@@ -7,10 +7,14 @@ module sparkle_error_handling
   private
   
   public :: sparkle_check, sparkle_error, sparkle_warning
-  public :: safe_allocate_1d, safe_allocate_2d, safe_deallocate
+  public :: safe_allocate_1d_real32, safe_allocate_1d_real64
+  public :: safe_allocate_1d_int32, safe_allocate_1d_int64
+  public :: safe_allocate_2d_real32, safe_allocate_2d_real64
+  public :: safe_deallocate
   public :: check_bounds_1d, check_bounds_2d
   public :: SPARKLE_SUCCESS, SPARKLE_ERR_ALLOC, SPARKLE_ERR_BOUNDS
   public :: SPARKLE_ERR_INVALID, SPARKLE_ERR_NOT_IMPL, SPARKLE_ERR_IO
+  public :: SPARKLE_ERR_OVERFLOW
   
   ! Error codes
   integer, parameter :: SPARKLE_SUCCESS = 0
@@ -24,13 +28,28 @@ module sparkle_error_handling
   ! Maximum allocation size (8GB default)
   integer(int64), parameter :: MAX_ALLOC_SIZE = 8_int64 * 1024_int64**3
   
-  interface safe_allocate_1d
-    module procedure safe_allocate_1d_real32, safe_allocate_1d_real64
-    module procedure safe_allocate_1d_int32, safe_allocate_1d_int64
+  interface safe_allocate_1d_real32
+    module procedure safe_allocate_1d_real32
   end interface
   
-  interface safe_allocate_2d
-    module procedure safe_allocate_2d_real32, safe_allocate_2d_real64
+  interface safe_allocate_1d_real64
+    module procedure safe_allocate_1d_real64
+  end interface
+  
+  interface safe_allocate_1d_int32
+    module procedure safe_allocate_1d_int32
+  end interface
+  
+  interface safe_allocate_1d_int64
+    module procedure safe_allocate_1d_int64
+  end interface
+  
+  interface safe_allocate_2d_real32
+    module procedure safe_allocate_2d_real32
+  end interface
+  
+  interface safe_allocate_2d_real64
+    module procedure safe_allocate_2d_real64
   end interface
   
 contains
@@ -95,6 +114,7 @@ contains
   
   ! Safe allocation for 1D real32 arrays
   function safe_allocate_1d_real32(n, array_name) result(ierr)
+    use iso_fortran_env, only: real32
     integer(int64), intent(in) :: n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -130,6 +150,7 @@ contains
   
   ! Safe allocation for 1D real64 arrays
   function safe_allocate_1d_real64(n, array_name) result(ierr)
+    use iso_fortran_env, only: real64
     integer(int64), intent(in) :: n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -235,6 +256,7 @@ contains
   
   ! Safe allocation for 2D real32 arrays
   function safe_allocate_2d_real32(m, n, array_name) result(ierr)
+    use iso_fortran_env, only: real32
     integer(int64), intent(in) :: m, n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -270,6 +292,7 @@ contains
   
   ! Safe allocation for 2D real64 arrays
   function safe_allocate_2d_real64(m, n, array_name) result(ierr)
+    use iso_fortran_env, only: real64
     integer(int64), intent(in) :: m, n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr

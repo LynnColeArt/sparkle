@@ -6,6 +6,7 @@ module sparkle_gpu_backend
   use iso_c_binding
   use sparkle_types
   use sparkle_error_handling
+  use sparkle_gpu_backend_detect
   implicit none
   private
   
@@ -54,12 +55,14 @@ module sparkle_gpu_backend
     end subroutine
     
     function backend_compile_interface(source, kernel_type) result(handle)
+      use iso_fortran_env, only: int64
       character(len=*), intent(in) :: source
       character(len=*), intent(in) :: kernel_type
       integer(int64) :: handle
     end function
     
     subroutine backend_execute_interface(handle, args, global_size, local_size)
+      use iso_fortran_env, only: int64
       integer(int64), intent(in) :: handle
       type(*), intent(inout) :: args(:)
       integer, intent(in) :: global_size(:)
@@ -156,21 +159,26 @@ contains
   
   ! Check for OpenGL compute shader support
   function check_opengl_backend() result(info)
+    use sparkle_gpu_backend_detect, only: opengl_info, detect_opengl_version
     type(gpu_backend_info) :: info
-    logical :: has_gl, has_compute
+    type(opengl_info) :: gl_info
+    logical :: has_gl
     
     info%backend_type = GPU_BACKEND_OPENGL
     info%name = "OpenGL Compute Shaders"
     
-    ! Check if OpenGL libraries are available
-    ! In real implementation, would use dlopen to check
+    ! Use enhanced detection
+    gl_info = detect_opengl_version()
     has_gl = check_library("libGL.so") .or. check_library("libGL.so.1")
-    has_compute = .false.  ! Would check for GL 4.3+ support
     
-    if (has_gl) then
-      info%version = "OpenGL 4.3+"
-      info%available = .true.  ! For now, assume it works
-      info%reason = "Available (mock implementation)"
+    if (has_gl .and. gl_info%has_compute) then
+      write(info%version, '(A,I0,A,I0)') "OpenGL ", gl_info%major, ".", gl_info%minor
+      info%available = .true.
+      info%reason = "Available with compute shader support"
+    else if (has_gl .and. .not. gl_info%has_compute) then
+      info%available = .false.
+      write(info%version, '(A,I0,A,I0)') "OpenGL ", gl_info%major, ".", gl_info%minor
+      info%reason = "OpenGL found but no compute shader support (need 4.3+)"
     else
       info%available = .false.
       info%reason = "OpenGL library not found"
@@ -181,14 +189,21 @@ contains
   ! Check for Vulkan support
   function check_vulkan_backend() result(info)
     type(gpu_backend_info) :: info
+    character(len=32) :: vk_version
     
     info%backend_type = GPU_BACKEND_VULKAN
     info%name = "Vulkan Compute"
     info%available = check_library("libvulkan.so") .or. check_library("libvulkan.so.1")
     
     if (info%available) then
-      info%version = "Vulkan 1.2+"
-      info%reason = "Available but not implemented"
+      vk_version = detect_vulkan_version()
+      if (vk_version /= "Unknown") then
+        info%version = vk_version
+        info%reason = "Library found but backend not implemented"
+      else
+        info%version = "Unknown"
+        info%reason = "Library found but version unknown"
+      end if
       info%available = .false.  ! Not implemented yet
     else
       info%reason = "Vulkan library not found"
@@ -216,8 +231,12 @@ contains
     
     info%available = has_rocm
     if (has_rocm) then
-      info%version = "ROCm 5.0+"
-      info%reason = "Found but not implemented"
+      info%version = detect_rocm_version()
+      if (info%version /= "Unknown") then
+        info%reason = "ROCm " // trim(info%version) // " found but backend not implemented"
+      else
+        info%reason = "ROCm found but version unknown"
+      end if
       info%available = .false.  ! Not implemented yet
     else
       info%reason = "ROCm not installed"
@@ -244,8 +263,12 @@ contains
     
     info%available = has_cuda
     if (has_cuda) then
-      info%version = "CUDA 11.0+"
-      info%reason = "Found but not implemented"
+      info%version = detect_cuda_version()
+      if (info%version /= "Unknown") then
+        info%reason = trim(info%version) // " found but backend not implemented"
+      else
+        info%reason = "CUDA found but version unknown"
+      end if
       info%available = .false.  ! Not implemented yet
     else
       info%reason = "CUDA not installed"
@@ -312,7 +335,7 @@ contains
     integer :: status
     
     print *, "🎮 Initializing OpenGL backend (mock)..."
-    status = SPARKLE_SUCCESS
+    status = 0  ! Success
     
   end function opengl_init
   
