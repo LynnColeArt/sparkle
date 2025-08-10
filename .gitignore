@@ -1,0 +1,35 @@
+# Compiled files
+*.o
+*.mod
+*.smod
+*.a
+*.so
+*.dylib
+
+# Executables
+test_basic
+test_mesh
+test_scheduler
+test_collectives
+
+# Build directories
+build/
+cmake-build-*/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation build
+docs/_build/
+
+# Profile data
+*.gcda
+*.gcno
+*.gcov
