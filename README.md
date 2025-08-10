@@ -2,6 +2,28 @@
 
 **Democratizing AI compute through heterogeneous device orchestration**
 
+## 🚧 Current State: Building Live!
+
+**We're starting from scratch and building in public!** This project is in its earliest stages - we literally just wrote the first lines of code. Everything you see here is being developed live, and we invite you to join us on this journey.
+
+### What's Working Now:
+- ✅ Basic device abstraction (CPU support)
+- ✅ Mesh topology design
+- ✅ Smart scheduling with cost models
+- ✅ Collective operations (all-reduce, broadcast)
+- ✅ Device discovery framework
+
+### What's Coming:
+- 🔨 Actual GPU execution (CUDA/ROCm/Level Zero)
+- 🔨 Memory management
+- 🔨 Kernel abstraction
+- 🔨 Network mesh communication
+- 🔨 Real-world examples
+
+**Want to help?** Jump right in! Whether you're fixing a typo, testing on your hardware, or implementing GPU backends - every contribution matters. This is truly a community project from day one.
+
+---
+
 Sparkle is a device-agnostic compute orchestration framework that enables ANY device - from high-end GPUs to old laptops - to contribute to a global mesh of computational power. Built entirely in Fortran with Pythonic design principles.
 
 ## 🌟 Vision
