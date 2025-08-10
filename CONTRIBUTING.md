@@ -40,9 +40,14 @@ We love new ideas! When suggesting features:
 
 ### Coding Style
 
-- **Pythonic Fortran**: Clean names, explicit over implicit
+Please follow our [Style Guide](STYLE_GUIDE.md) and [Quick Reference](STYLE_QUICK_REFERENCE.md).
+
+Key points:
+- **Strong typing always** - explicit types with kinds
+- **Pythonic Fortran** - explicit over implicit  
 - Use `implicit none` everywhere
-- Descriptive variable names
+- Descriptive variable names (no abbreviations)
+- Initialize all derived type components
 - Comment the "why", not the "what"
 - Prefer array operations over explicit loops
 
