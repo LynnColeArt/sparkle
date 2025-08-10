@@ -8,12 +8,13 @@ module sparkle_execute
   implicit none
   private
   
-  public :: sparkle_run, sparkle_run_async
+  public :: sparkle_run, sparkle_run_async, sparkle_run_quiet
   public :: execution_context, create_context
   
   type :: execution_context
     type(mesh_topology), pointer :: mesh => null()
     logical :: async_mode = .false.
+    logical :: quiet_mode = .false.  ! Suppress output during benchmarks
     integer :: preferred_device = -1  ! -1 means auto-select
   contains
     procedure :: execute => context_execute_kernel
@@ -57,6 +58,19 @@ contains
     
   end subroutine sparkle_run_async
   
+  ! Quiet execution (for benchmarking)
+  subroutine sparkle_run_quiet(kernel, mesh)
+    type(sparkle_kernel), intent(inout) :: kernel
+    type(mesh_topology), intent(inout) :: mesh
+    
+    type(execution_context) :: ctx
+    
+    ctx = create_context(mesh)
+    ctx%quiet_mode = .true.
+    call ctx%execute(kernel)
+    
+  end subroutine sparkle_run_quiet
+  
   ! Main execution logic
   subroutine context_execute_kernel(this, kernel)
     class(execution_context), intent(inout) :: this
@@ -78,8 +92,10 @@ contains
     ! Get execution plan
     schedule = plan_shards(this%mesh, kernel%work_items, "compute")
     
-    print '(A,A,A)', "🚀 Executing kernel '", kernel%name, "'"
-    print '(A,I0,A)', "   Distributing ", kernel%work_items, " work items"
+    if (.not. this%quiet_mode) then
+      print '(A,A,A)', "🚀 Executing kernel '", kernel%name, "'"
+      print '(A,I0,A)', "   Distributing ", kernel%work_items, " work items"
+    end if
     
     ! Check if we can run on GPU
     block
@@ -94,7 +110,7 @@ contains
         end if
       end do
       
-      if (has_gpu) then
+      if (has_gpu .and. .not. this%quiet_mode) then
         print *, "   GPU execution not yet implemented - falling back to CPU"
       end if
     end block
@@ -111,15 +127,19 @@ contains
           call execute_kernel_cpu(kernel, offset, chunk_size)
         else
           ! Skip GPU for now
-          print '(A,I0,A)', "   Skipping GPU device ", device_idx - 1, &
-                          " (GPU execution coming soon)"
+          if (.not. this%quiet_mode) then
+            print '(A,I0,A)', "   Skipping GPU device ", device_idx - 1, &
+                            " (GPU execution coming soon)"
+          end if
         end if
       end if
       
       offset = offset + chunk_size
     end do
     
-    print *, "✓ Kernel execution complete"
+    if (.not. this%quiet_mode) then
+      print *, "✓ Kernel execution complete"
+    end if
     
   end subroutine context_execute_kernel
   

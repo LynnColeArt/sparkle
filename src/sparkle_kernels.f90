@@ -23,10 +23,13 @@ module sparkle_kernels
   integer, parameter :: ARG_INOUT = 3
   
   ! Data type constants for kernel arguments
-  integer, parameter :: TYPE_REAL32 = int(real32)
-  integer, parameter :: TYPE_REAL64 = int(real64)
-  integer, parameter :: TYPE_INT32 = int(int32)
-  integer, parameter :: TYPE_INT64 = int(int64)
+  integer, parameter :: TYPE_REAL32 = 1
+  integer, parameter :: TYPE_REAL64 = 2
+  integer, parameter :: TYPE_INT32 = 3
+  integer, parameter :: TYPE_INT64 = 4
+  integer, parameter :: TYPE_INT8 = 5
+  integer, parameter :: TYPE_COMPLEX32 = 6
+  integer, parameter :: TYPE_COMPLEX64 = 7
   
   ! Kernel argument descriptor
   type :: kernel_argument

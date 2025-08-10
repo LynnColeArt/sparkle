@@ -88,17 +88,17 @@ program test_kernel_execution
   ! Set up arguments
   allocate(kernel%arguments(3))
   kernel%arguments(1)%name = 'a'
-  kernel%arguments(1)%arg_type = int(real32)
+  kernel%arguments(1)%arg_type = TYPE_REAL32
   kernel%arguments(1)%intent = ARG_IN
   kernel%arguments(1)%rank = 1
   
   kernel%arguments(2)%name = 'b'
-  kernel%arguments(2)%arg_type = int(real32)
+  kernel%arguments(2)%arg_type = TYPE_REAL32
   kernel%arguments(2)%intent = ARG_IN
   kernel%arguments(2)%rank = 1
   
   kernel%arguments(3)%name = 'c'
-  kernel%arguments(3)%arg_type = int(real32)
+  kernel%arguments(3)%arg_type = TYPE_REAL32
   kernel%arguments(3)%intent = ARG_OUT
   kernel%arguments(3)%rank = 1
   
@@ -153,12 +153,12 @@ program test_kernel_execution
   deallocate(kernel%arguments)
   allocate(kernel%arguments(2))
   kernel%arguments(1)%name = 'input'
-  kernel%arguments(1)%arg_type = int(real32)
+  kernel%arguments(1)%arg_type = TYPE_REAL32
   kernel%arguments(1)%intent = ARG_IN
   kernel%arguments(1)%rank = 1
   
   kernel%arguments(2)%name = 'sum'
-  kernel%arguments(2)%arg_type = int(real32)
+  kernel%arguments(2)%arg_type = TYPE_REAL32
   kernel%arguments(2)%intent = ARG_OUT
   kernel%arguments(2)%rank = 0  ! Scalar output
   
