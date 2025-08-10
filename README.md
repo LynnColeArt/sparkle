@@ -8,17 +8,21 @@
 
 ### What's Working Now:
 - ✅ Basic device abstraction (CPU support)
+- ✅ Hardware detection via kernel drivers (no SDKs needed!)
+- ✅ AMD GPU detection with actual VRAM sizes
+- ✅ CPU detection with real core count and memory
 - ✅ Mesh topology design
 - ✅ Smart scheduling with cost models
 - ✅ Collective operations (all-reduce, broadcast)
-- ✅ Device discovery framework
+- ✅ Memory management system
+- ✅ Device profiling and benchmarking
 
 ### What's Coming:
-- 🔨 Actual GPU execution (CUDA/ROCm/Level Zero)
-- 🔨 Memory management
-- 🔨 Kernel abstraction
+- 🔨 Actual GPU execution (Vulkan Compute/OpenCL for vendor neutrality)
+- 🔨 Kernel abstraction layer
 - 🔨 Network mesh communication
 - 🔨 Real-world examples
+- 🔨 Windows and macOS support
 
 **Want to help?** Jump right in! Whether you're fixing a typo, testing on your hardware, or implementing GPU backends - every contribution matters. This is truly a community project from day one.
 
@@ -33,6 +37,7 @@ AGI is coming. When it does, computational power will determine who shapes the f
 ## 🚀 Key Features
 
 - **Universal Device Support**: CPUs, NVIDIA/AMD/Intel GPUs, and future accelerators
+- **Zero Dependencies**: Detects hardware via kernel drivers - no SDK installation required!
 - **Mesh Topology**: Devices communicate directly, no hierarchical bottlenecks  
 - **Smart Orchestration**: Work distributed based on actual device capabilities
 - **Self-Healing**: Device failures are handled gracefully - the mesh adapts
