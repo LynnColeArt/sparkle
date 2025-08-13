@@ -11,7 +11,7 @@ module sparkle_gpu_dispatch
   use sparkle_memory
   use sparkle_gpu_kernels
   use sparkle_gpu_safe_detect
-  use sparkle_error_handling
+  use sparkle_error_handling, only: sparkle_error_sub => sparkle_error
   implicit none
   private
   
@@ -116,7 +116,7 @@ contains
     else
       print *, "⚠️  No GPU detected"
       print *, "   Using CPU fallback mode"
-      call sparkle_warning("GPU detection failed - using CPU fallback")
+      call sparkle_error_sub("GPU detection failed - using CPU fallback", .false.)
     end if
     
     if (allocated(gpus)) deallocate(gpus)
@@ -168,13 +168,13 @@ contains
     
     ! Validate size
     if (size_bytes <= 0) then
-      call sparkle_error("Invalid GPU allocation size", .false.)
+      call sparkle_error_sub("Invalid GPU allocation size", .false.)
       mem%allocated = .false.
       return
     end if
     
     if (size_bytes > 24_int64 * 1024_int64**3) then
-      call sparkle_error("GPU allocation too large (>24GB)", .false.)
+      call sparkle_error_sub("GPU allocation too large (>24GB)", .false.)
       mem%allocated = .false.
       return
     end if

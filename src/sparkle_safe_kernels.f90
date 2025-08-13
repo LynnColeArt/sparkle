@@ -5,9 +5,11 @@ module sparkle_safe_kernels
   use iso_fortran_env, only: int32, int64, real32, real64
   use iso_c_binding, only: c_f_pointer
   use sparkle_types
-  use sparkle_kernels
+  use sparkle_kernels, only: sparkle_kernel, kernel_argument, &
+                            TYPE_REAL32, TYPE_REAL64, TYPE_INT32, TYPE_INT64, &
+                            ARG_IN, ARG_OUT, ARG_INOUT, KERNEL_PURE
   use sparkle_memory
-  use sparkle_error_handling
+  use sparkle_error_handling, only: sparkle_error_sub => sparkle_error
   implicit none
   private
   
@@ -23,12 +25,12 @@ contains
     integer :: i, j
     integer(int64) :: expected_size, actual_size
     
-    ierr = SPARKLE_SUCCESS
+    ierr = 0  ! Success
     
     ! Check kernel has arguments
     if (.not. allocated(kernel%arguments)) then
-      ierr = SPARKLE_ERR_INVALID
-      call sparkle_error("Kernel has no arguments", .false.)
+      ierr = -1  ! Error
+      call sparkle_error_sub("Kernel has no arguments", .false.)
       return
     end if
     
@@ -37,15 +39,15 @@ contains
       associate(arg => kernel%arguments(i))
         ! Check memory handle is valid
         if (.not. arg%data%is_allocated) then
-          ierr = SPARKLE_ERR_INVALID
-          call sparkle_error("Argument " // trim(arg%name) // " has unallocated memory", .false.)
+          ierr = -1  ! Error
+          call sparkle_error_sub("Argument " // trim(arg%name) // " has unallocated memory", .false.)
           return
         end if
         
         ! Check shape is allocated
         if (.not. allocated(arg%shape)) then
-          ierr = SPARKLE_ERR_INVALID
-          call sparkle_error("Argument " // trim(arg%name) // " has no shape", .false.)
+          ierr = -1  ! Error
+          call sparkle_error_sub("Argument " // trim(arg%name) // " has no shape", .false.)
           return
         end if
         
@@ -53,8 +55,8 @@ contains
         expected_size = 1
         do j = 1, size(arg%shape)
           if (arg%shape(j) <= 0) then
-            ierr = SPARKLE_ERR_INVALID
-            call sparkle_error("Argument " // trim(arg%name) // " has invalid shape", .false.)
+            ierr = -1  ! Error
+            call sparkle_error_sub("Argument " // trim(arg%name) // " has invalid shape", .false.)
             return
           end if
           expected_size = expected_size * arg%shape(j)
@@ -66,22 +68,16 @@ contains
           expected_size = expected_size * 4
         case(TYPE_REAL64, TYPE_INT64)
           expected_size = expected_size * 8
-        case(TYPE_INT8)
-          expected_size = expected_size * 1
-        case(TYPE_COMPLEX32)
-          expected_size = expected_size * 8
-        case(TYPE_COMPLEX64)
-          expected_size = expected_size * 16
         case default
-          ierr = SPARKLE_ERR_INVALID
-          call sparkle_error("Unknown type for argument " // trim(arg%name), .false.)
+          ierr = -1  ! Error
+          call sparkle_error_sub("Unknown type for argument " // trim(arg%name), .false.)
           return
         end select
         
         ! Check memory size is sufficient
-        if (expected_size > arg%data%size_bytes) then
-          ierr = SPARKLE_ERR_BOUNDS
-          call sparkle_error("Memory too small for argument " // trim(arg%name), .false.)
+        if (expected_size > arg%data%size) then
+          ierr = -2  ! Bounds error
+          call sparkle_error_sub("Memory too small for argument " // trim(arg%name), .false.)
           return
         end if
       end associate
@@ -89,8 +85,8 @@ contains
     
     ! Validate work items
     if (kernel%work_items <= 0) then
-      ierr = SPARKLE_ERR_INVALID
-      call sparkle_error("Invalid work items count", .false.)
+      ierr = -1  ! Error
+      call sparkle_error_sub("Invalid work items count", .false.)
       return
     end if
     
@@ -104,7 +100,7 @@ contains
     ! Validate arguments first
     ierr = validate_kernel_args(kernel)
     if (ierr /= SPARKLE_SUCCESS) then
-      call sparkle_error("Kernel validation failed", .false.)
+      call sparkle_error_sub("Kernel validation failed", .false.)
       return
     end if
     
@@ -125,7 +121,7 @@ contains
     if (associated(kernel%fortran_proc)) then
       call kernel%fortran_proc(kernel%arguments)
     else
-      call sparkle_error("Kernel procedure not set", .false.)
+      call sparkle_error_sub("Kernel procedure not set", .false.)
     end if
     
   end subroutine safe_kernel_wrapper
@@ -139,13 +135,13 @@ contains
     
     ! Basic validation
     if (n <= 0) then
-      call sparkle_error("Invalid vector size for safe_vector_add", .false.)
+      call sparkle_error_sub("Invalid vector size for safe_vector_add", .false.)
       return
     end if
     
     ! Check memory sizes
-    if (x_mem%size_bytes < n * 4 .or. y_mem%size_bytes < n * 4 .or. z_mem%size_bytes < n * 4) then
-      call sparkle_error("Insufficient memory for vector operation", .false.)
+    if (x_mem%size < n * 4 .or. y_mem%size < n * 4 .or. z_mem%size < n * 4) then
+      call sparkle_error_sub("Insufficient memory for vector operation", .false.)
       return
     end if
     
@@ -200,7 +196,7 @@ contains
     
     ! Verify all arrays have same size
     if (args(2)%shape(1) /= n .or. args(3)%shape(1) /= n) then
-      call sparkle_error("Array size mismatch in vector add", .false.)
+      call sparkle_error_sub("Array size mismatch in vector add", .false.)
       return
     end if
     
@@ -215,7 +211,7 @@ contains
       if (check_bounds) then
         do i = 1, n
           if (i < 1 .or. i > n) then
-            call sparkle_error("Bounds violation in vector add", .false.)
+            call sparkle_error_sub("Bounds violation in vector add", .false.)
             return
           end if
           z(i) = x(i) + y(i)
