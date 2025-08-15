@@ -61,7 +61,11 @@ COMMON_MODULES = \
     $(SRC_DIR)/sparkle_memory.f90 \
     $(SRC_DIR)/sparkle_kernels.f90 \
     $(SRC_DIR)/sparkle_safe_kernels.f90 \
-    $(SRC_DIR)/sparkle_platform.f90
+    $(SRC_DIR)/sparkle_platform.f90 \
+    $(SRC_DIR)/sparkle_glsl_generator.f90 \
+    $(SRC_DIR)/sparkle_glsl_compute.f90 \
+    $(SRC_DIR)/sparkle_adaptive_kernel.f90 \
+    $(SRC_DIR)/sparkle_kernel_variants.f90
 
 # Platform-specific modules
 ifeq ($(PLATFORM),LINUX)
@@ -112,9 +116,13 @@ info:
 	@echo "Build dir: $(BUILD_DIR)"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  make test_platform    - Test platform detection"
-	@echo "  make test_gpu         - Test GPU functionality"
-	@echo "  make benchmark        - Run performance benchmarks"
+	@echo "  make test_platform      - Test platform detection"
+	@echo "  make test_gpu           - Test GPU functionality"
+	@echo "  make test_amdgpu_direct - Test direct AMDGPU access"
+	@echo "  make test_amdgpu_command - Test AMDGPU command submission"
+	@echo "  make test_glsl_compute  - Test GLSL compute shader"
+	@echo "  make test_adaptive_kernel - Test adaptive kernel framework"
+	@echo "  make benchmark          - Run performance benchmarks"
 	@echo ""
 
 # Platform detection test
@@ -146,6 +154,36 @@ $(BUILD_DIR)/test_amdgpu_direct: $(OBJECTS) $(EXAMPLES_DIR)/test_amdgpu_direct.f
 	@echo "🔨 Building direct AMDGPU test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
 		$(EXAMPLES_DIR)/test_amdgpu_direct.f90 -o $@ $(LDFLAGS)
+
+# AMDGPU command submission test
+test_amdgpu_command: $(BUILD_DIR)/test_amdgpu_command
+	@echo "🚀 Running AMDGPU command submission test..."
+	@./$(BUILD_DIR)/test_amdgpu_command
+
+$(BUILD_DIR)/test_amdgpu_command: $(OBJECTS) $(EXAMPLES_DIR)/test_amdgpu_command.f90
+	@echo "🔨 Building AMDGPU command submission test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_amdgpu_command.f90 -o $@ $(LDFLAGS)
+
+# GLSL compute shader test
+test_glsl_compute: $(BUILD_DIR)/test_glsl_compute
+	@echo "🚀 Running GLSL compute shader test..."
+	@./$(BUILD_DIR)/test_glsl_compute
+
+$(BUILD_DIR)/test_glsl_compute: $(OBJECTS) $(EXAMPLES_DIR)/test_glsl_compute.f90
+	@echo "🔨 Building GLSL compute shader test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_glsl_compute.f90 -o $@ $(LDFLAGS)
+
+# Adaptive kernel test
+test_adaptive_kernel: $(BUILD_DIR)/test_adaptive_kernel
+	@echo "🚀 Running adaptive kernel test..."
+	@./$(BUILD_DIR)/test_adaptive_kernel
+
+$(BUILD_DIR)/test_adaptive_kernel: $(OBJECTS) $(EXAMPLES_DIR)/test_adaptive_kernel.f90
+	@echo "🔨 Building adaptive kernel test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_adaptive_kernel.f90 -o $@ $(LDFLAGS)
 endif
 
 ifeq ($(PLATFORM),MACOS)
