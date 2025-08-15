@@ -14,10 +14,10 @@ module sparkle_gpu_opengl
   public :: gl_context, gl_compute_shader, gl_buffer
   public :: create_gl_context, destroy_gl_context
   public :: create_compute_shader, dispatch_compute
-  public :: create_gl_buffer, update_gl_buffer, read_gl_buffer
+  public :: create_gl_buffer, update_gl_buffer
   
   ! OpenGL constants
-  integer(c_int), parameter :: GL_COMPUTE_SHADER = int(z'91B9', c_int)
+  integer(c_int), parameter :: GL_COMPUTE_SHADER_TYPE = int(z'91B9', c_int)
   integer(c_int), parameter :: GL_SHADER_STORAGE_BUFFER = int(z'90D2', c_int)
   integer(c_int), parameter :: GL_DYNAMIC_COPY = int(z'88EA', c_int)
   integer(c_int), parameter :: GL_READ_WRITE = int(z'88BA', c_int)
@@ -153,7 +153,7 @@ contains
     type(gl_context) :: ctx
     integer(c_int) :: EGL_DEFAULT_DISPLAY = 0
     integer(c_int) :: EGL_OPENGL_API = int(z'30A2', c_int)
-    integer(c_int) :: major, minor
+    integer(c_int), target :: major, minor
     
     ! Get default display
     ctx%display = eglGetDisplay(int(EGL_DEFAULT_DISPLAY, c_long))
@@ -195,7 +195,7 @@ contains
     code_ptr = c_loc(code_with_null)
     
     ! Create shader
-    shader%shader_id = glCreateShader(GL_COMPUTE_SHADER)
+    shader%shader_id = glCreateShader(GL_COMPUTE_SHADER_TYPE)
     
     ! Set source and compile
     call glShaderSource(shader%shader_id, 1, code_ptr, c_null_ptr)
@@ -218,11 +218,13 @@ contains
     integer(c_size_t), intent(in) :: size_bytes
     integer, intent(in) :: binding
     type(gl_buffer) :: buffer
+    integer(c_int), target :: temp_id
     
     buffer%size_bytes = size_bytes
     buffer%binding_point = binding
     
-    call glGenBuffers(1, c_loc(buffer%buffer_id))
+    call glGenBuffers(1, c_loc(temp_id))
+    buffer%buffer_id = temp_id
     call glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer%buffer_id)
     call glBufferData(GL_SHADER_STORAGE_BUFFER, size_bytes, c_null_ptr, GL_DYNAMIC_COPY)
     call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, buffer%buffer_id)

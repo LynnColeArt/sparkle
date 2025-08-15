@@ -1,0 +1,213 @@
+# Smart Makefile for Sparkle
+# Detects platform and builds accordingly
+
+# Base settings
+FC = gfortran
+CC = gcc
+BASE_FFLAGS = -O2 -Wall -fcheck=bounds
+BASE_CFLAGS = -O2 -Wall
+
+# Detect OS
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
+# Platform-specific settings
+ifeq ($(UNAME_S),Linux)
+    PLATFORM = LINUX
+    
+    # Check for AMD GPU
+    GPU_VENDOR := $(shell cat /sys/class/drm/card0/device/vendor 2>/dev/null)
+    ifeq ($(GPU_VENDOR),0x1002)
+        GPU_TYPE = AMD
+        # Check available libraries
+        HAS_OPENGL := $(shell test -f /usr/lib/x86_64-linux-gnu/libGL.so.1 && echo yes)
+        HAS_VULKAN := $(shell test -f /usr/lib/x86_64-linux-gnu/libvulkan.so.1 && echo yes)
+        
+        ifeq ($(HAS_OPENGL),yes)
+            LDFLAGS += -lGL -lEGL
+            CFLAGS += -DHAS_OPENGL
+            GPU_BACKEND = opengl
+        endif
+        
+        ifeq ($(HAS_VULKAN),yes)
+            LDFLAGS += -lvulkan
+            CFLAGS += -DHAS_VULKAN
+            GPU_BACKEND_ALT = vulkan
+        endif
+    endif
+    
+else ifeq ($(UNAME_S),Darwin)
+    PLATFORM = MACOS
+    GPU_TYPE = APPLE
+    LDFLAGS = -framework Metal -framework Foundation -framework CoreGraphics
+    CFLAGS += -DHAS_METAL
+    GPU_BACKEND = metal
+endif
+
+# Build directories
+BUILD_DIR = build/$(PLATFORM)
+SRC_DIR = src
+EXAMPLES_DIR = examples
+
+# Create build directory
+$(shell mkdir -p $(BUILD_DIR))
+
+# Common modules (platform-independent)
+COMMON_MODULES = \
+    $(SRC_DIR)/sparkle_types.f90 \
+    $(SRC_DIR)/sparkle_mesh_types.f90 \
+    $(SRC_DIR)/sparkle_error_handling.f90 \
+    $(SRC_DIR)/sparkle_config.f90 \
+    $(SRC_DIR)/sparkle_memory.f90 \
+    $(SRC_DIR)/sparkle_kernels.f90 \
+    $(SRC_DIR)/sparkle_safe_kernels.f90 \
+    $(SRC_DIR)/sparkle_platform.f90 \
+    $(SRC_DIR)/sparkle_glsl_generator.f90 \
+    $(SRC_DIR)/sparkle_glsl_compute.f90 \
+    $(SRC_DIR)/sparkle_adaptive_kernel.f90 \
+    $(SRC_DIR)/sparkle_kernel_variants.f90
+
+# Platform-specific modules
+ifeq ($(PLATFORM),LINUX)
+    ifeq ($(GPU_TYPE),AMD)
+        PLATFORM_MODULES = \
+            $(SRC_DIR)/sparkle_gpu_safe_detect.f90 \
+            $(SRC_DIR)/sparkle_gpu_backend_detect.f90 \
+            $(SRC_DIR)/sparkle_gpu_backend.f90 \
+            $(SRC_DIR)/sparkle_amdgpu_direct.f90
+            
+        ifeq ($(HAS_OPENGL),yes)
+            PLATFORM_MODULES += $(SRC_DIR)/sparkle_gpu_opengl.f90
+        endif
+    endif
+endif
+
+ifeq ($(PLATFORM),MACOS)
+    PLATFORM_MODULES = \
+        $(SRC_DIR)/sparkle_gpu_metal.f90 \
+        $(SRC_DIR)/sparkle_memory_metal.f90 \
+        $(SRC_DIR)/sparkle_metal_kernels.f90 \
+        $(SRC_DIR)/sparkle_amx.f90 \
+        $(SRC_DIR)/sparkle_neural_engine.f90 \
+        $(SRC_DIR)/sparkle_apple_orchestrator.f90
+        
+    PLATFORM_C_SOURCES = \
+        $(SRC_DIR)/metal_wrapper.m \
+        $(SRC_DIR)/coreml_bridge_simple.m
+endif
+
+# All modules
+MODULES = $(COMMON_MODULES) $(PLATFORM_MODULES)
+OBJECTS = $(MODULES:$(SRC_DIR)/%.f90=$(BUILD_DIR)/%.o)
+
+# Platform-specific C objects
+ifeq ($(PLATFORM),MACOS)
+    C_OBJECTS = $(PLATFORM_C_SOURCES:$(SRC_DIR)/%.m=$(BUILD_DIR)/%.o)
+endif
+
+# Info target
+info:
+	@echo "🌟 Sparkle Smart Build System"
+	@echo "============================"
+	@echo "Platform: $(PLATFORM)"
+	@echo "Architecture: $(UNAME_M)"
+	@echo "GPU: $(GPU_TYPE)"
+	@echo "GPU Backend: $(GPU_BACKEND)"
+	@echo "Build dir: $(BUILD_DIR)"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  make test_platform      - Test platform detection"
+	@echo "  make test_gpu           - Test GPU functionality"
+	@echo "  make test_amdgpu_direct - Test direct AMDGPU access"
+	@echo "  make test_amdgpu_command - Test AMDGPU command submission"
+	@echo "  make test_glsl_compute  - Test GLSL compute shader"
+	@echo "  make test_adaptive_kernel - Test adaptive kernel framework"
+	@echo "  make benchmark          - Run performance benchmarks"
+	@echo ""
+
+# Platform detection test
+test_platform: $(BUILD_DIR)/test_platform
+	@echo "🚀 Running platform detection..."
+	@./$(BUILD_DIR)/test_platform
+
+$(BUILD_DIR)/test_platform: $(OBJECTS) $(EXAMPLES_DIR)/test_platform.f90
+	@echo "🔨 Building platform test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_platform.f90 -o $@ $(LDFLAGS)
+
+# GPU test (platform-specific)
+ifeq ($(PLATFORM),LINUX)
+test_gpu: $(BUILD_DIR)/test_gpu_$(GPU_BACKEND)
+	@./$(BUILD_DIR)/test_gpu_$(GPU_BACKEND)
+
+$(BUILD_DIR)/test_gpu_opengl: $(OBJECTS) $(EXAMPLES_DIR)/test_gpu_opengl.f90
+	@echo "🔨 Building OpenGL GPU test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_gpu_opengl.f90 -o $@ $(LDFLAGS)
+
+# Direct AMDGPU test
+test_amdgpu_direct: $(BUILD_DIR)/test_amdgpu_direct
+	@echo "🚀 Running direct AMDGPU test..."
+	@./$(BUILD_DIR)/test_amdgpu_direct
+
+$(BUILD_DIR)/test_amdgpu_direct: $(OBJECTS) $(EXAMPLES_DIR)/test_amdgpu_direct.f90
+	@echo "🔨 Building direct AMDGPU test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_amdgpu_direct.f90 -o $@ $(LDFLAGS)
+
+# AMDGPU command submission test
+test_amdgpu_command: $(BUILD_DIR)/test_amdgpu_command
+	@echo "🚀 Running AMDGPU command submission test..."
+	@./$(BUILD_DIR)/test_amdgpu_command
+
+$(BUILD_DIR)/test_amdgpu_command: $(OBJECTS) $(EXAMPLES_DIR)/test_amdgpu_command.f90
+	@echo "🔨 Building AMDGPU command submission test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_amdgpu_command.f90 -o $@ $(LDFLAGS)
+
+# GLSL compute shader test
+test_glsl_compute: $(BUILD_DIR)/test_glsl_compute
+	@echo "🚀 Running GLSL compute shader test..."
+	@./$(BUILD_DIR)/test_glsl_compute
+
+$(BUILD_DIR)/test_glsl_compute: $(OBJECTS) $(EXAMPLES_DIR)/test_glsl_compute.f90
+	@echo "🔨 Building GLSL compute shader test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_glsl_compute.f90 -o $@ $(LDFLAGS)
+
+# Adaptive kernel test
+test_adaptive_kernel: $(BUILD_DIR)/test_adaptive_kernel
+	@echo "🚀 Running adaptive kernel test..."
+	@./$(BUILD_DIR)/test_adaptive_kernel
+
+$(BUILD_DIR)/test_adaptive_kernel: $(OBJECTS) $(EXAMPLES_DIR)/test_adaptive_kernel.f90
+	@echo "🔨 Building adaptive kernel test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_adaptive_kernel.f90 -o $@ $(LDFLAGS)
+endif
+
+ifeq ($(PLATFORM),MACOS)
+test_gpu: $(BUILD_DIR)/test_metal_vs_mock
+	@./$(BUILD_DIR)/test_metal_vs_mock
+endif
+
+# Compile rules
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.f90
+	@echo "📦 Compiling $< for $(PLATFORM)..."
+	$(FC) $(BASE_FFLAGS) -c $< -o $@ -J$(BUILD_DIR)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.m
+	@echo "🎮 Compiling $< (Objective-C)..."
+	$(CC) $(BASE_CFLAGS) -fobjc-arc -c $< -o $@
+
+# Clean
+clean:
+	@echo "🧹 Cleaning $(PLATFORM) build..."
+	rm -rf $(BUILD_DIR)
+
+# Clean all platforms
+clean-all:
+	@echo "🧹 Cleaning all builds..."
+	rm -rf build/
+
+.PHONY: info test_platform test_gpu clean clean-all
