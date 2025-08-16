@@ -62,6 +62,11 @@ module sparkle_amdgpu_direct
   integer(c_int), parameter :: AMDGPU_CHUNK_ID_FENCE = int(z'02', c_int)
   integer(c_int), parameter :: AMDGPU_CHUNK_ID_DEPENDENCIES = int(z'03', c_int)
   
+  ! HW IP types
+  integer(c_int), parameter :: AMDGPU_HW_IP_GFX = 0
+  integer(c_int), parameter :: AMDGPU_HW_IP_COMPUTE = 1
+  integer(c_int), parameter :: AMDGPU_HW_IP_DMA = 2
+  
   ! Context operations
   integer(c_int), parameter :: AMDGPU_CTX_OP_ALLOC_CTX = 1
   integer(c_int), parameter :: AMDGPU_CTX_OP_FREE_CTX = 2
@@ -478,7 +483,7 @@ contains
       ib_info%va_start = cmd_buf%ib_buffer%gpu_addr
     end if
     ib_info%ib_bytes = int(cmd_buf%ib_size, c_int32_t)  ! Size in bytes
-    ib_info%ip_type = 0  ! 0 = GFX (graphics/compute)
+    ib_info%ip_type = AMDGPU_HW_IP_COMPUTE  ! Use compute ring, not GFX!
     ib_info%ip_instance = 0
     ib_info%ring = 0  ! Ring 0
     
