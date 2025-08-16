@@ -13,26 +13,34 @@ module sparkle_conv2d
   public :: conv2d_select_implementation
   
   ! Implementation selection
-  character(len=64) :: cpu_impl = "naive"  ! "reference" once we have it
+  character(len=64) :: cpu_impl = "reference"  ! High-performance universal memory optimization
   character(len=64) :: gpu_impl = "reference"
   
 contains
   
   subroutine conv2d_cpu(input, weights, output, &
                        N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+    use cpu_conv2d_reference, only: conv2d_cpu_with_warmup
     real(real32), intent(in) :: input(:), weights(:)
     real(real32), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
+    real(real32) :: time_ms, gflops
+    integer(int64) :: total_flops
+    
     select case(cpu_impl)
     case("reference")
-      ! TODO: Use reference once reconstructed
-      ! use sparkle_conv2d_cpu_reference
-      ! call conv2d_cpu_reference(input, weights, output, &
-      !                          N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-      print *, "Reference CPU implementation not yet available"
-      call conv2d_cpu_naive(input, weights, output, &
-                           N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      ! Use high-performance reference implementation
+      time_ms = conv2d_cpu_with_warmup(input, weights, output, &
+                                       N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      
+      ! Calculate and report performance
+      total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
+                    int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+      gflops = real(total_flops, real32) / (time_ms * 1.0e6)
+      
+      print '(A,F6.2,A,F6.1,A)', "CPU conv2d: ", time_ms, " ms, ", gflops, " GFLOPS"
+      
     case("naive")
       call conv2d_cpu_naive(input, weights, output, &
                            N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)

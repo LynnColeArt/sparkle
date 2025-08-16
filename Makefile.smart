@@ -90,6 +90,9 @@ ifeq ($(PLATFORM),LINUX)
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/sparkle_gpu_opengl.f90 \
                                 $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
+                                $(SRC_DIR)/reference/universal_memory_optimization.f90 \
+                                $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+                                $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
                                 $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c
@@ -293,6 +296,26 @@ $(BUILD_DIR)/test_fortran_shader: $(OBJECTS) $(EXAMPLES_DIR)/test_fortran_shader
 	@echo "🔨 Building Fortran shader test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
 		$(EXAMPLES_DIR)/test_fortran_shader.f90 -o $@ $(LDFLAGS)
+
+# Universal memory optimization test
+test_universal_memory_optimization: $(BUILD_DIR)/test_universal_memory_optimization
+	@echo "🚀 Testing universal memory optimization patterns..."
+	@./$(BUILD_DIR)/test_universal_memory_optimization
+
+$(BUILD_DIR)/test_universal_memory_optimization: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_universal_memory_optimization.f90
+	@echo "🔨 Building universal memory optimization test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_universal_memory_optimization.f90 -o $@ $(LDFLAGS)
+
+# Intelligent device juggling test
+test_intelligent_device_juggling: $(BUILD_DIR)/test_intelligent_device_juggling
+	@echo "🧠 Testing intelligent device juggling system..."
+	@./$(BUILD_DIR)/test_intelligent_device_juggling
+
+$(BUILD_DIR)/test_intelligent_device_juggling: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_intelligent_device_juggling.f90
+	@echo "🔨 Building intelligent device juggling test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_intelligent_device_juggling.f90 -o $@ $(LDFLAGS)
 
 # Benchmarks
 benchmark_saxpy: $(BUILD_DIR)/benchmark_saxpy
