@@ -87,11 +87,12 @@ ifeq ($(PLATFORM),LINUX)
             $(SRC_DIR)/sparkle_amdgpu_direct.f90 \
             $(SRC_DIR)/sparkle_amdgpu_shader_binary.f90 \
             $(SRC_DIR)/sparkle_amdgpu_memory.f90 \
-            $(SRC_DIR)/sparkle_amdgpu_shaders.f90
+            $(SRC_DIR)/sparkle_amdgpu_shaders.f90 \
+            $(SRC_DIR)/amdgpu_device.f90
             
         ifeq ($(HAS_OPENGL),yes)
-            PLATFORM_MODULES += $(SRC_DIR)/sparkle_gpu_opengl.f90 \
-                                $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
+            PLATFORM_MODULES += $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
+                                $(SRC_DIR)/sparkle_gpu_opengl.f90 \
                                 $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
                                 $(SRC_DIR)/reference/universal_memory_optimization.f90 \
                                 $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
@@ -99,7 +100,8 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
                                 $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d.f90 \
-                                $(SRC_DIR)/gpu_dynamic_execution.f90
+                                $(SRC_DIR)/gpu_dynamic_execution.f90 \
+                                $(SRC_DIR)/gpu_async_executor.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c
         endif
@@ -149,7 +151,10 @@ info:
 	@echo "  make test_platform      - Test platform detection"
 	@echo "  make test_gpu           - Test GPU functionality"
 	@echo "  make test_amdgpu_direct - Test direct AMDGPU access"
+	@echo "  make test_amdgpu_direct_integration - Test AMDGPU direct device integration"
 	@echo "  make test_amdgpu_command - Test AMDGPU command submission"
+	@echo "  make test_gpu_async_poc - Test GPU async proof of concept"
+	@echo "  make test_gpu_async_executor - Test GPU async executor with sync objects"
 	@echo "  make test_glsl_compute  - Test GLSL compute shader"
 	@echo "  make test_adaptive_kernel - Test adaptive kernel framework"
 	@echo "  make test_amdgpu_compute - Test AMDGPU compute shader"
@@ -180,6 +185,15 @@ $(BUILD_DIR)/test_gpu_opengl: $(OBJECTS) $(EXAMPLES_DIR)/test_gpu_opengl.f90
 test_amdgpu_direct: $(BUILD_DIR)/test_amdgpu_direct
 	@echo "🚀 Running direct AMDGPU test..."
 	@./$(BUILD_DIR)/test_amdgpu_direct
+
+test_amdgpu_direct_integration: $(BUILD_DIR)/test_amdgpu_direct_integration
+	@echo "Running AMDGPU Direct Integration Test..."
+	@./$(BUILD_DIR)/test_amdgpu_direct_integration
+
+$(BUILD_DIR)/test_amdgpu_direct_integration: $(OBJECTS) $(EXAMPLES_DIR)/test_amdgpu_direct_integration.f90
+	@echo "Building AMDGPU Direct Integration Test..."
+	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_amdgpu_direct_integration.f90 -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/test_amdgpu_direct: $(OBJECTS) $(EXAMPLES_DIR)/test_amdgpu_direct.f90
 	@echo "🔨 Building direct AMDGPU test..."
@@ -215,6 +229,26 @@ $(BUILD_DIR)/test_adaptive_kernel: $(OBJECTS) $(EXAMPLES_DIR)/test_adaptive_kern
 	@echo "🔨 Building adaptive kernel test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
 		$(EXAMPLES_DIR)/test_adaptive_kernel.f90 -o $@ $(LDFLAGS)
+
+# GPU async proof of concept test
+test_gpu_async_poc: $(BUILD_DIR)/test_gpu_async_poc
+	@echo "🚀 Running GPU async proof of concept..."
+	@./$(BUILD_DIR)/test_gpu_async_poc
+
+$(BUILD_DIR)/test_gpu_async_poc: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_poc.f90
+	@echo "🔨 Building GPU async POC test..."
+	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_gpu_async_poc.f90 -o $@ $(LDFLAGS)
+
+# GPU async executor test
+test_gpu_async_executor: $(BUILD_DIR)/test_gpu_async_executor
+	@echo "🚀 Running GPU async executor test..."
+	@./$(BUILD_DIR)/test_gpu_async_executor
+
+$(BUILD_DIR)/test_gpu_async_executor: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_executor.f90
+	@echo "🔨 Building GPU async executor test..."
+	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_gpu_async_executor.f90 -o $@ $(LDFLAGS)
 
 # AMDGPU compute shader test
 test_amdgpu_compute: $(BUILD_DIR)/test_amdgpu_compute
@@ -486,3 +520,8 @@ $(BUILD_DIR)/test_simd_performance: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test
 		$(EXAMPLES_DIR)/test_simd_performance.f90 -o $@ $(LDFLAGS)
 
 .PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd
+
+$(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
+	@echo "🔨 Building honest GPU async test..."
+	@$(FC) $(FFLAGS) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_gpu_async_honest.f90 -o $@ $(LDFLAGS)

@@ -8,7 +8,7 @@ module gpu_opengl_interface
   
   private
   public :: gpu_conv2d_params, gpu_init, gpu_cleanup
-  public :: gpu_compile_shaders, gpu_execute_conv2d_ref
+  public :: gpu_compile_shaders, gpu_execute_conv2d_ref, gpu_get_program_id
   
   ! Parameter structure matching C implementation
   type, bind(C) :: gpu_conv2d_params
@@ -49,6 +49,12 @@ module gpu_opengl_interface
       type(c_ptr), value :: input, weights, output
       integer(c_int), value :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
       real(c_float) :: gpu_execute_conv2d_fortran
+    end function
+    
+    ! Get compute program handle
+    function gpu_get_compute_program() bind(C, name="gpu_get_compute_program")
+      import :: c_int
+      integer(c_int) :: gpu_get_compute_program
     end function
   end interface
   
@@ -99,5 +105,11 @@ contains
     
     gpu_execute_conv2d_ref = real(time_ms, real32)
   end function gpu_execute_conv2d_ref
+  
+  ! Get the compute program ID for async execution
+  function gpu_get_program_id() result(program_id)
+    integer :: program_id
+    program_id = gpu_get_compute_program()
+  end function gpu_get_program_id
   
 end module gpu_opengl_interface

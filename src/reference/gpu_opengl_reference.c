@@ -430,3 +430,8 @@ float gpu_execute_conv2d_fortran(const float* input, const float* weights, float
     
     return (float)time_ms;
 }
+
+// Get compute program handle for async execution
+int gpu_get_compute_program() {
+    return (int)g_compute_program;
+}
