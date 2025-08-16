@@ -6,6 +6,8 @@ FC = gfortran
 CC = gcc
 BASE_FFLAGS = -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall
 BASE_CFLAGS = -O2 -Wall
+FFLAGS = $(BASE_FFLAGS)
+CFLAGS = $(BASE_CFLAGS)
 
 # Detect OS
 UNAME_S := $(shell uname -s)
@@ -24,7 +26,7 @@ ifeq ($(UNAME_S),Linux)
         HAS_VULKAN := $(shell test -f /usr/lib/x86_64-linux-gnu/libvulkan.so.1 && echo yes)
         
         ifeq ($(HAS_OPENGL),yes)
-            LDFLAGS += -lGL -lEGL
+            LDFLAGS += -lGL -lEGL -fopenmp
             CFLAGS += -DHAS_OPENGL
             GPU_BACKEND = opengl
         endif
@@ -421,9 +423,9 @@ $(BUILD_DIR)/test_adaptive_convolution: $(OBJECTS) $(EXAMPLES_DIR)/test_adaptive
 benchmark_convolution: $(BUILD_DIR)/benchmark_convolution
 	@echo "📊 Running convolution benchmark..."
 	@./$(BUILD_DIR)/benchmark_convolution
-$(BUILD_DIR)/benchmark_convolution: $(OBJECTS) $(EXAMPLES_DIR)/benchmark_convolution.f90
+$(BUILD_DIR)/benchmark_convolution: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/benchmark_convolution.f90
 	@echo "🔨 Building convolution benchmark..."
-	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/benchmark_convolution.f90 -o $@ $(LDFLAGS)
 
 # Production interface test
