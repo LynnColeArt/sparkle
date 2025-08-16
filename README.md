@@ -1,8 +1,8 @@
-# Sparkle: Universal Memory Optimization Framework
+# Sporkle: Universal Memory Optimization Framework
 
 ## Abstract
 
-Sparkle is a high-performance heterogeneous computing framework that achieves vendor-independent GPU execution through universal memory optimization patterns. By applying the same optimization principles across CPU and GPU architectures, Sparkle demonstrates that memory access patterns—not device-specific APIs—are the key to portable performance.
+Sporkle is a high-performance heterogeneous computing framework that achieves vendor-independent GPU execution through universal memory optimization patterns. By applying the same optimization principles across CPU and GPU architectures, Sporkle demonstrates that memory access patterns—not device-specific APIs—are the key to portable performance.
 
 ## Performance Results
 
@@ -11,7 +11,7 @@ Sparkle is a high-performance heterogeneous computing framework that achieves ve
 ```mermaid
 %%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f5f5f5','tertiaryColor':'#ddd','background':'#fff','mainBkg':'#fff','secondBkg':'#f5f5f5','tertiaryBkg':'#ddd'}}}%%
 graph LR
-    subgraph Performance["SPARKLE PERFORMANCE (GFLOPS)"]
+    subgraph Performance["SPORKLE PERFORMANCE (GFLOPS)"]
         CPU["CPU AVX-512<br/>196.7"]:::white
         GPU1["GPU Single<br/>451"]:::light
         GPU2["GPU Async<br/>3,631"]:::dark
@@ -57,8 +57,8 @@ graph TD
 
 ```bash
 # Clone the repository
-git clone https://github.com/LynnColeArt/Sparkle.git
-cd Sparkle
+git clone https://github.com/LynnColeArt/Sporkle.git
+cd Sporkle
 
 # Build the framework
 make -f Makefile.smart
@@ -75,7 +75,7 @@ make test_gpu_async_executor
 ```mermaid
 %%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f5f5f5','tertiaryColor':'#ddd'}}}%%
 graph TB
-    subgraph Architecture["SPARKLE ARCHITECTURE"]
+    subgraph Architecture["SPORKLE ARCHITECTURE"]
         subgraph API["USER API LAYER"]
             A1["User API"]:::white
             A2["Conv2D, GEMM"]:::white
@@ -175,12 +175,12 @@ make benchmark_convolution      # Full convolution benchmark
 
 1. **Automatic Device Selection** - Route workloads to optimal device automatically
 2. **Multi-Device Execution** - Use CPU + GPU + iGPU simultaneously  
-3. **Network Distribution** - Sparkle across multiple machines
+3. **Network Distribution** - Sporkle across multiple machines
 4. **More Backends** - Vulkan, Metal, DirectX 12
 
 ## Contributing
 
-Sparkle is an ambitious project aiming to democratize high-performance computing. We welcome contributions in:
+Sporkle is an ambitious project aiming to democratize high-performance computing. We welcome contributions in:
 
 - Backend implementations for new devices
 - Kernel optimizations
@@ -190,9 +190,9 @@ Sparkle is an ambitious project aiming to democratize high-performance computing
 ## Acknowledgments
 
 This entire project was generated using AI-assisted development:
-- **Primary Development**: Claude (Anthropic) via [Claude.ai Code](https://claude.ai/code)
-- **Architecture & Organization**: Claude-3 Opus, Claude-3.5 Sonnet, and GPT-4/GPT-5
-- **Human Supervision**: Lynn Cole - vision, direction, and quality control
+- **Primary Development**: Claude Opus 4 and Claude Sonnet 4 (Anthropic) via [Claude.ai Code](https://claude.ai/code)
+- **Technical Advisory**: GPT-5 (OpenAI) - architecture consultation and design review
+- **Director of Engineering**: Lynn Cole - vision, direction, and quality control
 
 This project demonstrates the power of AI-human collaboration in creating production-quality systems software. Every line of code, every optimization, and every architectural decision was made through iterative discussion with AI models, proving that the future of software development is collaborative intelligence.
 
@@ -203,13 +203,13 @@ This project demonstrates the power of AI-human collaboration in creating produc
 <tr>
 <td align="center" style="border: 2px solid #333; padding: 20px; background-color: #f0f0f0;">
 <h3>📚 Citation</h3>
-<p>If you use Sparkle in your research, please cite:</p>
+<p>If you use Sporkle in your research, please cite:</p>
 <pre style="text-align: left; background-color: #fff; padding: 10px; border: 1px solid #ddd;">
-@software{sparkle2025,
+@software{sporkle2025,
   author = {Cole, Lynn},
-  title = {Sparkle: Universal Memory Optimization Framework},
+  title = {Sporkle: Universal Memory Optimization Framework},
   year = {2025},
-  url = {https://github.com/LynnColeArt/Sparkle},
+  url = {https://github.com/LynnColeArt/Sporkle},
   note = {High-performance heterogeneous computing via 
           universal memory patterns. Developed with
           AI-assisted programming using Claude.}
@@ -226,5 +226,5 @@ This project demonstrates the power of AI-human collaboration in creating produc
 
 <div align="center">
 <i>"The future of computing isn't about faster devices—it's about smarter patterns."</i><br>
-<b>The Sparkle Way</b>
+<b>The Sporkle Way</b>
 </div>
