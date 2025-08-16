@@ -4,7 +4,7 @@
 # Base settings
 FC = gfortran
 CC = gcc
-BASE_FFLAGS = -O2 -Wall -fcheck=bounds
+BASE_FFLAGS = -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall
 BASE_CFLAGS = -O2 -Wall
 
 # Detect OS
@@ -90,10 +90,12 @@ ifeq ($(PLATFORM),LINUX)
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/sparkle_gpu_opengl.f90 \
                                 $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
+                                $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
                                 $(SRC_DIR)/reference/universal_memory_optimization.f90 \
+                                $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+                                $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
                                 $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
-                                $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c
         endif
@@ -395,4 +397,44 @@ $(BUILD_DIR)/test_production_conv2d: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/tes
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_production_conv2d.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d
+# Memory wall breakthrough test
+test_memory_wall_breakthrough: $(BUILD_DIR)/test_memory_wall_breakthrough
+	@echo "🚀 Testing memory wall breakthrough..."
+	@OMP_NUM_THREADS=16 ./$(BUILD_DIR)/test_memory_wall_breakthrough
+
+$(BUILD_DIR)/test_memory_wall_breakthrough: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_memory_wall_breakthrough.f90
+	@echo "🔨 Building memory wall breakthrough test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_memory_wall_breakthrough.f90 -o $@ $(LDFLAGS)
+
+# Memory wall simple test
+test_memory_wall_simple: $(BUILD_DIR)/test_memory_wall_simple
+	@echo "🚀 Testing memory wall breakthrough (simple)..."
+	@OMP_NUM_THREADS=16 ./$(BUILD_DIR)/test_memory_wall_simple
+
+$(BUILD_DIR)/test_memory_wall_simple: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_memory_wall_simple.f90
+	@echo "🔨 Building memory wall simple test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_memory_wall_simple.f90 -o $@ $(LDFLAGS)
+
+# Test peak CPU performance
+test_peak_cpu: $(BUILD_DIR)/test_peak_cpu_performance
+	@echo "🚀 Testing peak CPU performance..."
+	@OMP_NUM_THREADS=32 ./$(BUILD_DIR)/test_peak_cpu_performance
+
+$(BUILD_DIR)/test_peak_cpu_performance: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_peak_cpu_performance.f90
+	@echo "🔨 Building peak CPU performance test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_peak_cpu_performance.f90 -o $@ $(LDFLAGS)
+
+# Test SIMD performance
+test_simd: $(BUILD_DIR)/test_simd_performance
+	@echo "🚀 Testing SIMD performance..."
+	@OMP_NUM_THREADS=16 ./$(BUILD_DIR)/test_simd_performance
+
+$(BUILD_DIR)/test_simd_performance: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_simd_performance.f90
+	@echo "🔨 Building SIMD performance test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_simd_performance.f90 -o $@ $(LDFLAGS)
+
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd

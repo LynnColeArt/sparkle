@@ -1,5 +1,5 @@
-# Reference implementations
-reference/
+# Reference implementations (root directory only)
+/reference/
 
 # Compiled files
 *.o
