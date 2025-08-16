@@ -140,13 +140,15 @@ contains
   subroutine parse_kernel_text_v2(text, kernel)
     character(len=*), intent(in) :: text
     type(shader_kernel_v2), intent(inout) :: kernel
-    character(len=512) :: line
+    character(len=2048) :: line, full_signature
     integer :: i, newline_pos, arg_idx
-    logical :: found_body, in_declarations
+    logical :: found_body, in_declarations, in_signature
     
     i = 1
     found_body = .false.
     in_declarations = .false.
+    in_signature = .false.
+    full_signature = ""
     
     
     ! Process line by line
@@ -168,8 +170,56 @@ contains
       ! Parse subroutine signature (exclude "end subroutine")
       if (index(line, "subroutine") > 0 .and. index(line, trim(kernel%name)) > 0 .and. &
           index(line, "end subroutine") == 0) then
-        call parse_subroutine_signature_from_line_v2(line, kernel)
-        in_declarations = .true.
+        in_signature = .true.
+        full_signature = trim(line)
+        ! Check if line ends with continuation character
+        if (index(line, "&") > 0) then
+          ! Remove trailing ampersand and spaces
+          block
+            integer :: amp_pos
+            amp_pos = index(line, "&", .true.)
+            if (amp_pos > 0) then
+              full_signature = line(1:amp_pos-1)
+            else
+              full_signature = line
+            end if
+          end block
+          ! Continue reading signature
+          cycle
+        else
+          ! Single line signature
+          call parse_subroutine_signature_from_line_v2(full_signature, kernel)
+          in_declarations = .true.
+          in_signature = .false.
+        end if
+      
+      ! Continue reading multi-line signature
+      else if (in_signature) then
+        ! Append to signature, handling leading ampersand
+        block
+          character(len=512) :: clean_line
+          clean_line = adjustl(line)
+          if (len_trim(clean_line) > 0 .and. clean_line(1:1) == "&") then
+            clean_line = adjustl(clean_line(2:))
+          end if
+          full_signature = trim(full_signature) // " " // trim(clean_line)
+        end block
+        
+        ! Check if we're done with the signature (no trailing ampersand)
+        if (index(line, "&") == 0 .or. index(line, ")") > 0) then
+          call parse_subroutine_signature_from_line_v2(full_signature, kernel)
+          in_declarations = .true.
+          in_signature = .false.
+        else
+          ! Remove trailing ampersand for next iteration
+          block
+            integer :: amp_pos
+            amp_pos = index(full_signature, "&", .true.)
+            if (amp_pos > 0) then
+              full_signature = full_signature(1:amp_pos-1)
+            end if
+          end block
+        end if
       
       ! Parse declarations
       else if (in_declarations .and. index(line, "::") > 0) then
@@ -253,27 +303,41 @@ contains
     ! Parse type declaration
     if (allocated(kernel%args)) then
       do i = 1, size(kernel%args)
-        ! More precise matching - check for whole word
-        if (index(line, " :: " // trim(kernel%args(i)%name)) > 0) then
-          ! Verify it's a whole word match, not a substring
-          block
-            integer :: pos, name_len
-            character(len=512) :: after_coloncolon
-            
-            pos = index(line, " :: ")
+        ! Check if this argument appears in the declaration line
+        block
+          integer :: pos, name_len, j
+          character(len=512) :: after_coloncolon, var_list
+          logical :: found_match
+          
+          found_match = .false.
+          pos = index(line, " :: ")
+          if (pos > 0) then
             after_coloncolon = adjustl(line(pos+4:))
-            name_len = len_trim(kernel%args(i)%name)
             
-            ! Check if it matches exactly (followed by space, comma, or end of line)
-            if (after_coloncolon(1:name_len) == trim(kernel%args(i)%name) .and. &
-                (name_len >= len_trim(after_coloncolon) .or. &
-                 after_coloncolon(name_len+1:name_len+1) == ' ' .or. &
-                 after_coloncolon(name_len+1:name_len+1) == ',')) then
-              ! This is a match
-            else
-              cycle  ! Not a match, try next arg
-            end if
-          end block
+            ! Check each comma-separated variable in the declaration
+            var_list = after_coloncolon
+            do while (len_trim(var_list) > 0)
+              ! Extract next variable name
+              pos = index(var_list, ",")
+              if (pos > 0) then
+                ! Check this variable
+                if (trim(adjustl(var_list(1:pos-1))) == trim(kernel%args(i)%name)) then
+                  found_match = .true.
+                  exit
+                end if
+                var_list = adjustl(var_list(pos+1:))
+              else
+                ! Last variable in the list
+                if (trim(adjustl(var_list)) == trim(kernel%args(i)%name)) then
+                  found_match = .true.
+                end if
+                exit
+              end if
+            end do
+          end if
+          
+          if (.not. found_match) cycle
+        end block
           ! Extract type
           if (index(line, "integer(int32)") > 0) then
             kernel%args(i)%type_str = "integer(int32)"
@@ -301,8 +365,6 @@ contains
             kernel%args(i)%binding_slot = binding_slot
             binding_slot = binding_slot + 1
           end if
-          exit
-        end if
       end do
     end if
   end subroutine parse_declaration_line_v2

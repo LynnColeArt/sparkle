@@ -2,20 +2,13 @@ module sparkle_glsl_compute
   use iso_c_binding
   use sparkle_types
   use sparkle_glsl_generator
-  use sparkle_amdgpu_direct  ! For buffer types
+  ! use sparkle_amdgpu_direct  ! For buffer types
+  use gl_constants
   implicit none
   
   private
   public :: glsl_kernel, compile_glsl_kernel, dispatch_conv_glsl, cleanup_glsl_kernel
   public :: init_opengl_compute, cleanup_opengl_compute
-  
-  ! OpenGL constants
-  integer(c_int), parameter :: GL_COMPUTE_SHADER = int(z'91B9', c_int)
-  integer(c_int), parameter :: GL_SHADER_STORAGE_BUFFER = int(z'90D2', c_int)
-  integer(c_int), parameter :: GL_SHADER_STORAGE_BARRIER_BIT = int(z'2000', c_int)
-  integer(c_int), parameter :: GL_COMPILE_STATUS = int(z'8B81', c_int)
-  integer(c_int), parameter :: GL_LINK_STATUS = int(z'8B82', c_int)
-  integer(c_int), parameter :: GL_INFO_LOG_LENGTH = int(z'8B84', c_int)
   
   ! GLSL kernel structure
   type :: glsl_kernel
@@ -25,78 +18,8 @@ module sparkle_glsl_compute
     logical :: is_valid
   end type glsl_kernel
   
-  ! OpenGL function interfaces
+  ! Additional OpenGL function interfaces not in gl_constants
   interface
-    function glCreateShader(shader_type) bind(C, name="glCreateShader")
-      import :: c_int
-      integer(c_int), value :: shader_type
-      integer(c_int) :: glCreateShader
-    end function
-    
-    subroutine glShaderSource(shader, count, string, length) bind(C, name="glShaderSource")
-      import :: c_int, c_ptr
-      integer(c_int), value :: shader
-      integer(c_int), value :: count
-      type(c_ptr), intent(in) :: string
-      type(c_ptr), value :: length
-    end subroutine
-    
-    subroutine glCompileShader(shader) bind(C, name="glCompileShader")
-      import :: c_int
-      integer(c_int), value :: shader
-    end subroutine
-    
-    subroutine glGetShaderiv(shader, pname, params) bind(C, name="glGetShaderiv")
-      import :: c_int
-      integer(c_int), value :: shader
-      integer(c_int), value :: pname
-      integer(c_int), intent(out) :: params
-    end subroutine
-    
-    subroutine glGetShaderInfoLog(shader, buf_size, length, info_log) bind(C, name="glGetShaderInfoLog")
-      import :: c_int, c_char
-      integer(c_int), value :: shader
-      integer(c_int), value :: buf_size
-      integer(c_int), intent(out) :: length
-      character(c_char), intent(out) :: info_log(*)
-    end subroutine
-    
-    function glCreateProgram() bind(C, name="glCreateProgram")
-      import :: c_int
-      integer(c_int) :: glCreateProgram
-    end function
-    
-    subroutine glAttachShader(program, shader) bind(C, name="glAttachShader")
-      import :: c_int
-      integer(c_int), value :: program
-      integer(c_int), value :: shader
-    end subroutine
-    
-    subroutine glLinkProgram(program) bind(C, name="glLinkProgram")
-      import :: c_int
-      integer(c_int), value :: program
-    end subroutine
-    
-    subroutine glGetProgramiv(program, pname, params) bind(C, name="glGetProgramiv")
-      import :: c_int
-      integer(c_int), value :: program
-      integer(c_int), value :: pname
-      integer(c_int), intent(out) :: params
-    end subroutine
-    
-    subroutine glGetProgramInfoLog(program, buf_size, length, info_log) bind(C, name="glGetProgramInfoLog")
-      import :: c_int, c_char
-      integer(c_int), value :: program
-      integer(c_int), value :: buf_size
-      integer(c_int), intent(out) :: length
-      character(c_char), intent(out) :: info_log(*)
-    end subroutine
-    
-    subroutine glUseProgram(program) bind(C, name="glUseProgram")
-      import :: c_int
-      integer(c_int), value :: program
-    end subroutine
-    
     function glGetUniformLocation(program, name) bind(C, name="glGetUniformLocation")
       import :: c_int, c_char
       integer(c_int), value :: program
@@ -108,35 +31,6 @@ module sparkle_glsl_compute
       import :: c_int
       integer(c_int), value :: location
       integer(c_int), value :: v0
-    end subroutine
-    
-    subroutine glBindBufferBase(target, index, buffer) bind(C, name="glBindBufferBase")
-      import :: c_int
-      integer(c_int), value :: target
-      integer(c_int), value :: index
-      integer(c_int), value :: buffer
-    end subroutine
-    
-    subroutine glDispatchCompute(num_groups_x, num_groups_y, num_groups_z) bind(C, name="glDispatchCompute")
-      import :: c_int
-      integer(c_int), value :: num_groups_x
-      integer(c_int), value :: num_groups_y
-      integer(c_int), value :: num_groups_z
-    end subroutine
-    
-    subroutine glMemoryBarrier(barriers) bind(C, name="glMemoryBarrier")
-      import :: c_int
-      integer(c_int), value :: barriers
-    end subroutine
-    
-    subroutine glDeleteShader(shader) bind(C, name="glDeleteShader")
-      import :: c_int
-      integer(c_int), value :: shader
-    end subroutine
-    
-    subroutine glDeleteProgram(program) bind(C, name="glDeleteProgram")
-      import :: c_int
-      integer(c_int), value :: program
     end subroutine
   end interface
   
@@ -166,7 +60,7 @@ contains
     type(c_ptr) :: source_ptr
     integer(c_int) :: compile_status, link_status
     integer(c_int) :: log_length
-    character(len=1024) :: error_log
+    character(len=1024), target :: error_log
     integer :: i
     
     kernel%config = config
@@ -198,7 +92,7 @@ contains
     if (compile_status == 0) then
       call glGetShaderiv(kernel%shader_id, GL_INFO_LOG_LENGTH, log_length)
       if (log_length > 0) then
-        call glGetShaderInfoLog(kernel%shader_id, min(log_length, 1024), log_length, error_log)
+        call glGetShaderInfoLog(kernel%shader_id, min(log_length, 1024), c_null_ptr, c_loc(error_log))
         print *, "Shader compilation failed:"
         print *, error_log(1:log_length)
       end if
@@ -222,7 +116,7 @@ contains
     if (link_status == 0) then
       call glGetProgramiv(kernel%program_id, GL_INFO_LOG_LENGTH, log_length)
       if (log_length > 0) then
-        call glGetProgramInfoLog(kernel%program_id, min(log_length, 1024), log_length, error_log)
+        call glGetProgramInfoLog(kernel%program_id, min(log_length, 1024), c_null_ptr, c_loc(error_log))
         print *, "Program linking failed:"
         print *, error_log(1:log_length)
       end if
@@ -240,8 +134,8 @@ contains
   
   subroutine dispatch_conv_glsl(kernel, input_buffer, kernel_buffer, output_buffer, M, N, K)
     type(glsl_kernel), intent(in) :: kernel
-    type(amdgpu_buffer), intent(in) :: input_buffer, kernel_buffer
-    type(amdgpu_buffer), intent(inout) :: output_buffer
+    type(c_ptr), intent(in) :: input_buffer, kernel_buffer
+    type(c_ptr), intent(inout) :: output_buffer
     integer, intent(in) :: M, N, K
     integer(c_int) :: loc_M, loc_N, loc_K
     integer(c_int) :: groups_x, groups_y, groups_z
@@ -258,9 +152,10 @@ contains
     ! Bind buffers
     ! Note: In real implementation, we'd need GL buffer objects
     ! For now, assuming buffers have GL IDs
-    call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, int(input_buffer%handle, c_int))
-    call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, int(kernel_buffer%handle, c_int))
-    call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, int(output_buffer%handle, c_int))
+    ! Assuming buffers are GL buffer IDs passed as c_ptr
+    call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transfer(input_buffer, 0))
+    call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, transfer(kernel_buffer, 0))
+    call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, transfer(output_buffer, 0))
     
     ! Set uniforms
     c_M = "M" // c_null_char

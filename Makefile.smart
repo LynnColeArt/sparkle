@@ -62,10 +62,16 @@ COMMON_MODULES = \
     $(SRC_DIR)/sparkle_kernels.f90 \
     $(SRC_DIR)/sparkle_safe_kernels.f90 \
     $(SRC_DIR)/sparkle_platform.f90 \
+    $(SRC_DIR)/gl_constants.f90 \
     $(SRC_DIR)/sparkle_glsl_generator.f90 \
     $(SRC_DIR)/sparkle_glsl_compute.f90 \
     $(SRC_DIR)/sparkle_adaptive_kernel.f90 \
-    $(SRC_DIR)/sparkle_kernel_variants.f90
+    $(SRC_DIR)/sparkle_kernel_variants.f90 \
+    $(SRC_DIR)/sparkle_shader_parser.f90 \
+    $(SRC_DIR)/sparkle_fortran_shaders.f90 \
+    $(SRC_DIR)/sparkle_fortran_params.f90 \
+    $(SRC_DIR)/sparkle_shader_parser_v2.f90 \
+    $(SRC_DIR)/sparkle_fortran_shaders_v2.f90
 
 # Platform-specific modules
 ifeq ($(PLATFORM),LINUX)
@@ -74,7 +80,10 @@ ifeq ($(PLATFORM),LINUX)
             $(SRC_DIR)/sparkle_gpu_safe_detect.f90 \
             $(SRC_DIR)/sparkle_gpu_backend_detect.f90 \
             $(SRC_DIR)/sparkle_gpu_backend.f90 \
-            $(SRC_DIR)/sparkle_amdgpu_direct.f90
+            $(SRC_DIR)/sparkle_amdgpu_direct.f90 \
+            $(SRC_DIR)/sparkle_amdgpu_shader_binary.f90 \
+            $(SRC_DIR)/sparkle_amdgpu_memory.f90 \
+            $(SRC_DIR)/sparkle_amdgpu_shaders.f90
             
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/sparkle_gpu_opengl.f90
@@ -122,6 +131,7 @@ info:
 	@echo "  make test_amdgpu_command - Test AMDGPU command submission"
 	@echo "  make test_glsl_compute  - Test GLSL compute shader"
 	@echo "  make test_adaptive_kernel - Test adaptive kernel framework"
+	@echo "  make test_amdgpu_compute - Test AMDGPU compute shader"
 	@echo "  make benchmark          - Run performance benchmarks"
 	@echo ""
 
@@ -184,6 +194,103 @@ $(BUILD_DIR)/test_adaptive_kernel: $(OBJECTS) $(EXAMPLES_DIR)/test_adaptive_kern
 	@echo "🔨 Building adaptive kernel test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
 		$(EXAMPLES_DIR)/test_adaptive_kernel.f90 -o $@ $(LDFLAGS)
+
+# AMDGPU compute shader test
+test_amdgpu_compute: $(BUILD_DIR)/test_amdgpu_compute
+	@echo "🚀 Running AMDGPU compute shader test..."
+	@./$(BUILD_DIR)/test_amdgpu_compute
+
+$(BUILD_DIR)/test_amdgpu_compute: $(OBJECTS) $(EXAMPLES_DIR)/test_amdgpu_compute.f90
+	@echo "🔨 Building AMDGPU compute shader test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_amdgpu_compute.f90 -o $@ $(LDFLAGS)
+
+# Simple write test
+test_simple_write: $(BUILD_DIR)/test_simple_write
+	@echo "🚀 Running simple GPU write/read test..."
+	@./$(BUILD_DIR)/test_simple_write
+
+$(BUILD_DIR)/test_simple_write: $(OBJECTS) $(EXAMPLES_DIR)/test_simple_write.f90
+	@echo "🔨 Building simple write test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_simple_write.f90 -o $@ $(LDFLAGS)
+
+# AMD convolution test  
+test_amd_convolution: $(BUILD_DIR)/test_conv_gemm_gpu
+	@echo "🚀 Running AMD GPU convolution test..."
+	@./$(BUILD_DIR)/test_conv_gemm_gpu
+
+$(BUILD_DIR)/test_conv_gemm_gpu: $(OBJECTS) $(EXAMPLES_DIR)/test_conv_gemm_gpu.f90
+	@echo "🔨 Building AMD convolution test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_conv_gemm_gpu.f90 -o $@ $(LDFLAGS)
+
+# GLSL compute test
+test_glsl_compute_real: $(BUILD_DIR)/test_glsl_simple
+	@echo "🚀 Running GLSL compute shader test..."
+	@./$(BUILD_DIR)/test_glsl_simple
+
+$(BUILD_DIR)/test_glsl_simple: $(EXAMPLES_DIR)/test_glsl_simple.f90
+	@echo "🔨 Building GLSL compute test..."
+	$(FC) $(BASE_FFLAGS) $(EXAMPLES_DIR)/test_glsl_simple.f90 -o $@ -lGL -lEGL
+
+# ===== Safe GPU test targets =====
+
+# Pick the device explicitly (default to iGPU render; override at CLI)
+RUN_DEVICE ?= /dev/dri/renderD129  # iGPU (Raphael)
+# alt: RUN_DEVICE=/dev/dri/renderD128  # dGPU (7900 XT)
+
+BIN_PM4 := $(BUILD_DIR)/test_minimal_pm4
+BIN_GL  := $(BUILD_DIR)/test_glsl_debug
+
+.PHONY: build_gpu run_pm4 run_gl run_dry
+
+build_gpu: $(BIN_PM4) $(BIN_GL)
+
+# --- SAFE RUN MODES (no auto-run during build) ---
+
+run_pm4:
+	@echo ">>> RUNNING PM4 on $(RUN_DEVICE)"
+	SPORKLE_DRI=$(RUN_DEVICE) $(BIN_PM4) --safe --once
+
+run_gl:
+	@echo ">>> RUNNING GL compute on $(RUN_DEVICE)"
+	SPORKLE_DRI=$(RUN_DEVICE) $(BIN_GL) --safe --once
+
+# dry-run prints the PM4 chunk/IB but does NOT submit
+run_dry:
+	@echo ">>> DRY-RUN PM4 on $(RUN_DEVICE)"
+	SPORKLE_DRI=$(RUN_DEVICE) $(BIN_PM4) --dry-run
+
+# Build targets (no auto-run)
+$(BUILD_DIR)/test_minimal_pm4: $(OBJECTS) $(EXAMPLES_DIR)/test_minimal_pm4.f90
+	@echo "🔨 Building minimal PM4 test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_minimal_pm4.f90 -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/test_glsl_debug: $(EXAMPLES_DIR)/test_glsl_debug.f90
+	@echo "🔨 Building GL debug test..."
+	$(FC) $(BASE_FFLAGS) $(EXAMPLES_DIR)/test_glsl_debug.f90 -o $@ -lGL -lEGL
+
+# Fortran shader test
+test_fortran_shader: $(BUILD_DIR)/test_fortran_shader
+	@echo "🚀 Running Fortran shader test..."
+	@./$(BUILD_DIR)/test_fortran_shader
+
+$(BUILD_DIR)/test_fortran_shader: $(OBJECTS) $(EXAMPLES_DIR)/test_fortran_shader.f90
+	@echo "🔨 Building Fortran shader test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_fortran_shader.f90 -o $@ $(LDFLAGS)
+
+# Benchmarks
+benchmark_saxpy: $(BUILD_DIR)/benchmark_saxpy
+	@echo "📊 Running SAXPY benchmark..."
+	@./$(BUILD_DIR)/benchmark_saxpy
+
+$(BUILD_DIR)/benchmark_saxpy: $(OBJECTS) $(EXAMPLES_DIR)/benchmark_saxpy.f90
+	@echo "🔨 Building SAXPY benchmark..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/benchmark_saxpy.f90 -o $@ $(LDFLAGS)
 endif
 
 ifeq ($(PLATFORM),MACOS)
@@ -210,4 +317,22 @@ clean-all:
 	@echo "🧹 Cleaning all builds..."
 	rm -rf build/
 
-.PHONY: info test_platform test_gpu clean clean-all
+# Adaptive convolution test
+test_adaptive_convolution: $(BUILD_DIR)/test_adaptive_convolution
+	@echo "🚀 Running adaptive convolution test..."
+	@./$(BUILD_DIR)/test_adaptive_convolution
+$(BUILD_DIR)/test_adaptive_convolution: $(OBJECTS) $(EXAMPLES_DIR)/test_adaptive_convolution.f90
+	@echo "🔨 Building adaptive convolution test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/test_adaptive_convolution.f90 -o $@ $(LDFLAGS)
+
+# Convolution benchmark
+benchmark_convolution: $(BUILD_DIR)/benchmark_convolution
+	@echo "📊 Running convolution benchmark..."
+	@./$(BUILD_DIR)/benchmark_convolution
+$(BUILD_DIR)/benchmark_convolution: $(OBJECTS) $(EXAMPLES_DIR)/benchmark_convolution.f90
+	@echo "🔨 Building convolution benchmark..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
+		$(EXAMPLES_DIR)/benchmark_convolution.f90 -o $@ $(LDFLAGS)
+
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution
