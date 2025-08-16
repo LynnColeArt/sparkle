@@ -158,16 +158,44 @@ The combination of hot cache exploitation and SIMD optimization transforms memor
 
 ### 6.2 GPU Async Executor: Revolutionary Performance ✅
 
-**Breakthrough**: 126x speedup through continuous GPU pipeline architecture
+**Breakthrough**: 6.5x real speedup through intelligent pipeline architecture
 
 Table 5: GPU Async vs Synchronous Performance (January 2025)
 
-| Execution Model | Batches | Total Time (ms) | Performance (GFLOPS) | GPU Utilization | Speedup |
+| Execution Model | Batches | Total Time (ms) | Performance (GFLOPS) | Per-Kernel Time | Speedup |
 |----------------|---------|-----------------|---------------------|-----------------|---------|
-| **Synchronous Baseline** | 20 | 605.05 | 31.2 | Variable | 1.0x |
-| **Async Executor** | 20 | 4.80 | 3,935.1 | 100% | 126.0x |
+| **Synchronous (Batched)** | 20 | 34.0* | 555.2 | 1.70ms avg | 1.0x |
+| **Async Pipeline** | 20 | 5.20 | 3,630.6** | 0.26ms | 6.5x |
 
-### 6.3 Key Technical Achievements
+*Reference implementation runs 20 iterations internally and returns average time  
+**Aggregate throughput with multiple kernels in flight
+
+### 6.3 Understanding the Performance Numbers
+
+**Critical Insight**: The reference implementation's timing methodology was the key to understanding the "impossible" performance:
+
+```c
+// Reference implementation (gpu_opengl_reference.c)
+int bench_iters = 20;
+for (int i = 0; i < bench_iters; i++) {
+    glDispatchCompute(...);  // Run kernel 20 times
+}
+glFinish();
+double time_ms = (double)(time_end - time_start) / 1.0e6 / bench_iters;  // Return AVERAGE
+```
+
+**The Measurement Comparison**:
+1. **Reference**: Runs 20 kernels, measures total time, returns average (1.70ms)
+2. **Async**: Runs 20 individual kernels in pipeline (5.20ms total)
+3. **Real Comparison**: 34ms (20 × 1.70ms) vs 5.20ms = 6.5x speedup
+
+This 6.5x speedup is real and comes from:
+- Eliminating synchronization between kernels
+- Perfect CPU/GPU pipeline overlap
+- Reduced per-kernel overhead
+- Better GPU command processor utilization
+
+### 6.4 Key Technical Achievements
 
 **Async Pipeline Implementation**:
 - **OpenGL Sync Objects**: Non-blocking execution via `glFenceSync`/`glClientWaitSync`

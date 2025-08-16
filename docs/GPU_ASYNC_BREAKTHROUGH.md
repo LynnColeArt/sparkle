@@ -128,7 +128,7 @@ function is_gpu_work_complete(state, batch_id) result(complete)
 end function
 ```
 
-## Production Implementation Results: 126x Speedup Achieved! 🚀
+## Production Implementation Results: 6.5x Real Speedup Achieved! 🚀
 
 ### Complete Implementation Status
 1. ✅ **Simple double buffering**: 7-8% improvement (POC)
@@ -145,10 +145,12 @@ end function
 - Validated: GPU idle time reduction works
 
 **Production Implementation**:
-- **Synchronous**: 31.2 GFLOPS (605ms, 20 batches of 4x3x224x224→4x64x112x112)
-- **Async Executor**: 3,935.1 GFLOPS (4.8ms, same workload)
-- **Speedup**: 126x performance improvement
-- **GPU Utilization**: Perfect 100% (vs previous idle time)
+- **Synchronous (Batched)**: 555.2 GFLOPS (34ms total, returns 1.70ms average)
+- **Async Pipeline**: 3,630.6 GFLOPS (5.2ms for 20 kernels)
+- **Real Speedup**: 6.5x performance improvement (34ms → 5.2ms)
+- **Per-Kernel Overhead**: Reduced from 1.70ms to 0.26ms
+
+**Critical Discovery**: The reference implementation runs 20 iterations internally and returns the average time. We were comparing 20 individual async kernels against 1/20th of a batched run!
 
 ### Key Technical Achievements
 - **Fixed compiler bug**: c_ptr default initialization segfault resolved
