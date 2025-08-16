@@ -259,10 +259,46 @@ Current development focuses on:
 
 ### 7.1 Prerequisites
 
-- Fortran compiler (GNU Fortran 9+ or Intel Fortran 2021+)
-- CMake 3.10 or higher
-- Linux kernel with AMDGPU driver (for AMD GPU support)
-- Access to `/dev/dri` devices (typically requires video group membership)
+#### System Requirements
+- Linux kernel 5.0+ with AMDGPU driver (for AMD GPU support)
+- Access to `/dev/dri` devices (requires video group membership)
+- At least 8GB RAM for benchmarks
+- AMD GPU with OpenGL 4.6 support (tested on RX 7900 XT)
+
+#### Required Packages (Ubuntu/Debian)
+```bash
+# Install build essentials and Fortran compiler
+sudo apt update
+sudo apt install -y build-essential gfortran
+
+# Install OpenGL and EGL development libraries
+sudo apt install -y libgl1-mesa-dev libegl1-mesa-dev libgles2-mesa-dev
+
+# Install OpenGL utilities and tools
+sudo apt install -y mesa-utils libglu1-mesa-dev freeglut3-dev
+
+# Install additional libraries for GPU support
+sudo apt install -y libdrm-dev libgbm-dev
+
+# Install OpenMP support
+sudo apt install -y libomp-dev
+
+# Add user to video group for GPU access
+sudo usermod -a -G video $USER
+# Note: Log out and back in for group change to take effect
+```
+
+#### Verify Installation
+```bash
+# Check OpenGL support
+glxinfo | grep "OpenGL version"
+
+# Check EGL support
+eglinfo
+
+# Verify GPU access
+ls -la /dev/dri/
+```
 
 ### 7.2 Build Process
 
@@ -279,6 +315,39 @@ make benchmark_convolution
 
 # Test GPU async executor
 make test_gpu_async_executor
+
+# Run all tests
+make test_platform
+make test_production_conv2d
+make test_simd_performance
+```
+
+### 7.3 Troubleshooting
+
+**GPU Access Denied**
+```bash
+# Ensure you're in the video group
+groups | grep video
+# If not, run: sudo usermod -a -G video $USER
+# Then log out and back in
+```
+
+**OpenGL Context Creation Failed**
+```bash
+# Check for proper GPU drivers
+lspci -k | grep -A 2 -E "(VGA|3D)"
+# Ensure amdgpu kernel module is loaded
+lsmod | grep amdgpu
+```
+
+**Build Errors**
+```bash
+# Clean and rebuild
+make clean
+make -f Makefile.smart
+
+# For verbose output
+make -f Makefile.smart VERBOSE=1
 ```
 
 ## 8. Documentation
@@ -308,13 +377,11 @@ This project demonstrates the power of AI-human collaboration in creating produc
 
 ---
 
-<div align="center">
-<table>
-<tr>
-<td align="center" style="border: 2px solid #333; padding: 20px; background-color: #f0f0f0;">
-<h3>📚 Citation</h3>
-<p>If you use Sporkle in your research, please cite:</p>
-<pre style="text-align: left; background-color: #fff; padding: 10px; border: 1px solid #ddd;">
+## Citation
+
+If you use Sporkle in your research, please cite:
+
+```bibtex
 @software{sporkle2025,
   author = {Cole, Lynn},
   title = {Sporkle: Universal Memory Optimization Framework},
@@ -324,13 +391,11 @@ This project demonstrates the power of AI-human collaboration in creating produc
           universal memory patterns. Developed with
           AI-assisted programming using Claude.}
 }
-</pre>
-<p><strong>© 2025 Lynn Cole</strong></p>
-<p>Released under MIT License</p>
-</td>
-</tr>
-</table>
-</div>
+```
+
+## License
+
+© 2025 Lynn Cole. Released under MIT License.
 
 ---
 
