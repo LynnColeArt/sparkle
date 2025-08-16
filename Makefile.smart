@@ -67,6 +67,7 @@ COMMON_MODULES = \
     $(SRC_DIR)/gl_constants.f90 \
     $(SRC_DIR)/sparkle_gpu_kernels.f90 \
     $(SRC_DIR)/sparkle_glsl_generator.f90 \
+    $(SRC_DIR)/sparkle_rdna_shader_generator.f90 \
     $(SRC_DIR)/sparkle_adaptive_kernel.f90 \
     $(SRC_DIR)/sparkle_kernel_variants.f90 \
     $(SRC_DIR)/sparkle_shader_parser.f90 \
@@ -406,6 +407,16 @@ $(BUILD_DIR)/test_memory_wall_breakthrough: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_D
 	@echo "🔨 Building memory wall breakthrough test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_memory_wall_breakthrough.f90 -o $@ $(LDFLAGS)
+
+# RDNA shader optimization test
+test_rdna_shader_optimization: $(BUILD_DIR)/test_rdna_shader_optimization
+	@echo "🚀 Testing RDNA shader optimization..."
+	@./$(BUILD_DIR)/test_rdna_shader_optimization
+
+$(BUILD_DIR)/test_rdna_shader_optimization: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_rdna_shader_optimization.f90
+	@echo "🔨 Building RDNA shader optimization test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_rdna_shader_optimization.f90 -o $@ $(LDFLAGS)
 
 # Memory wall simple test
 test_memory_wall_simple: $(BUILD_DIR)/test_memory_wall_simple
