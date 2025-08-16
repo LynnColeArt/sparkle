@@ -1,0 +1,318 @@
+subroutine test_conv_cpu_vs_gpu() bind(C, name="test_conv_cpu_vs_gpu")
+  use iso_fortran_env
+  use iso_c_binding
+  use gl_constants
+  implicit none
+  
+  interface
+    subroutine set_conv2d_shader_source(shader) bind(C, name="set_conv2d_shader_source")
+      import :: c_int
+      integer(c_int), value :: shader
+    end subroutine set_conv2d_shader_source
+  end interface
+  
+  ! Test parameters
+  integer, parameter :: N = 1, H = 224, W = 224, C = 3, K = 64
+  integer, parameter :: kernel_size = 7, stride = 2, pad = 3
+  integer, parameter :: H_out = (H + 2*pad - kernel_size) / stride + 1
+  integer, parameter :: W_out = (W + 2*pad - kernel_size) / stride + 1
+  
+  ! Data
+  real(c_float), allocatable, target :: input(:), weights(:), output_cpu(:), output_gpu(:)
+  integer, target :: params(10)
+  
+  ! Timing
+  real(real64) :: cpu_time_ms, gpu_time_ms
+  real(real64) :: start_time, end_time
+  integer :: i, j, warmup_iters, bench_iters
+  
+  ! OpenGL objects
+  integer(c_int) :: shader, program
+  integer(c_int) :: in_ssbo, weight_ssbo, out_ssbo, param_ssbo
+  integer(c_int) :: compile_status, link_status
+  integer(c_int), target :: query_ids(2)
+  integer(c_int64_t) :: time_start, time_end
+  character(len=512, kind=c_char), target :: info_log
+  integer(c_int) :: info_len
+  
+  ! Performance metrics
+  integer(int64) :: total_flops, bytes_accessed
+  real(real64) :: cpu_gflops, gpu_gflops, speedup, gpu_bandwidth_gb
+  real :: max_diff
+  
+  print *, "Test configuration:"
+  print *, "  Input: ", N, "x", C, "x", H, "x", W
+  print *, "  Output: ", N, "x", K, "x", H_out, "x", W_out
+  print *, "  Kernel: ", kernel_size, "x", kernel_size, ", stride:", stride, ", pad:", pad
+  print *, ""
+  
+  ! Initialize data
+  allocate(input(N * C * H * W))
+  allocate(weights(K * C * kernel_size * kernel_size))
+  allocate(output_cpu(N * K * H_out * W_out))
+  allocate(output_gpu(N * K * H_out * W_out))
+  
+  call random_number(input)
+  call random_number(weights)
+  
+  ! Scale to reasonable values
+  input = input * 2.0 - 1.0
+  weights = weights * 0.1
+  
+  ! Debug: Check array initialization
+  print *, "  Input min/max: ", minval(input), maxval(input)
+  print *, "  Weights min/max: ", minval(weights), maxval(weights)
+  
+  params = [N, H, W, C, K, kernel_size, stride, pad, H_out, W_out]
+  
+  !============================================
+  ! CPU Implementation
+  !============================================
+  print *, "1. Running CPU convolution..."
+  output_cpu = 0.0
+  print *, "  Output array size: ", size(output_cpu)
+  print *, "  Input values: ", input(1:5)
+  print *, "  Weight values: ", weights(1:5)
+  
+  ! Warmup
+  warmup_iters = 2
+  bench_iters = 5
+  
+  ! Reset output before warmup
+  output_cpu = 0.0
+  do i = 1, warmup_iters
+    call cpu_conv2d()
+    output_cpu = 0.0  ! Reset for next iteration
+  end do
+  
+  ! Benchmark
+  output_cpu = 0.0
+  call cpu_time(start_time)
+  do i = 1, bench_iters
+    call cpu_conv2d()
+  end do
+  call cpu_time(end_time)
+  
+  cpu_time_ms = (end_time - start_time) * 1000.0 / bench_iters
+  print *, "  CPU time: ", cpu_time_ms, " ms"
+  
+  !============================================
+  ! GPU Implementation
+  !============================================
+  print *, ""
+  print *, "2. Setting up GPU..."
+  
+  ! Create and compile shader
+  shader = glCreateShader(GL_COMPUTE_SHADER)
+  call set_conv2d_shader_source(shader)
+  call glCompileShader(shader)
+  
+  call glGetShaderiv(shader, GL_COMPILE_STATUS, compile_status)
+  if (compile_status == 0) then
+    call glGetShaderiv(shader, GL_INFO_LOG_LENGTH, info_len)
+    call glGetShaderInfoLog(shader, min(info_len, 512), C_NULL_PTR, c_loc(info_log))
+    print *, "ERROR: Shader compilation failed:"
+    print *, trim(info_log)
+    return
+  end if
+  
+  ! Create and link program
+  program = glCreateProgram()
+  call glAttachShader(program, shader)
+  call glLinkProgram(program)
+  
+  call glGetProgramiv(program, GL_LINK_STATUS, link_status)
+  if (link_status == 0) then
+    call glGetProgramiv(program, GL_INFO_LOG_LENGTH, info_len)
+    call glGetProgramInfoLog(program, min(info_len, 512), C_NULL_PTR, c_loc(info_log))
+    print *, "ERROR: Program linking failed:"
+    print *, trim(info_log)
+    return
+  end if
+  
+  ! Create buffers
+  call glGenBuffers(1, in_ssbo)
+  call glBindBuffer(GL_SHADER_STORAGE_BUFFER, in_ssbo)
+  call glBufferData(GL_SHADER_STORAGE_BUFFER, &
+                    int(size(input) * 4, c_size_t), &
+                    c_loc(input), GL_DYNAMIC_DRAW)
+  call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, in_ssbo)
+  
+  call glGenBuffers(1, weight_ssbo)
+  call glBindBuffer(GL_SHADER_STORAGE_BUFFER, weight_ssbo)
+  call glBufferData(GL_SHADER_STORAGE_BUFFER, &
+                    int(size(weights) * 4, c_size_t), &
+                    c_loc(weights), GL_DYNAMIC_DRAW)
+  call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, weight_ssbo)
+  
+  call glGenBuffers(1, out_ssbo)
+  call glBindBuffer(GL_SHADER_STORAGE_BUFFER, out_ssbo)
+  call glBufferData(GL_SHADER_STORAGE_BUFFER, &
+                    int(size(output_gpu) * 4, c_size_t), &
+                    C_NULL_PTR, GL_DYNAMIC_DRAW)
+  call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, out_ssbo)
+  
+  call glGenBuffers(1, param_ssbo)
+  call glBindBuffer(GL_SHADER_STORAGE_BUFFER, param_ssbo)
+  call glBufferData(GL_SHADER_STORAGE_BUFFER, &
+                    int(size(params) * 4, c_size_t), &
+                    c_loc(params), GL_DYNAMIC_DRAW)
+  call glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, param_ssbo)
+  
+  call glUseProgram(program)
+  
+  ! Warmup GPU
+  print *, "  Warming up GPU..."
+  do i = 1, 10
+    call glDispatchCompute((N * K * H_out * W_out + 63) / 64, 1, 1)
+    call glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+    call glFinish()
+  end do
+  
+  ! Benchmark GPU
+  print *, "  Benchmarking GPU..."
+  call glGenQueries(2, query_ids)
+  
+  call glQueryCounter(query_ids(1), GL_TIMESTAMP)
+  
+  ! Execute multiple times
+  bench_iters = 20
+  do i = 1, bench_iters
+    call glDispatchCompute((N * K * H_out * W_out + 63) / 64, 1, 1)
+    call glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+  end do
+  call glFinish()
+  
+  call glQueryCounter(query_ids(2), GL_TIMESTAMP)
+  
+  ! Get timestamps
+  call glGetQueryObjectui64v(query_ids(1), GL_QUERY_RESULT, time_start)
+  call glGetQueryObjectui64v(query_ids(2), GL_QUERY_RESULT, time_end)
+  
+  gpu_time_ms = real(time_end - time_start, real64) / 1.0e6_real64 / bench_iters
+  print *, "  GPU time: ", gpu_time_ms, " ms"
+  
+  ! Read back GPU results
+  call glBindBuffer(GL_SHADER_STORAGE_BUFFER, out_ssbo)
+  call glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, &
+                          0_c_size_t, &
+                          int(size(output_gpu) * 4, c_size_t), &
+                          c_loc(output_gpu))
+  
+  !============================================
+  ! Compare Results
+  !============================================
+  print *, ""
+  print *, "3. Comparing results..."
+  
+  ! Check correctness (first few elements)
+  print *, "  CPU output[1:5]: ", output_cpu(1:5)
+  print *, "  GPU output[1:5]: ", output_gpu(1:5)
+  
+  ! Calculate max difference
+  max_diff = maxval(abs(output_cpu - output_gpu))
+  print *, "  Max difference: ", max_diff
+  
+  !============================================
+  ! Performance Summary
+  !============================================
+  print *, ""
+  print *, "=== PERFORMANCE SUMMARY ==="
+  
+  total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
+                int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+  
+  cpu_gflops = real(total_flops, real64) / (cpu_time_ms * 1.0e6_real64)
+  gpu_gflops = real(total_flops, real64) / (gpu_time_ms * 1.0e6_real64)
+  speedup = cpu_time_ms / gpu_time_ms
+  
+  print *, "CPU Performance:"
+  print *, "  Time: ", cpu_time_ms, " ms"
+  print *, "  GFLOPS: ", cpu_gflops
+  
+  print *, ""
+  print *, "GPU Performance:"
+  print *, "  Time: ", gpu_time_ms, " ms"
+  print *, "  GFLOPS: ", gpu_gflops
+  
+  print *, ""
+  print *, "Speedup: ", speedup, "x"
+  print *, "Total FLOPs: ", total_flops
+  
+  ! Memory bandwidth
+  
+  bytes_accessed = int(size(input) + size(weights) + size(output_gpu), int64) * 4_int64
+  gpu_bandwidth_gb = real(bytes_accessed, real64) / (gpu_time_ms * 1.0e6_real64)
+  
+  print *, ""
+  print *, "GPU Memory bandwidth: ", gpu_bandwidth_gb, " GB/s"
+  print *, "Arithmetic intensity: ", real(total_flops, real64) / real(bytes_accessed, real64), " FLOPS/byte"
+  
+  ! Cleanup
+  call glDeleteBuffers(1, in_ssbo)
+  call glDeleteBuffers(1, weight_ssbo)
+  call glDeleteBuffers(1, out_ssbo)
+  call glDeleteBuffers(1, param_ssbo)
+  call glDeleteProgram(program)
+  call glDeleteShader(shader)
+  call glDeleteQueries(2, query_ids)
+  
+  deallocate(input, weights, output_cpu, output_gpu)
+  
+contains
+
+  subroutine cpu_conv2d()
+    integer :: n_idx, k_idx, h_out_idx, w_out_idx, c_idx, kh_idx, kw_idx, h_in, w_in
+    integer :: in_idx, weight_idx, out_idx
+    real :: sum
+    integer :: debug_count
+    
+    debug_count = 0
+    
+    !$omp parallel do collapse(4) private(sum, c_idx, kh_idx, kw_idx, h_in, w_in, &
+    !$omp                                  in_idx, weight_idx, out_idx) reduction(+:debug_count)
+    ! print *, "CPU conv2d starting: N=", N, " K=", K, " H_out=", H_out, " W_out=", W_out
+    do n_idx = 1, N
+      do k_idx = 1, K
+        do h_out_idx = 1, H_out
+          do w_out_idx = 1, W_out
+            sum = 0.0
+            do c_idx = 1, C
+              do kh_idx = 1, kernel_size
+                do kw_idx = 1, kernel_size
+                  ! Note: Fortran uses 1-based indexing, GPU uses 0-based
+                  h_in = (h_out_idx - 1) * stride + (kh_idx - 1) - pad + 1
+                  w_in = (w_out_idx - 1) * stride + (kw_idx - 1) - pad + 1
+                  
+                  ! Debug first output position (disabled for performance)
+                  ! if (n_idx == 1 .and. k_idx == 1 .and. h_out_idx == 1 .and. &
+                  !     w_out_idx == 1 .and. c_idx == 1 .and. kh_idx <= 2 .and. kw_idx <= 2) then
+                  !   print *, "DEBUG h_out=1, w_out=1, kh=", kh_idx, " kw=", kw_idx, " h_in=", h_in, " w_in=", w_in
+                  ! end if
+                  
+                  if (h_in > 0 .and. h_in <= H .and. w_in > 0 .and. w_in <= W) then
+                    in_idx = (n_idx-1)*C*H*W + (c_idx-1)*H*W + (h_in-1)*W + w_in
+                    weight_idx = (k_idx-1)*C*kernel_size*kernel_size + &
+                                 (c_idx-1)*kernel_size*kernel_size + &
+                                 (kh_idx-1)*kernel_size + kw_idx
+                    sum = sum + input(in_idx) * weights(weight_idx)
+                    debug_count = debug_count + 1
+                  end if
+                end do
+              end do
+            end do
+            out_idx = (n_idx-1)*K*H_out*W_out + (k_idx-1)*H_out*W_out + (h_out_idx-1)*W_out + w_out_idx
+            output_cpu(out_idx) = sum
+          end do
+        end do
+      end do
+    end do
+    !$omp end parallel do
+    
+    print *, "DEBUG: Total convolution operations: ", debug_count
+    if (debug_count == 0) then
+      print *, "WARNING: No convolution operations were performed!"
+    end if
+  end subroutine cpu_conv2d
+  
+end subroutine test_conv_cpu_vs_gpu

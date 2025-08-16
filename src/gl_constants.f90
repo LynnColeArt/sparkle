@@ -15,6 +15,24 @@ module gl_constants
   integer(c_int), parameter :: GL_FALSE = 0
   integer(c_int), parameter :: GL_TRUE = 1
   
+  ! Additional buffer constants
+  integer(c_int), parameter :: GL_DYNAMIC_DRAW = int(z'88E8', c_int)
+  integer(c_int), parameter :: GL_MAJOR_VERSION = int(z'821B', c_int)
+  integer(c_int), parameter :: GL_MINOR_VERSION = int(z'821C', c_int)
+  
+  ! Query constants
+  integer(c_int), parameter :: GL_TIMESTAMP = int(z'8E28', c_int)
+  integer(c_int), parameter :: GL_QUERY_RESULT = int(z'8866', c_int)
+  integer(c_int), parameter :: GL_QUERY_RESULT_AVAILABLE = int(z'8867', c_int)
+  
+  ! GLFW constants
+  integer(c_int), parameter :: GLFW_CONTEXT_VERSION_MAJOR = int(z'00022002', c_int)
+  integer(c_int), parameter :: GLFW_CONTEXT_VERSION_MINOR = int(z'00022003', c_int)
+  integer(c_int), parameter :: GLFW_OPENGL_PROFILE = int(z'00022008', c_int)
+  integer(c_int), parameter :: GLFW_OPENGL_CORE_PROFILE = int(z'00032001', c_int)
+  integer(c_int), parameter :: GLFW_VISIBLE = int(z'00020004', c_int)
+  integer(c_int), parameter :: GLFW_FALSE = 0
+  
   ! OpenGL function interfaces that are commonly used
   interface
     function glCreateShader(shader_type) bind(C, name="glCreateShader")
@@ -226,6 +244,81 @@ module gl_constants
       integer(c_size_t), value :: size
       type(c_ptr), value :: data
     end subroutine
+    
+    ! GPU Query functions for timing
+    subroutine glGenQueries(n, ids) bind(C, name="glGenQueries")
+      import :: c_int
+      integer(c_int), value :: n
+      integer(c_int), intent(out) :: ids(*)
+    end subroutine
+    
+    subroutine glDeleteQueries(n, ids) bind(C, name="glDeleteQueries")
+      import :: c_int
+      integer(c_int), value :: n
+      integer(c_int), intent(in) :: ids(*)
+    end subroutine
+    
+    subroutine glQueryCounter(id, target) bind(C, name="glQueryCounter")
+      import :: c_int
+      integer(c_int), value :: id, target
+    end subroutine
+    
+    subroutine glGetQueryObjectui64v(id, pname, params) bind(C, name="glGetQueryObjectui64v")
+      import :: c_int, c_int64_t
+      integer(c_int), value :: id, pname
+      integer(c_int64_t), intent(out) :: params
+    end subroutine glGetQueryObjectui64v
+    
+    subroutine glGetQueryObjectiv(id, pname, params) bind(C, name="glGetQueryObjectiv")
+      import :: c_int
+      integer(c_int), value :: id, pname
+      integer(c_int), intent(out) :: params
+    end subroutine
+    
+    subroutine glGetQueryObjecti64v(id, pname, params) bind(C, name="glGetQueryObjecti64v")
+      import :: c_int, c_int64_t
+      integer(c_int), value :: id, pname
+      integer(c_int64_t), intent(out) :: params
+    end subroutine
+    
+    subroutine glGetIntegerv(pname, params) bind(C, name="glGetIntegerv")
+      import :: c_int
+      integer(c_int), value :: pname
+      integer(c_int), intent(out) :: params
+    end subroutine
+    
+    ! GLFW functions for context creation
+    function glfwInit() bind(C, name="glfwInit")
+      import :: c_int
+      integer(c_int) :: glfwInit
+    end function
+    
+    subroutine glfwTerminate() bind(C, name="glfwTerminate")
+    end subroutine
+    
+    subroutine glfwWindowHint(hint, value) bind(C, name="glfwWindowHint")
+      import :: c_int
+      integer(c_int), value :: hint, value
+    end subroutine
+    
+    function glfwCreateWindow(width, height, title, monitor, share) bind(C, name="glfwCreateWindow")
+      import :: c_int, c_ptr, c_char
+      integer(c_int), value :: width, height
+      character(kind=c_char), intent(in) :: title(*)
+      type(c_ptr), value :: monitor, share
+      type(c_ptr) :: glfwCreateWindow
+    end function
+    
+    subroutine glfwDestroyWindow(window) bind(C, name="glfwDestroyWindow")
+      import :: c_ptr
+      type(c_ptr), value :: window
+    end subroutine
+    
+    subroutine glfwMakeContextCurrent(window) bind(C, name="glfwMakeContextCurrent")
+      import :: c_ptr
+      type(c_ptr), value :: window
+    end subroutine
+    
   end interface
   
 end module gl_constants

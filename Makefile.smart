@@ -51,6 +51,8 @@ EXAMPLES_DIR = examples
 
 # Create build directory
 $(shell mkdir -p $(BUILD_DIR))
+$(shell mkdir -p $(BUILD_DIR)/reference)
+$(shell mkdir -p $(BUILD_DIR)/production)
 
 # Common modules (platform-independent)
 COMMON_MODULES = \
@@ -63,8 +65,8 @@ COMMON_MODULES = \
     $(SRC_DIR)/sparkle_safe_kernels.f90 \
     $(SRC_DIR)/sparkle_platform.f90 \
     $(SRC_DIR)/gl_constants.f90 \
+    $(SRC_DIR)/sparkle_gpu_kernels.f90 \
     $(SRC_DIR)/sparkle_glsl_generator.f90 \
-    $(SRC_DIR)/sparkle_glsl_compute.f90 \
     $(SRC_DIR)/sparkle_adaptive_kernel.f90 \
     $(SRC_DIR)/sparkle_kernel_variants.f90 \
     $(SRC_DIR)/sparkle_shader_parser.f90 \
@@ -86,7 +88,11 @@ ifeq ($(PLATFORM),LINUX)
             $(SRC_DIR)/sparkle_amdgpu_shaders.f90
             
         ifeq ($(HAS_OPENGL),yes)
-            PLATFORM_MODULES += $(SRC_DIR)/sparkle_gpu_opengl.f90
+            PLATFORM_MODULES += $(SRC_DIR)/sparkle_gpu_opengl.f90 \
+                                $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
+                                $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
+                                $(SRC_DIR)/production/sparkle_conv2d.f90
+            PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c
         endif
     endif
 endif
@@ -112,6 +118,12 @@ OBJECTS = $(MODULES:$(SRC_DIR)/%.f90=$(BUILD_DIR)/%.o)
 # Platform-specific C objects
 ifeq ($(PLATFORM),MACOS)
     C_OBJECTS = $(PLATFORM_C_SOURCES:$(SRC_DIR)/%.m=$(BUILD_DIR)/%.o)
+endif
+
+ifeq ($(PLATFORM),LINUX)
+    ifneq ($(strip $(PLATFORM_C_SOURCES)),)
+        C_OBJECTS = $(PLATFORM_C_SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
+    endif
 endif
 
 # Info target
@@ -303,9 +315,25 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.f90
 	@echo "📦 Compiling $< for $(PLATFORM)..."
 	$(FC) $(BASE_FFLAGS) -c $< -o $@ -J$(BUILD_DIR)
 
+$(BUILD_DIR)/reference/%.o: $(SRC_DIR)/reference/%.f90
+	@echo "📦 Compiling $< (reference) for $(PLATFORM)..."
+	$(FC) $(BASE_FFLAGS) -c $< -o $@ -J$(BUILD_DIR)
+
+$(BUILD_DIR)/production/%.o: $(SRC_DIR)/production/%.f90
+	@echo "📦 Compiling $< (production) for $(PLATFORM)..."
+	$(FC) $(BASE_FFLAGS) -c $< -o $@ -J$(BUILD_DIR)
+
+$(BUILD_DIR)/reference/%.o: $(SRC_DIR)/reference/%.c
+	@echo "⚙️  Compiling $< (reference C)..."
+	$(CC) $(BASE_CFLAGS) $(CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.m
 	@echo "🎮 Compiling $< (Objective-C)..."
 	$(CC) $(BASE_CFLAGS) -fobjc-arc -c $< -o $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@echo "⚙️  Compiling $< (C)..."
+	$(CC) $(BASE_CFLAGS) $(CFLAGS) -c $< -o $@
 
 # Clean
 clean:
@@ -335,4 +363,13 @@ $(BUILD_DIR)/benchmark_convolution: $(OBJECTS) $(EXAMPLES_DIR)/benchmark_convolu
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
 		$(EXAMPLES_DIR)/benchmark_convolution.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution
+# Production interface test
+test_production_conv2d: $(BUILD_DIR)/test_production_conv2d
+	@echo "🧪 Testing production conv2d interface..."
+	@./$(BUILD_DIR)/test_production_conv2d
+$(BUILD_DIR)/test_production_conv2d: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_production_conv2d.f90
+	@echo "🔨 Building production conv2d test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_production_conv2d.f90 -o $@ $(LDFLAGS)
+
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d

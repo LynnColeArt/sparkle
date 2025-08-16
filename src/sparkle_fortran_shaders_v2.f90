@@ -67,8 +67,9 @@ contains
     ! Generate test GLSL
     glsl_source = generate_glsl_v2(test_kernel)
     
-    ! Benchmark all methods
-    call benchmark_param_methods(global_strategy, glsl_source)
+    ! Benchmark all methods - TODO: implement benchmark_param_methods
+    ! call benchmark_param_methods(global_strategy, glsl_source)
+    print *, "⚠️  benchmark_param_methods not yet implemented - skipping"
   end subroutine sporkle_benchmark_params
   
   subroutine sporkle_compile_and_dispatch_v2(kernel_file, kernel_name, global_size, &
