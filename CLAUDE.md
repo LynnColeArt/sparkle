@@ -79,3 +79,43 @@ Bugs are not failures - they are:
 3. **Zen Teachers** - They test our mental models and reveal hidden assumptions
 
 When we hit a bug, we celebrate the learning opportunity. Each bug brings us closer to understanding what we're really building.
+
+## Development Machine Details
+**OS**: Linux (Ubuntu-based)
+**CPU**: AMD Ryzen 7900X (has integrated GPU)
+**GPUs**:
+- **card0**: AMD Raphael iGPU (Device ID: 0x164e) - RDNA 2 architecture, 2 CUs
+- **card1**: AMD Radeon RX 7900 XT (Device ID: 0x744c) - RDNA 3 architecture, Navi 31
+  
+**Important Notes**:
+- User (lynn) is now in the video group and can access both GPUs
+- We've been testing on card0 (the integrated GPU) by default
+- Using direct AMDGPU ioctl interface, no ROCm/Mesa dependencies
+- Using render nodes: renderD128 (7900 XT), renderD129 (Raphael iGPU)
+
+**Current Testing Focus**: Getting compute shaders to execute on the Raphael iGPU
+
+## GPU Compute Status
+- **GLSL/OpenGL Compute**: ✅ Working on both GPUs (returns 0xDEADBEEF)
+- **PM4 Direct Submission**: ❌ Shader doesn't execute (returns 0xBAD0BAD0)
+  - Fixed: GPU ring timeout (malformed PM4 headers)
+  - Issue: GCN3 shader binary incompatible with RDNA 2 architecture
+  - The shader binary we embedded was designed for older GCN ISA
+  - RDNA 2 (Raphael) and RDNA 3 (7900 XT) use different instruction encoding
+
+## Fortran GPU DSL Status (Dec 2024)
+- **Parser V1**: ✅ Working - translates simple Fortran kernels to GLSL
+- **Shader Execution**: ✅ Working - successfully executes on GPU via OpenGL
+- **Example Kernels**: ✅ Working - vector_add, SAXPY, store_deadbeef
+- **Adaptive Parameter Passing**: ✅ Framework Complete (Jan 2025)
+  - Parser correctly identifies scalar vs array parameters
+  - Generates GLSL for UNIFORM/BUFFER/INLINE methods
+  - Benchmarks each method and selects optimal approach
+  - Proper GL interface with all uniform functions
+  - QA'd and documented with test programs
+  - GPU execution still mocked but hooks in place
+- **Next Goals**: 
+  - Connect real GPU shader compilation to benchmarks
+  - Implement INLINE parameter substitution
+  - Port convolution kernels (im2col, GEMM)
+  - Achieve 14 TFLOPS target (90% of theoretical like we did with Metal)
