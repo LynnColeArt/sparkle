@@ -98,8 +98,10 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
                                 $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d.f90
-            PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c
+                                $(SRC_DIR)/production/sparkle_conv2d.f90 \
+                                $(SRC_DIR)/gpu_dynamic_execution.f90
+            PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
+                                  $(SRC_DIR)/gpu_dynamic_shader_exec.c
         endif
     endif
 endif
@@ -432,6 +434,26 @@ $(BUILD_DIR)/test_dynamic_shader_system: $(BUILD_DIR)/sparkle_types.o $(BUILD_DI
 		$(BUILD_DIR)/sparkle_rdna_shader_generator.o \
 		$(BUILD_DIR)/sparkle_dynamic_shader_system.o \
 		$(EXAMPLES_DIR)/test_dynamic_shader_system.f90 -o $@
+
+# GPU shader variants benchmark
+test_gpu_shader_variants: $(BUILD_DIR)/test_gpu_shader_variants
+	@echo "🚀 Testing GPU shader variants..."
+	@./$(BUILD_DIR)/test_gpu_shader_variants
+
+$(BUILD_DIR)/test_gpu_shader_variants: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_shader_variants.f90
+	@echo "🔨 Building GPU shader variants test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_gpu_shader_variants.f90 -o $@ $(LDFLAGS)
+
+# GPU dynamic shaders test
+test_gpu_dynamic_shaders: $(BUILD_DIR)/test_gpu_dynamic_shaders
+	@echo "🚀 Testing GPU dynamic shaders..."
+	@./$(BUILD_DIR)/test_gpu_dynamic_shaders
+
+$(BUILD_DIR)/test_gpu_dynamic_shaders: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_dynamic_shaders.f90
+	@echo "🔨 Building GPU dynamic shaders test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_gpu_dynamic_shaders.f90 -o $@ $(LDFLAGS)
 
 # Memory wall simple test
 test_memory_wall_simple: $(BUILD_DIR)/test_memory_wall_simple
