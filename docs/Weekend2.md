@@ -321,12 +321,44 @@ The GPU idle time problem is **solved**. The async executor demonstrates that pr
 4. **Production Integration**: Everything works through clean APIs
 5. **Documentation**: Comprehensive docs explaining all performance numbers
 
-### 🔲 Remaining Tasks (Optional)
-1. **Automatic Device Selection**: Framework currently requires manual backend choice
-2. **PM4 Direct Submission**: AMDGPU direct path exists but not integrated
-3. **Dual GPU Execution**: Could use both iGPU and dGPU together
-4. **Persistent Kernel Framework**: Keep shaders running continuously
-5. **Push to 250 GFLOPS CPU**: Current 196.7 is great, but room for more
+### 🚨 CRITICAL DISCOVERY: Unintegrated Performance Features
+
+**Found during code review (Jan 2025)**: Multiple high-performance features are implemented but NOT integrated into production:
+
+1. **CPU SIMD (196.7 GFLOPS)** - `gemm_simd_optimized` exists but not used in production convolution path
+   - Test achieves 196.7 GFLOPS for GEMM alone
+   - Production uses slower universal_memory GEMM (~40 GFLOPS)
+   - Need to integrate SIMD GEMM into CPU path
+
+2. **GPU Async Executor (3,630 GFLOPS)** - Full async implementation not connected
+   - `gpu_async_executor` module fully implemented
+   - Test shows 6.5x speedup with triple buffering
+   - Production only uses synchronous execution (451 GFLOPS)
+
+3. **Direct AMDGPU** - Kernel driver interface implemented but not integrated
+   - `amdgpu_device` module complete
+   - Could bypass OpenGL overhead
+   - Not available as backend option
+
+4. **Dynamic Shader System** - Built but not connected
+   - `sparkle_dynamic_shader_system` can optimize per-workload
+   - Tests show adaptive performance gains
+   - Production uses static shaders only
+
+5. **Fused im2col+GEMM** - Critical optimization missing
+   - GPU does direct convolution (no cold buffers)
+   - CPU currently: im2col → cold buffer → GEMM
+   - Need: fused im2col+GEMM in hot cache loop
+
+**Impact**: Production performance is 5-20x slower than claimed in tests!
+
+### 🔲 Remaining Tasks (Now CRITICAL - Not Optional!)
+1. **Integrate SIMD GEMM** into CPU convolution path
+2. **Connect GPU Async Executor** to production dispatch
+3. **Implement fused im2col+GEMM** for CPU (match GPU approach)
+4. **Wire up Dynamic Shader System** for adaptive optimization
+5. **Complete Auto Device Selection** (currently manual only)
+6. **Add Direct AMDGPU** as backend option
 
 ### 🎯 Mission Status: SUCCESS!
 We've proven that universal memory optimization patterns work across architectures:

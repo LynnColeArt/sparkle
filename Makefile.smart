@@ -100,9 +100,11 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/reference/universal_memory_optimization.f90 \
                                 $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
                                 $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
+                                $(SRC_DIR)/reference/cpu_conv2d_simd.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
                                 $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d.f90 \
+                                $(SRC_DIR)/production/sparkle_conv2d_v2.f90 \
                                 $(SRC_DIR)/gpu_dynamic_execution.f90 \
                                 $(SRC_DIR)/gpu_async_executor.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
@@ -430,6 +432,15 @@ $(BUILD_DIR)/benchmark_convolution: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/benc
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/benchmark_convolution.f90 -o $@ $(LDFLAGS)
 
+# Convolution benchmark v2 with Universal Device Selector
+benchmark_convolution_v2: $(BUILD_DIR)/benchmark_convolution_v2
+	@echo "📊 Running convolution benchmark v2..."
+	@./$(BUILD_DIR)/benchmark_convolution_v2
+$(BUILD_DIR)/benchmark_convolution_v2: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/benchmark_convolution_v2.f90
+	@echo "🔨 Building convolution benchmark v2..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/benchmark_convolution_v2.f90 -o $@ $(LDFLAGS)
+
 # Production interface test
 test_production_conv2d: $(BUILD_DIR)/test_production_conv2d
 	@echo "🧪 Testing production conv2d interface..."
@@ -438,6 +449,15 @@ $(BUILD_DIR)/test_production_conv2d: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/tes
 	@echo "🔨 Building production conv2d test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_production_conv2d.f90 -o $@ $(LDFLAGS)
+
+# Production interface v2 test with Universal Device Selector
+test_production_conv2d_v2: $(BUILD_DIR)/test_production_conv2d_v2
+	@echo "🎯 Testing production conv2d v2 with Universal Device Selector..."
+	@./$(BUILD_DIR)/test_production_conv2d_v2
+$(BUILD_DIR)/test_production_conv2d_v2: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_production_conv2d_v2.f90
+	@echo "🔨 Building production conv2d v2 test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_production_conv2d_v2.f90 -o $@ $(LDFLAGS)
 
 # Memory wall breakthrough test
 test_memory_wall_breakthrough: $(BUILD_DIR)/test_memory_wall_breakthrough
@@ -533,7 +553,7 @@ $(BUILD_DIR)/test_universal_device_selector: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_universal_device_selector.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_production_conv2d_v2 test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector
 
 $(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
 	@echo "🔨 Building honest GPU async test..."
