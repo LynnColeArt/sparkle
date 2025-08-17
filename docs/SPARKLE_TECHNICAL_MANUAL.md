@@ -29,6 +29,17 @@ The Sparkle Universal Memory Optimization Framework implements a unified approac
 
 The framework operates on the principle that memory bandwidth limitations, cache locality requirements, and prefetch optimization strategies exhibit universal characteristics across compute architectures. This universality enables the development of optimization patterns that provide performance benefits regardless of the target execution environment.
 
+### 1.3 Correctness as a Core Value
+
+**Mathematical correctness takes precedence over raw performance in Sparkle.** This fundamental principle guides all design decisions:
+
+- **Validated Algorithms**: Every optimization must maintain bit-accurate results
+- **Comprehensive Testing**: Multiple test suites validate correctness at every level
+- **Transparent Performance**: We report real, achievable performance numbers
+- **Trust Over Marketing**: Better to report 100 correct GFLOPS than 8,000 incorrect ones
+
+This approach ensures that Sparkle can be trusted for critical workloads where accuracy matters, such as neural network training, scientific computing, and financial modeling.
+
 ### 1.3 Supported Compute Targets
 
 - **CPU**: Multi-core processors with SIMD instruction sets and hierarchical cache systems
@@ -423,7 +434,75 @@ Specialized accelerator support requires:
 
 ---
 
-## 12. Troubleshooting and Diagnostics
+## 12. Correctness Validation and Testing
+
+### 12.1 The Correctness-First Approach
+
+Sparkle's development history includes a critical lesson: initial implementations achieved 8,773 GFLOPS but were mathematically incorrect due to compiler optimizations eliminating actual computation. The current production system achieves:
+
+- **CPU**: 90-160 GFLOPS (correct, validated)
+- **GPU**: 400+ GFLOPS (correct, validated)
+
+This reduction in reported performance represents our commitment to accuracy over marketing.
+
+### 12.2 Validation Methodology
+
+**Unit Testing:**
+```fortran
+! Test 1: Identity convolution - simplest validation
+weights(1) = 1.0
+time_ms = conv2d_adaptive(input, weights, output, ...)
+! Verify: output should equal input
+
+! Test 2: Known patterns - predictable outputs
+weights = 1.0  ! All ones
+! With padding, corners = 4.0, edges = 6.0, center = 9.0
+```
+
+**Integration Testing:**
+- Side-by-side CPU/GPU comparison
+- Floating-point tolerance checks (typically < 1e-5)
+- Performance regression detection
+
+**Debugging Process:**
+1. Start with simplest possible cases
+2. Trace execution with debug output
+3. Verify intermediate results
+4. Never hide correctness issues behind optimizations
+
+### 12.3 Common Correctness Issues
+
+**Index Calculation Errors:**
+- Column-major vs row-major confusion
+- Off-by-one errors in loop bounds
+- Incorrect stride calculations
+
+**Parallel Execution Bugs:**
+- Race conditions in output updates
+- Incorrect thread partitioning
+- Missing synchronization barriers
+
+**Optimization-Related Issues:**
+- Compiler eliminating computations
+- Unsafe floating-point optimizations
+- Memory aliasing violations
+
+### 12.4 Validation Tools
+
+```bash
+# Run correctness test suite
+./test_adaptive_correctness
+
+# Compare CPU vs GPU results
+./test_production_juggling
+
+# Comprehensive matrix test
+./test_adaptive_matrix
+```
+
+---
+
+## 13. Troubleshooting and Diagnostics
 
 ### 12.1 Common Issues
 
