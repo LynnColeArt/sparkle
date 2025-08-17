@@ -23,7 +23,7 @@ module cpu_conv2d_reference
   use iso_fortran_env, only: real32, real64, int64
   use universal_memory_optimization, only: memory_params, detect_memory_params, &
                                           fused_conv2d_cpu, arithmetic_intensity
-  use cpu_conv2d_simd, only: conv2d_cpu_simd
+  use cpu_conv2d_fused_final, only: conv2d_fused_final
   implicit none
   
   private
@@ -39,9 +39,9 @@ contains
     real(real32), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    ! Use SIMD-optimized implementation for high performance
-    conv2d_cpu_reference = conv2d_cpu_simd(input, weights, output, &
-                                          N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+    ! Use OpenMP + SIMD optimized implementation for high performance
+    conv2d_cpu_reference = conv2d_fused_final(input, weights, output, &
+                                              N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
   end function conv2d_cpu_reference
   
   ! Benchmarking version with multiple iterations (like GPU test)

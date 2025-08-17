@@ -43,8 +43,8 @@ module universal_memory_optimization
     real(real64) :: effective_bandwidth_gb = 80.0  ! Achievable bandwidth
     
     ! Parallelism
-    integer :: num_cores = 16        ! Physical cores
-    integer :: num_threads = 32      ! SMT threads
+    integer :: num_cores = 8         ! Physical cores (Ryzen 7 7700X)
+    integer :: num_threads = 16      ! SMT threads (2 per core)
     
     ! Algorithm parameters
     integer :: tile_m = 64           ! Optimal tile size M dimension
@@ -61,13 +61,13 @@ contains
     type(memory_params) :: params
     
     ! TODO: Implement hardware detection
-    ! For now, use conservative defaults for AMD Ryzen 7900X
-    params%l1_cache_kb = 32
-    params%l2_cache_kb = 1024  
-    params%l3_cache_kb = 65536
-    params%num_cores = 16
-    params%num_threads = 32
-    params%peak_bandwidth_gb = 100.0
+    ! For now, use defaults for AMD Ryzen 7 7700X
+    params%l1_cache_kb = 32      ! 32KB L1D per core
+    params%l2_cache_kb = 1024    ! 1MB L2 per core
+    params%l3_cache_kb = 32768   ! 32MB L3 shared
+    params%num_cores = 8         ! 8 physical cores
+    params%num_threads = 16      ! 16 threads (SMT)
+    params%peak_bandwidth_gb = 83.2  ! DDR5-5200 dual channel
     
     ! Calculate optimal tile sizes based on cache
     params%tile_m = cache_optimal_tile_size(params%l1_cache_kb, 4)  ! 4 bytes per float

@@ -435,3 +435,162 @@ float gpu_execute_conv2d_fortran(const float* input, const float* weights, float
 int gpu_get_compute_program() {
     return (int)g_compute_program;
 }
+
+// Runtime shader compilation support
+// Compile a custom shader source at runtime
+GLuint gpu_compile_custom_shader(const char* shader_source) {
+    if (!gpu_is_initialized()) {
+        printf("GPU not initialized\n");
+        return 0;
+    }
+    
+    // Create compute shader
+    GLuint compute_shader = glCreateShader(GL_COMPUTE_SHADER);
+    if (compute_shader == 0) {
+        printf("Failed to create custom compute shader\n");
+        return 0;
+    }
+    
+    // Set shader source
+    glShaderSource(compute_shader, 1, &shader_source, NULL);
+    
+    // Compile shader
+    glCompileShader(compute_shader);
+    
+    // Check compilation status
+    GLint compile_status;
+    glGetShaderiv(compute_shader, GL_COMPILE_STATUS, &compile_status);
+    if (compile_status != GL_TRUE) {
+        GLint log_length;
+        glGetShaderiv(compute_shader, GL_INFO_LOG_LENGTH, &log_length);
+        if (log_length > 0) {
+            char* log = malloc(log_length);
+            glGetShaderInfoLog(compute_shader, log_length, NULL, log);
+            printf("Custom shader compilation failed:\n%s\n", log);
+            free(log);
+        }
+        glDeleteShader(compute_shader);
+        return 0;
+    }
+    
+    // Create program
+    GLuint program = glCreateProgram();
+    if (program == 0) {
+        printf("Failed to create custom program\n");
+        glDeleteShader(compute_shader);
+        return 0;
+    }
+    
+    // Attach and link
+    glAttachShader(program, compute_shader);
+    glLinkProgram(program);
+    
+    // Check link status
+    GLint link_status;
+    glGetProgramiv(program, GL_LINK_STATUS, &link_status);
+    if (link_status != GL_TRUE) {
+        GLint log_length;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+        if (log_length > 0) {
+            char* log = malloc(log_length);
+            glGetProgramInfoLog(program, log_length, NULL, log);
+            printf("Custom program linking failed:\n%s\n", log);
+            free(log);
+        }
+        glDeleteProgram(program);
+        glDeleteShader(compute_shader);
+        return 0;
+    }
+    
+    // Clean up shader object
+    glDeleteShader(compute_shader);
+    
+    return program;
+}
+
+// Execute convolution with custom shader program
+float gpu_execute_conv2d_custom(
+    GLuint custom_program,
+    const float* input, const float* weights, float* output,
+    int N, int C, int H, int W, int K, 
+    int kernel_size, int stride, int pad,
+    int H_out, int W_out) {
+    
+    if (!gpu_is_initialized() || custom_program == 0) {
+        printf("GPU not initialized or invalid program\n");
+        return -1.0f;
+    }
+    
+    // Create buffers
+    size_t input_size = N * C * H * W * sizeof(float);
+    size_t weight_size = K * C * kernel_size * kernel_size * sizeof(float);
+    size_t output_size = N * K * H_out * W_out * sizeof(float);
+    
+    gpu_buffer_t input_buf = gpu_create_buffer(input, input_size);
+    gpu_buffer_t weight_buf = gpu_create_buffer(weights, weight_size);
+    gpu_buffer_t output_buf = gpu_create_buffer(NULL, output_size);
+    
+    if (input_buf.buffer_id == 0 || weight_buf.buffer_id == 0 || output_buf.buffer_id == 0) {
+        printf("Failed to create buffers\n");
+        return -1.0f;
+    }
+    
+    // Create parameter buffer
+    struct {
+        int N, H, W, C, K;
+        int kernel_size, stride, pad;
+        int H_out, W_out;
+    } params = {N, H, W, C, K, kernel_size, stride, pad, H_out, W_out};
+    
+    gpu_buffer_t param_buf = gpu_create_buffer(&params, sizeof(params));
+    if (param_buf.buffer_id == 0) {
+        printf("Failed to create parameter buffer\n");
+        gpu_free_buffer(input_buf);
+        gpu_free_buffer(weight_buf);
+        gpu_free_buffer(output_buf);
+        return -1.0f;
+    }
+    
+    // Use custom program
+    glUseProgram(custom_program);
+    
+    // Bind buffers
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, input_buf.buffer_id);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, weight_buf.buffer_id);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, output_buf.buffer_id);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, param_buf.buffer_id);
+    
+    // Calculate dispatch size
+    int total_outputs = N * K * H_out * W_out;
+    int local_size = 64;  // Default, should match shader
+    int num_groups = (total_outputs + local_size - 1) / local_size;
+    
+    // Time the execution
+    glFinish();
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    
+    // Dispatch compute
+    glDispatchCompute(num_groups, 1, 1);
+    
+    // Wait for completion
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glFinish();
+    
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    
+    // Download result
+    gpu_download_buffer(output_buf, output);
+    
+    // Cleanup
+    gpu_free_buffer(input_buf);
+    gpu_free_buffer(weight_buf);
+    gpu_free_buffer(output_buf);
+    gpu_free_buffer(param_buf);
+    
+    // Calculate elapsed time
+    double time_ms = (end.tv_sec - start.tv_sec) * 1000.0 +
+                     (end.tv_nsec - start.tv_nsec) / 1000000.0;
+    
+    return (float)time_ms;
+}
