@@ -98,16 +98,18 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/sparkle_gpu_opengl.f90 \
                                 $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
                                 $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+                                $(SRC_DIR)/reference/gemm_simd_optimized_v2.f90 \
                                 $(SRC_DIR)/reference/universal_memory_optimization.f90 \
                                 $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_simd.f90 \
+                                $(SRC_DIR)/reference/cpu_conv2d_fused_final.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_fused.f90 \
                                 $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d_v2.f90 \
                                 $(SRC_DIR)/gpu_dynamic_execution.f90 \
-                                $(SRC_DIR)/gpu_async_executor.f90
+                                $(SRC_DIR)/gpu_async_executor.f90 \
+                                $(SRC_DIR)/production/sparkle_conv2d.f90 \
+                                $(SRC_DIR)/production/sparkle_conv2d_v2.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c
         endif
@@ -569,9 +571,27 @@ $(BUILD_DIR)/test_universal_device_selector: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_universal_device_selector.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_production_conv2d_v2 test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector test_async_toggle
+# Test production optimizations
+test_production_optimizations: $(BUILD_DIR)/test_production_optimizations
+	@echo "🚀 Testing production optimizations..."
+	@OMP_NUM_THREADS=16 ./$(BUILD_DIR)/test_production_optimizations
+
+$(BUILD_DIR)/test_production_optimizations: $(OBJECTS) $(C_OBJECTS) test_production_optimizations.f90
+	@echo "🔨 Building production optimizations test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_production_optimizations.f90 -o $@ $(LDFLAGS)
+
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_production_conv2d_v2 test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector test_async_toggle test_production_optimizations
 
 $(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
 	@echo "🔨 Building honest GPU async test..."
 	@$(FC) $(FFLAGS) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_gpu_async_honest.f90 -o $@ $(LDFLAGS)
+test_conv2d_correctness: $(BUILD_DIR)/test_conv2d_correctness
+	@echo "Testing convolution correctness..."
+	@OMP_NUM_THREADS=16 ./$(BUILD_DIR)/test_conv2d_correctness
+
+$(BUILD_DIR)/test_conv2d_correctness: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_conv2d_correctness.f90
+	@echo "Building convolution correctness test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_conv2d_correctness.f90 -o $@ $(LDFLAGS)

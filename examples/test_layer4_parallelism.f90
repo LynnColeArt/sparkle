@@ -80,7 +80,7 @@ program test_layer4_parallelism
   
   ! Test 2: Multi-threaded with production implementation
   print *, ""
-  print *, "🚀 Test 2: Multi-threaded execution (production naive)"
+  print *, "🚀 Test 2: Multi-threaded execution (production optimized)"
   call omp_set_num_threads(num_threads)
   print *, "   Using", omp_get_max_threads(), "threads"
   

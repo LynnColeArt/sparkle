@@ -13,6 +13,7 @@ module sparkle_gpu_dispatch
   use sparkle_gpu_safe_detect
   use sparkle_error_handling, only: sparkle_error_sub => sparkle_error
   use gpu_opengl_interface, only: gpu_init, gpu_cleanup, gpu_execute_conv2d_ref
+  use sparkle_dynamic_shader_system
   implicit none
   private
   
@@ -37,6 +38,8 @@ module sparkle_gpu_dispatch
     integer :: compute_units = 0
     real(real32) :: clock_mhz = 0.0
     logical :: opengl_ready = .false.  ! Track OpenGL initialization
+    type(shader_system) :: dynamic_shaders  ! Dynamic shader generation
+    logical :: dynamic_shaders_enabled = .false.
   end type gpu_device
   
   ! GPU kernel handle

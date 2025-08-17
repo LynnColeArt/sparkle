@@ -1,6 +1,6 @@
 program test_simple_parallel
   use iso_fortran_env
-  use sparkle_conv2d, only: conv2d_cpu_naive
+  use sparkle_conv2d, only: conv2d_cpu
   use omp_lib
   implicit none
   
@@ -46,14 +46,14 @@ program test_simple_parallel
     
     ! Warmup
     output = 0.0
-    call conv2d_cpu_naive(input, weights, output, &
-                          N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+    call conv2d_cpu(input, weights, output, &
+                    N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     
     ! Time the actual run
     call cpu_time(start_time)
     output = 0.0
-    call conv2d_cpu_naive(input, weights, output, &
-                          N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+    call conv2d_cpu(input, weights, output, &
+                    N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     call cpu_time(end_time)
     
     elapsed_time = (end_time - start_time) * 1000.0  ! Convert to ms

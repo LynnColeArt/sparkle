@@ -304,49 +304,20 @@ contains
     
   end subroutine initialize_amd_gpu_backend_real
   
-  ! REAL CPU convolution execution
+  ! REAL CPU convolution execution - USES OPTIMIZED IMPLEMENTATION
   subroutine execute_cpu_convolution_real(device, input, weights, output, &
                                          N, C, H, W, K, kernel_size, stride, pad, &
                                          H_out, W_out, status)
+    use sparkle_conv2d, only: conv2d_cpu
     type(unified_device), intent(in) :: device
     real(real32), intent(in) :: input(:), weights(:)
     real(real32), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     integer, intent(out) :: status
     
-    ! Simple naive CPU implementation for now
-    integer :: batch, out_c, out_h, out_w, in_c, kh, kw
-    integer :: in_h, in_w
-    real(real32) :: sum
-    
-    !$omp parallel do collapse(4) private(sum, in_c, kh, kw, in_h, in_w)
-    do batch = 1, N
-      do out_c = 1, K
-        do out_h = 1, H_out
-          do out_w = 1, W_out
-            sum = 0.0
-            do in_c = 1, C
-              do kh = 1, kernel_size
-                do kw = 1, kernel_size
-                  in_h = (out_h - 1) * stride + kh - pad
-                  in_w = (out_w - 1) * stride + kw - pad
-                  
-                  if (in_h >= 1 .and. in_h <= H .and. in_w >= 1 .and. in_w <= W) then
-                    sum = sum + input((batch-1)*C*H*W + (in_c-1)*H*W + (in_h-1)*W + in_w) * &
-                               weights((out_c-1)*C*kernel_size*kernel_size + &
-                                      (in_c-1)*kernel_size*kernel_size + &
-                                      (kh-1)*kernel_size + kw)
-                  end if
-                end do
-              end do
-            end do
-            output((batch-1)*K*H_out*W_out + (out_c-1)*H_out*W_out + &
-                   (out_h-1)*W_out + out_w) = sum
-          end do
-        end do
-      end do
-    end do
-    !$omp end parallel do
+    ! NAIVE IMPLEMENTATION OBLITERATED!
+    ! Use the optimized production implementation
+    call conv2d_cpu(input, weights, output, N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     status = 0
     
   end subroutine execute_cpu_convolution_real
