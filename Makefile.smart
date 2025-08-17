@@ -77,7 +77,8 @@ COMMON_MODULES = \
     $(SRC_DIR)/sparkle_fortran_shaders.f90 \
     $(SRC_DIR)/sparkle_fortran_params.f90 \
     $(SRC_DIR)/sparkle_shader_parser_v2.f90 \
-    $(SRC_DIR)/sparkle_fortran_shaders_v2.f90
+    $(SRC_DIR)/sparkle_fortran_shaders_v2.f90 \
+    $(SRC_DIR)/sparkle_universal_device_selector.f90
 
 # Platform-specific modules
 ifeq ($(PLATFORM),LINUX)
@@ -160,6 +161,7 @@ info:
 	@echo "  make test_glsl_compute  - Test GLSL compute shader"
 	@echo "  make test_adaptive_kernel - Test adaptive kernel framework"
 	@echo "  make test_amdgpu_compute - Test AMDGPU compute shader"
+	@echo "  make test_universal_device_selector - Test universal device selection"
 	@echo "  make benchmark          - Run performance benchmarks"
 	@echo ""
 
@@ -521,7 +523,17 @@ $(BUILD_DIR)/test_simd_performance: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_simd_performance.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd
+# Universal device selector test
+test_universal_device_selector: $(BUILD_DIR)/test_universal_device_selector
+	@echo "🎯 Testing universal device selector..."
+	@./$(BUILD_DIR)/test_universal_device_selector
+
+$(BUILD_DIR)/test_universal_device_selector: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_universal_device_selector.f90
+	@echo "🔨 Building universal device selector test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_universal_device_selector.f90 -o $@ $(LDFLAGS)
+
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector
 
 $(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
 	@echo "🔨 Building honest GPU async test..."
