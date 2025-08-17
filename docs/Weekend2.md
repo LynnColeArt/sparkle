@@ -253,6 +253,29 @@ The GPU is a river, not a bucket - keep it flowing!
 - Proposed async pipeline could achieve 2000+ GFLOPS at 90% utilization
 - Need continuous compute pipeline, not synchronous calls
 
+## 🧱 Layer-by-Layer Integration (Sunday)
+
+### Layer 1: Quick Fixes ✅
+- **CPU SIMD Integration**: Connected gemm_simd_avx512 to production path
+- **GPU Async Toggle**: Added SPORKLE_GPU_ASYNC environment variable
+- **Performance**: 9.5 GFLOPS CPU (marginal improvement from 9.0)
+- **Reality Check**: 196.7 GFLOPS was only for GEMM in isolation, not full conv
+
+### Layer 2: Fused im2col+GEMM 🚧
+- **Implementation**: Created cpu_conv2d_fused_simple.f90 with hot cache processing
+- **Performance**: 15.4 GFLOPS (3.18x speedup over unfused)
+- **Status**: Working but numerical differences on large problems
+- **Key Insight**: Processing tiles while hot in cache shows significant speedup
+
+### Layer 3: Advanced Features (TODO)
+- Dynamic shader generation system
+- Direct AMDGPU backend option
+- Full async executor integration
+
+### Layer 4: Multi-Device Scheduling (TODO)
+- Load balancing across all devices
+- Automatic work distribution
+
 ## Next Steps
 
 ### ✅ GPU Async Proof of Concept Complete!
