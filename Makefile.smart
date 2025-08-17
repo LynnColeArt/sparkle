@@ -102,6 +102,7 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_simd.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+                                $(SRC_DIR)/reference/cpu_conv2d_fused.f90 \
                                 $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d_v2.f90 \
