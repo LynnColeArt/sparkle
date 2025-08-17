@@ -97,8 +97,8 @@ ifeq ($(PLATFORM),LINUX)
             PLATFORM_MODULES += $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
                                 $(SRC_DIR)/sparkle_gpu_opengl.f90 \
                                 $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
-                                $(SRC_DIR)/reference/universal_memory_optimization.f90 \
                                 $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+                                $(SRC_DIR)/reference/universal_memory_optimization.f90 \
                                 $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_simd.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
@@ -164,6 +164,7 @@ info:
 	@echo "  make test_adaptive_kernel - Test adaptive kernel framework"
 	@echo "  make test_amdgpu_compute - Test AMDGPU compute shader"
 	@echo "  make test_universal_device_selector - Test universal device selection"
+	@echo "  make test_async_toggle  - Test GPU async executor toggle"
 	@echo "  make benchmark          - Run performance benchmarks"
 	@echo ""
 
@@ -533,6 +534,20 @@ $(BUILD_DIR)/test_peak_cpu_performance: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_peak_cpu_performance.f90 -o $@ $(LDFLAGS)
 
+# Test async executor toggle
+test_async_toggle: $(BUILD_DIR)/test_async_toggle
+	@echo "🔀 Testing async executor toggle..."
+	@echo "Running without async enabled:"
+	@./$(BUILD_DIR)/test_async_toggle
+	@echo ""
+	@echo "Running with async enabled:"
+	@SPORKLE_GPU_ASYNC=1 ./$(BUILD_DIR)/test_async_toggle
+
+$(BUILD_DIR)/test_async_toggle: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_async_toggle.f90
+	@echo "🔨 Building async toggle test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_async_toggle.f90 -o $@ $(LDFLAGS)
+
 # Test SIMD performance
 test_simd: $(BUILD_DIR)/test_simd_performance
 	@echo "🚀 Testing SIMD performance..."
@@ -553,7 +568,7 @@ $(BUILD_DIR)/test_universal_device_selector: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_universal_device_selector.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_production_conv2d_v2 test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_production_conv2d_v2 test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector test_async_toggle
 
 $(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
 	@echo "🔨 Building honest GPU async test..."

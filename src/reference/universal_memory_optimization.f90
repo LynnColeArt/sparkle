@@ -21,6 +21,7 @@
 
 module universal_memory_optimization
   use iso_fortran_env, only: real32, real64, int32, int64
+  use gemm_simd_optimized, only: gemm_simd_avx512
   implicit none
   
   private
@@ -292,9 +293,10 @@ contains
     
     ! Step 2: Universal memory-optimized GEMM
     ! C = weights * input_matrix
-    call gemm_universal_memory(weights, input_matrix, output, &
-                              K, input_matrix_cols, input_matrix_rows, &
-                              1.0, 0.0)
+    ! Use SIMD version for better performance
+    call gemm_simd_avx512(weights, input_matrix, output, &
+                         K, input_matrix_cols, input_matrix_rows, &
+                         1.0, 0.0)
     
     call cpu_time(end_time)
     
