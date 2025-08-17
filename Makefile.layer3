@@ -1,0 +1,57 @@
+# Makefile for Layer 3 testing
+
+FC = gfortran
+CC = gcc
+FFLAGS = -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -I build/LINUX
+CFLAGS = -O2 -Wall
+LDFLAGS = -lGL -lEGL -fopenmp -lm
+
+# Core dependencies
+CORE_OBJS = build/LINUX/sparkle_memory.o \
+            build/LINUX/sparkle_error_handling.o \
+            build/LINUX/sparkle_gpu_kernels.o \
+            build/LINUX/sparkle_gpu_safe_detect.o
+
+# Find all necessary object files
+GPU_OBJS = build/LINUX/sparkle_gpu_dispatch.o \
+           build/LINUX/reference/gpu_opengl_interface.o \
+           build/LINUX/reference/gpu_opengl_reference.o
+
+CPU_OBJS = build/LINUX/reference/cpu_conv2d_reference.o \
+           build/LINUX/reference/universal_memory_optimization.o \
+           build/LINUX/reference/gemm_simd_optimized.o \
+           build/LINUX/reference/cpu_conv2d_simd.o
+
+PROD_OBJS = build/LINUX/production/sparkle_conv2d.o
+
+ALL_OBJS = $(CORE_OBJS) $(GPU_OBJS) $(CPU_OBJS) $(PROD_OBJS)
+
+# Dynamic shader system objects
+SHADER_OBJS = build/LINUX/sparkle_types.o \
+              build/LINUX/sparkle_glsl_generator.o \
+              build/LINUX/sparkle_rdna_shader_generator.o \
+              build/LINUX/sparkle_dynamic_shader_system.o
+
+# Async GPU objects
+ASYNC_OBJS = build/LINUX/gpu_async_executor.o
+
+# Test programs
+test_layer3_gpu_baseline: examples/test_layer3_gpu_baseline.f90 $(ALL_OBJS)
+	$(FC) $(FFLAGS) $< $(ALL_OBJS) -o $@ $(LDFLAGS)
+
+test_layer3_dynamic_shaders: examples/test_layer3_dynamic_shaders.f90 $(ALL_OBJS) $(SHADER_OBJS)
+	$(FC) $(FFLAGS) $< $(ALL_OBJS) $(SHADER_OBJS) -o $@ $(LDFLAGS)
+
+test_layer3_shader_compilation: examples/test_layer3_shader_compilation.f90 $(ALL_OBJS) $(SHADER_OBJS)
+	$(FC) $(FFLAGS) $< $(ALL_OBJS) $(SHADER_OBJS) -o $@ $(LDFLAGS)
+
+test_layer3_async_gpu: examples/test_layer3_async_gpu.f90 $(ALL_OBJS) $(ASYNC_OBJS)
+	$(FC) $(FFLAGS) $< $(ALL_OBJS) $(ASYNC_OBJS) -o $@ $(LDFLAGS)
+
+test_layer4_parallelism: examples/test_layer4_parallelism.f90 $(ALL_OBJS) build/LINUX/reference/cpu_conv2d_fused_final.o
+	$(FC) $(FFLAGS) $< $(ALL_OBJS) build/LINUX/reference/cpu_conv2d_fused_final.o build/LINUX/reference/gemm_simd_optimized_v2.o -o $@ $(LDFLAGS)
+
+clean:
+	rm -f test_layer3_gpu_baseline test_layer3_dynamic_shaders test_layer3_shader_compilation test_layer3_async_gpu test_layer4_parallelism
+
+.PHONY: clean

@@ -1,0 +1,40 @@
+# Quick test Makefile for Mini's solution
+
+FC = gfortran
+FFLAGS = -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall
+
+# Modules in dependency order
+MODULES = src/reference/gemm_simd_optimized.f90 \
+          src/reference/gemm_simd_optimized_v2.f90 \
+          src/reference/cpu_conv2d_fused_final.f90 \
+          src/reference/universal_memory_optimization.f90
+
+# Test programs
+TEST_PROGRAMS = test_final_solution test_output_ordering
+
+all: $(TEST_PROGRAMS)
+
+# Module compilation
+gemm_simd_optimized.mod: src/reference/gemm_simd_optimized.f90
+	$(FC) $(FFLAGS) -c $< 
+
+gemm_simd_optimized_v2.mod: src/reference/gemm_simd_optimized_v2.f90
+	$(FC) $(FFLAGS) -c $<
+
+cpu_conv2d_fused_final.mod: src/reference/cpu_conv2d_fused_final.f90 gemm_simd_optimized_v2.mod
+	$(FC) $(FFLAGS) -c $<
+
+universal_memory_optimization.mod: src/reference/universal_memory_optimization.f90 gemm_simd_optimized.mod
+	$(FC) $(FFLAGS) -c $<
+
+# Test programs
+test_final_solution: examples/test_final_solution.f90 gemm_simd_optimized.mod gemm_simd_optimized_v2.mod cpu_conv2d_fused_final.mod universal_memory_optimization.mod
+	$(FC) $(FFLAGS) gemm_simd_optimized.o gemm_simd_optimized_v2.o cpu_conv2d_fused_final.o universal_memory_optimization.o $< -o $@
+
+test_output_ordering: examples/test_output_ordering.f90 gemm_simd_optimized.mod gemm_simd_optimized_v2.mod cpu_conv2d_fused_final.mod universal_memory_optimization.mod
+	$(FC) $(FFLAGS) gemm_simd_optimized.o gemm_simd_optimized_v2.o cpu_conv2d_fused_final.o universal_memory_optimization.o $< -o $@
+
+clean:
+	rm -f *.o *.mod test_final_solution test_mini_solution test_restructured_accuracy test_mini_v2 test_output_ordering
+
+.PHONY: all clean

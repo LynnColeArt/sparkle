@@ -64,7 +64,7 @@ contains
               ! AVX-512 can process 16 floats at once
               !$OMP SIMD
               do i = ii, i_end
-                C((j-1)*m + i) = C((j-1)*m + i) + alpha * A((kk-1)*m + i) * B((j-1)*k + kk)
+                C((j-1)*m + i) = C((j-1)*m + i) + alpha * A((kk-1)*m + i) * B(kk + (j-1)*k)
               end do
               !$OMP END SIMD
             end do

@@ -1,9 +1,9 @@
 ! Unified Device Abstraction V2 - Connected to real implementations
 ! This version actually calls the working backend code instead of stubs
 
-module sparkle_unified_device
+module sparkle_unified_device_v2
   use iso_fortran_env, only: real32, int32, int64
-  use sparkle_device_detection, only: device_capability
+  use sparkle_device_detection_v2, only: device_capability
   implicit none
   
   private
@@ -413,4 +413,4 @@ contains
     ! Neural engine cleanup not implemented
   end subroutine cleanup_neural_backend
 
-end module sparkle_unified_device
+end module sparkle_unified_device_v2

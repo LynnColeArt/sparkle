@@ -1,7 +1,7 @@
 ! Device Capability Detection System V2 - Real hardware queries
 ! This version actually queries the system instead of returning hardcoded values
 
-module sparkle_device_detection
+module sparkle_device_detection_v2
   use iso_fortran_env, only: real32, int32, int64
   use iso_c_binding
   implicit none
@@ -564,4 +564,4 @@ contains
     neural_device%available = .false.
   end function get_neural_engine_info
 
-end module sparkle_device_detection
+end module sparkle_device_detection_v2
