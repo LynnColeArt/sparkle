@@ -212,10 +212,12 @@ contains
           flat_input = reshape(input, [input_size])
           flat_weights = reshape(weights, [weight_size])
           
-          ! Execute on GPU
+          ! Execute on GPU (OpenGL is not thread-safe)
+          !$omp critical(gpu_execution)
           gpu_time_ms = gpu_execute_conv2d_ref(flat_input, flat_weights, flat_output, &
                                               N, C, H, W, K, KH, actual_stride_h, &
                                               actual_pad_h, OH, OW)
+          !$omp end critical(gpu_execution)
           
           ! Copy output back
           output = reshape(flat_output, shape(output))
