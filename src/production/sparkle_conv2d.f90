@@ -53,10 +53,8 @@ contains
       
     case("naive")
       ! OBLITERATED! Use optimized implementation instead
-      time_ms = conv2d_fused_final(input, weights, output, &
-                                  N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-      gflops = real(total_flops, real32) / (time_ms * 1.0e6)
-      print '(A,F6.2,A,F6.1,A)', "CPU conv2d: ", time_ms, " ms, ", gflops, " GFLOPS"
+      time_ms = conv2d_adaptive(input, weights, output, &
+                               N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     case default
       print *, "Unknown CPU implementation: ", trim(cpu_impl)
       stop
