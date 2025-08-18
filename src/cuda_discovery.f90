@@ -1,3 +1,25 @@
+! ⚠️  WARNING: CUDA SUPPORT - USE ONLY AS LAST RESORT ⚠️
+! ====================================================
+!
+! This module provides CUDA device discovery for NVIDIA GPUs.
+! 
+! IMPORTANT: This code requires proprietary NVIDIA CUDA runtime
+! and goes against Sparkle's philosophy of democratized compute.
+! 
+! Use this ONLY when:
+! - No other option exists (OpenCL, Vulkan, OpenGL compute)
+! - User explicitly has NVIDIA hardware with no alternatives
+! - Performance requirements absolutely mandate CUDA
+!
+! Preferred alternatives:
+! - OpenCL: Cross-vendor GPU compute
+! - Vulkan Compute: Modern cross-vendor API
+! - OpenGL Compute: Wide compatibility
+! - Direct kernel driver access (like our AMDGPU implementation)
+!
+! Remember: Every CUDA dependency is a step away from our
+! mission of democratizing AI compute for everyone.
+
 module cuda_discovery
   use sparkle_mesh_types
   use iso_c_binding
