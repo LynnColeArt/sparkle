@@ -109,7 +109,9 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/gpu_async_executor.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d_juggling.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d_auto_selector.f90
+                                $(SRC_DIR)/production/sparkle_conv2d_auto_selector.f90 \
+                                $(SRC_DIR)/production/gpu_program_cache.f90 \
+                                $(SRC_DIR)/production/gpu_opengl_cached.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c \
                                   $(SRC_DIR)/production/aligned_alloc.c
@@ -168,6 +170,8 @@ info:
 	@echo "  make test_adaptive_kernel - Test adaptive kernel framework"
 	@echo "  make test_amdgpu_compute - Test AMDGPU compute shader"
 	@echo "  make test_universal_device_selector - Test universal device selection"
+	@echo "  make test_program_cache - Test GPU program cache"
+	@echo "  make test_persistent_kernels - Test persistent kernel framework"
 	@echo "  make benchmark          - Run performance benchmarks"
 	@echo ""
 
@@ -408,6 +412,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "⚙️  Compiling $< (C)..."
 	$(CC) $(BASE_CFLAGS) $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/production/%.o: $(SRC_DIR)/production/%.c
+	@echo "⚙️  Compiling $< (production C)..."
+	$(CC) $(BASE_CFLAGS) $(CFLAGS) -c $< -o $@
+
 # Clean
 clean:
 	@echo "🧹 Cleaning $(PLATFORM) build..."
@@ -548,7 +556,27 @@ $(BUILD_DIR)/test_universal_device_selector: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_universal_device_selector.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector
+# GPU program cache test
+test_program_cache: $(BUILD_DIR)/test_program_cache
+	@echo "🚀 Testing GPU program cache..."
+	@./$(BUILD_DIR)/test_program_cache
+
+$(BUILD_DIR)/test_program_cache: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_program_cache.f90
+	@echo "🔨 Building GPU program cache test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_program_cache.f90 -o $@ $(LDFLAGS)
+
+# Persistent kernel framework test
+test_persistent_kernels: $(BUILD_DIR)/test_persistent_kernels
+	@echo "🚀 Testing persistent kernel framework..."
+	@./$(BUILD_DIR)/test_persistent_kernels
+
+$(BUILD_DIR)/test_persistent_kernels: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_persistent_kernels.f90
+	@echo "🔨 Building persistent kernel test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_persistent_kernels.f90 -o $@ $(LDFLAGS)
+
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector test_program_cache test_persistent_kernels
 
 $(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
 	@echo "🔨 Building honest GPU async test..."

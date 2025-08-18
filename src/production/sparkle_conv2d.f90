@@ -55,6 +55,10 @@ contains
       ! OBLITERATED! Use optimized implementation instead
       time_ms = conv2d_adaptive(input, weights, output, &
                                N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
+                    int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+      gflops = real(total_flops, real32) / (time_ms * 1.0e6)
+      print '(A,F6.2,A,F6.1,A)', "CPU conv2d: ", time_ms, " ms, ", gflops, " GFLOPS"
     case default
       print *, "Unknown CPU implementation: ", trim(cpu_impl)
       stop
