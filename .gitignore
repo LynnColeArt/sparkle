@@ -36,3 +36,10 @@ docs/_build/
 *.gcda
 *.gcno
 *.gcov
+
+# Test cache directories
+benchmark_cache_*/
+test_threadsafe_cache/
+test_binary_cache/
+benchmark_cache/
+production_cache/
