@@ -177,7 +177,7 @@ contains
     if (devices%gpu_available) then
       ! Use GPU for large workloads
       ! CPU is better for small workloads due to kernel launch overhead
-      if (total_flops > 500e6_int64) then  ! > 500 MFLOPS
+      if (total_flops > 100e6_int64) then  ! > 100 MFLOPS
         use_gpu = .true.
       end if
     end if

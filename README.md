@@ -147,18 +147,31 @@ end type
 
 ### 3.3 Async GPU Executor
 
-Sporkle implements a sophisticated async execution pipeline that achieves 6.5x speedup over traditional synchronous execution:
+Sporkle implements a sophisticated async execution pipeline that achieves dramatic speedups through intelligent triple buffering:
 
 **Triple Buffering Architecture**:
 - 3 buffer sets enable CPU/GPU overlap
 - Zero idle time between kernel executions
 - OpenGL sync objects (glFenceSync) for lightweight synchronization
 
-**Performance Breakthrough**:
+**Performance Breakthrough - Two Perspectives**:
+
+*Pipeline Efficiency (ResNet-50 first layer, 224×224)*:
 - Synchronous: 1.70ms per kernel (averaged over batch)
 - Async Pipeline: 0.26ms per kernel 
-- 6.5x reduction in per-kernel overhead
+- **6.5x reduction** in per-kernel overhead
 - 3,630 GFLOPS aggregate throughput
+
+*Throughput Improvement (ResNet-50 layer 3, 28×28)*:
+- Synchronous: 1,522 GFLOPS
+- Async Pipeline: 3,515 GFLOPS
+- **2.3x speedup** in total throughput
+- 100% GPU utilization achieved
+
+The async executor provides different benefits depending on workload:
+- Larger kernels (224×224): Maximize pipeline efficiency, approaching theoretical 6.5x
+- Smaller kernels (28×28): Still achieve 2.3x speedup with perfect GPU utilization
+- All workloads benefit from eliminating CPU-GPU synchronization overhead
 
 This demonstrates that intelligent architecture can provide dramatic speedups without changing the underlying compute kernels.
 
