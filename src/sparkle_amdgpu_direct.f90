@@ -853,7 +853,18 @@ contains
       buffer%is_va_mapped = .true.
       print '(A,Z16)', "✅ Mapped buffer to GPU VA: 0x", va_address
     else
-      print *, "❌ Failed to map buffer to GPU VA"
+      block
+        integer(c_int), pointer :: errno
+        type(c_ptr) :: errno_ptr
+        
+        errno_ptr = get_errno()
+        call c_f_pointer(errno_ptr, errno)
+        print '(A,I0)', "❌ Failed to map buffer to GPU VA, errno: ", errno
+        ! Common errors:
+        ! 16 (EBUSY) - Address already in use
+        ! 22 (EINVAL) - Invalid argument
+        ! 12 (ENOMEM) - Out of memory
+      end block
     end if
     
   end function amdgpu_map_va

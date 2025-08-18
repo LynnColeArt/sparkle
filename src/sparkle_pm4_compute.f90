@@ -9,6 +9,8 @@ module sparkle_pm4_compute
   use iso_c_binding
   use sparkle_amdgpu_direct
   use sparkle_pm4_packets
+  use sparkle_gpu_va_allocator
+  use sparkle_rdna3_shaders, only: shader_code, get_simple_copy_shader, get_vector_add_shader
   implicit none
   private
   
@@ -79,6 +81,9 @@ contains
       call amdgpu_close_device(g_context%device)
       return
     end if
+    
+    ! Initialize VA allocator
+    call gpu_va_init()
     
     g_context%initialized = .true.
     success = .true.
@@ -163,7 +168,7 @@ contains
     
     type(amdgpu_buffer) :: shader_buffer
     integer :: status
-    integer(int32), pointer :: shader_code(:)
+    integer(int32), pointer :: shader_code_ptr(:)
     type(c_ptr) :: mapped_ptr
     integer :: code_size
     
@@ -198,25 +203,54 @@ contains
     
     mapped_ptr = shader_buffer%cpu_ptr
     
-    call c_f_pointer(mapped_ptr, shader_code, [code_size])
+    call c_f_pointer(mapped_ptr, shader_code_ptr, [code_size])
     
-    ! Write a minimal compute shader that just returns
-    ! This is GCN ISA for: s_endpgm
-    shader_code(1) = int(z'BF810000')  ! s_endpgm
-    shader_code(2:) = 0  ! Fill with NOPs
+    ! Get real ISA shader based on name
+    if (name == "test_shader" .or. name == "copy_shader") then
+      block
+        type(shader_code) :: isa_shader
+        
+        isa_shader = get_simple_copy_shader()
+        
+        ! Copy shader code
+        shader_code_ptr(1:isa_shader%size_dwords) = isa_shader%code(1:isa_shader%size_dwords)
+        shader_code_ptr(isa_shader%size_dwords+1:) = 0
+      end block
+    else if (name == "vector_add") then
+      block
+        type(shader_code) :: isa_shader
+        
+        isa_shader = get_vector_add_shader()
+        
+        ! Copy shader code
+        shader_code_ptr(1:isa_shader%size_dwords) = isa_shader%code(1:isa_shader%size_dwords)
+        shader_code_ptr(isa_shader%size_dwords+1:) = 0
+      end block
+    else
+      ! Default: just s_endpgm
+      shader_code_ptr(1) = int(z'BF810000', int32)  ! s_endpgm
+      shader_code_ptr(2:) = 0
+    end if
     
     ! Unmap buffer
     ! TODO: Add unmap function
     
     ! Map to GPU address space
-    status = amdgpu_map_va(g_context%device, shader_buffer, 0_int64)
+    shader_buffer%va_addr = gpu_va_allocate(shader_buffer%size)
+    if (shader_buffer%va_addr == 0) then
+      print *, "❌ Failed to allocate VA"
+      shader_addr = 0
+      return
+    end if
+    
+    status = amdgpu_map_va(g_context%device, shader_buffer, shader_buffer%va_addr)
     if (status /= 0) then
       print *, "❌ Failed to map shader VA"
       shader_addr = 0
       return
     end if
     
-    shader_addr = shader_buffer%gpu_addr
+    shader_addr = shader_buffer%va_addr  ! Use the VA address
     call g_context%add_shader(name, shader_addr)
     
     print '(A,A,A,Z16)', "✅ Compiled shader: ", trim(name), " at 0x", shader_addr
@@ -300,6 +334,15 @@ contains
       cmd_ptr(1:cmd_size) = cmd_data(1:cmd_size)
     end block
     
+    ! Map command buffer to GPU VA
+    cmd_buf%va_addr = gpu_va_allocate(cmd_buf%size)
+    status = amdgpu_map_va(g_context%device, cmd_buf, cmd_buf%va_addr)
+    if (status /= 0) then
+      print *, "❌ Failed to map command buffer VA"
+      call builder%cleanup()
+      return
+    end if
+    
     ! Create BO list with all buffers
     if (g_context%bo_list_id == 0) then
       ! TODO: Create BO list with buffers
@@ -382,13 +425,16 @@ contains
     if (output_buf%handle == 0) return
     
     ! Map buffers to GPU address space
-    status = amdgpu_map_va(g_context%device, input_buf, 0_int64)
+    input_buf%va_addr = gpu_va_allocate(input_buf%size)
+    status = amdgpu_map_va(g_context%device, input_buf, input_buf%va_addr)
     if (status /= 0) return
     
-    status = amdgpu_map_va(g_context%device, weight_buf, 0_int64)
+    weight_buf%va_addr = gpu_va_allocate(weight_buf%size)
+    status = amdgpu_map_va(g_context%device, weight_buf, weight_buf%va_addr)
     if (status /= 0) return
     
-    status = amdgpu_map_va(g_context%device, output_buf, 0_int64)
+    output_buf%va_addr = gpu_va_allocate(output_buf%size)
+    status = amdgpu_map_va(g_context%device, output_buf, output_buf%va_addr)
     if (status /= 0) return
     
     ! Copy input data
