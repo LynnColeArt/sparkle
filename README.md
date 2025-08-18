@@ -11,10 +11,10 @@ We present Sporkle, a novel heterogeneous computing framework that achieves vend
 ```mermaid
 %%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f5f5f5','tertiaryColor':'#ddd','background':'#fff','mainBkg':'#fff','secondBkg':'#f5f5f5','tertiaryBkg':'#ddd'}}}%%
 graph LR
-    subgraph Performance["SPORKLE PERFORMANCE (GFLOPS)"]
-        CPU["CPU AVX-512<br/>196.7"]:::white
-        GPU1["GPU Single<br/>451"]:::light
-        GPU2["GPU Async<br/>3,631"]:::dark
+    subgraph Performance["SPORKLE PRODUCTION PERFORMANCE (GFLOPS)"]
+        CPU["CPU Adaptive<br/>90-160"]:::white
+        GPU1["GPU OpenGL<br/>400+"]:::light
+        AUTO["Auto-Select<br/>Optimal"]:::dark
     end
     
     classDef white fill:#fff,stroke:#000,stroke-width:2px,color:#000
@@ -22,28 +22,27 @@ graph LR
     classDef dark fill:#ddd,stroke:#000,stroke-width:2px,color:#000
 ```
 
-### Performance Evolution
+### Performance Evolution with Intelligent Device Juggling
 
 ```mermaid
 %%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f5f5f5','tertiaryColor':'#ddd'}}}%%
 graph TD
-    subgraph CPU["CPU OPTIMIZATION JOURNEY"]
-        B["Baseline<br/>2.7 GFLOPS"]:::white
-        C["Cache Optimized<br/>31.9 GFLOPS<br/>(11.8x)"]:::light
-        S["SIMD AVX-512<br/>196.7 GFLOPS<br/>(72.9x)"]:::dark
-        B --> C
-        C --> S
-    end
-    
-    subgraph GPU["GPU ASYNC SPEEDUP"]
-        G1["Synchronous<br/>1.0x"]:::white
-        G2["Async Pipeline<br/>6.5x"]:::dark
-        G1 --> G2
+    subgraph Evolution["PRODUCTION OPTIMIZATION JOURNEY"]
+        B["Initial CPU<br/>9.5 GFLOPS"]:::white
+        F["Fused Operations<br/>14.8 GFLOPS"]:::light
+        A["AVX-512 Integration<br/>90-160 GFLOPS"]:::dark
+        G["GPU Integration<br/>400+ GFLOPS"]:::dark
+        J["Intelligent Juggling<br/>Auto-Optimal"]:::green
+        B --> F
+        F --> A
+        A --> G
+        G --> J
     end
     
     classDef white fill:#fff,stroke:#000,stroke-width:2px,color:#000
     classDef light fill:#f5f5f5,stroke:#000,stroke-width:2px,color:#000
     classDef dark fill:#ddd,stroke:#000,stroke-width:2px,color:#000
+    classDef green fill:#dfd,stroke:#080,stroke-width:2px,color:#080
 ```
 
 ## 1. Introduction
@@ -56,8 +55,8 @@ The proliferation of heterogeneous computing architectures has created significa
 - **AMD GPU Support via AMDGPU**: Working command buffer submission through `/dev/dri` interfaces
 - **Zero Runtime Dependencies**: Complete elimination of vendor runtime libraries (no ROCm, Mesa, or libdrm)
 - **Unified Device Abstraction**: Single programming model proven across CPU and GPU backends
-- **Performance Validation**: CPU achieving up to 196.7 GFLOPS with AVX-512, GPU at 451 GFLOPS
-- **Async GPU Execution**: 6.5x speedup through intelligent pipeline architecture
+- **Performance Validation**: CPU achieving 90-160 GFLOPS with adaptive tiling, GPU at 400+ GFLOPS
+- **Intelligent Device Juggling**: Automatic selection of optimal device based on workload characteristics
 
 ## 2. System Architecture
 
@@ -218,24 +217,29 @@ We employ a rigorous benchmarking methodology distinguishing between:
 
 ### 4.3 Universal Optimization Results
 
+**Production Performance with Intelligent Device Juggling**:
+
+| Workload Size | Device Selected | Performance | Rationale |
+|---------------|----------------|-------------|------------|
+| Small (3×32×32) | CPU | 0.1 GFLOPS | Avoids GPU overhead |
+| Medium (64×56×56) | CPU | 14.5 GFLOPS | Better cache utilization |
+| Large (256×28×28) | GPU | 438.7 GFLOPS | Maximum throughput |
+| Auto-Selection | Optimal | Best Available | Framework decides |
+
 **GPU Performance** (AMD RX 7900 XT):
-| Operation | Performance | Efficiency | Implementation Details |
-|-----------|------------|------------|------------------------|
-| Convolution (Synchronous) | 451 GFLOPS | 60% theoretical | OpenGL compute shaders with batched execution |
-| Convolution (Async Pipeline) | 3,630 GFLOPS* | 6.5x speedup | Triple buffering, zero idle time |
-| Matrix Multiplication | 451 GFLOPS | >60% theoretical | Same patterns as CPU GEMM |
-| Memory Bandwidth | 24 GB/s | Near-peak | Coalesced access patterns |
+| Operation | Performance | Status | Implementation |
+|-----------|------------|--------|----------------|
+| Convolution | 400+ GFLOPS | Production | OpenGL compute shaders |
+| Dynamic Shaders | Optimized | Working | Per-workload compilation |
+| Memory Transfer | Minimized | Efficient | Intelligent batching |
 
-*Aggregate throughput with multiple kernels in flight
-
-**CPU Performance** (AMD Ryzen 7 7700X):
-| Operation | Performance | Improvement | Universal Patterns |
-|-----------|------------|-------------|-------------------|
-| Convolution (Original) | 2.7 GFLOPS | Baseline | Basic im2col + GEMM |
-| Convolution (Optimized) | 31.9 GFLOPS | 11.8x | Cache blocking, OpenMP |
-| Convolution (SIMD AVX-512) | 196.7 GFLOPS | 72.9x | Vectorized + hot cache |
-| Matrix Multiplication | 196.7 GFLOPS | Peak | AVX-512 SIMD optimization |
-| Memory Wall Breakthrough | 2-3x speedup | Proven | Hot cache exploitation |
+**CPU Performance** (AMD Ryzen 7900X):
+| Operation | Performance | Status | Implementation |
+|-----------|------------|--------|----------------|
+| Convolution (Basic) | 9.5 GFLOPS | Baseline | Simple GEMM |
+| Convolution (Fused) | 14.8 GFLOPS | Optimized | im2col+GEMM fusion |
+| Convolution (Production) | 90-160 GFLOPS | Production | AVX-512 + adaptive tiling |
+| Thread Scaling | 16 threads | Efficient | OpenMP parallelization |
 
 **Cross-Architecture Validation**:
 - **Apple Metal**: 90% theoretical peak using universal memory patterns
@@ -353,13 +357,13 @@ make -f Makefile.smart VERBOSE=1
 ## 8. Current State
 
 ### Working Features
-- **CPU Backend**: 196.7 GFLOPS with AVX-512 SIMD optimization ✅
-- **GPU Backend**: 451 GFLOPS single kernel, 3,630 GFLOPS with async pipeline ✅
+- **Intelligent Device Juggling**: Automatic CPU/GPU selection based on workload ✅
+- **CPU Backend**: 90-160 GFLOPS with adaptive K×N tiling and AVX-512 ✅
+- **GPU Backend**: 400+ GFLOPS with dynamic shader compilation ✅
 - **Direct AMDGPU Support**: Kernel driver interface proven with command submission ✅
 - **OpenGL Compute**: Full production implementation with EGL headless context ✅
-- **Async Executor**: 6.5x speedup with triple buffering and fence synchronization ✅
-- **Memory Management**: Unified memory model with GPU buffer allocation ✅
-- **Production API**: Clean Fortran interface via `sparkle_conv2d` module ✅
+- **Memory Management**: Unified memory model with proper synchronization ✅
+- **Production API**: Clean Fortran interface via `sparkle_conv2d_juggling` module ✅
 
 ### Tested Configurations
 - **Primary Development**: AMD Ryzen 7 7700X + RX 7900 XT (Linux 6.14)
@@ -369,17 +373,17 @@ make -f Makefile.smart VERBOSE=1
 
 ### Known Limitations
 - Linux/AMD GPU only (NVIDIA/Intel support planned)
-- Requires manual backend selection (automatic device selection in progress)
 - PM4 direct submission path not yet integrated with compute kernels
 - Metal/Vulkan backends not yet ported to new architecture
+- Multi-GPU support in development
 
 ### Performance Summary
 | Backend | Operation | Performance | Notes |
 |---------|-----------|-------------|-------|
-| CPU | Convolution | 196.7 GFLOPS | AVX-512 SIMD, 16 threads |
-| GPU | Single Kernel | 451 GFLOPS | OpenGL compute shaders |
-| GPU | Async Pipeline | 3,630 GFLOPS | 6.5x speedup, aggregate throughput |
-| CPU | Matrix Multiply | 196.7 GFLOPS | Cache-optimal GEMM |
+| CPU | Convolution | 90-160 GFLOPS | Adaptive tiling, AVX-512, 16 threads |
+| GPU | Convolution | 400+ GFLOPS | OpenGL compute shaders |
+| Auto | Device Juggling | Optimal | Selects best device per workload |
+| Both | Correctness | Validated | All results mathematically correct |
 
 ## 9. Documentation
 
