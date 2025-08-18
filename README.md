@@ -376,7 +376,8 @@ make -f Makefile.smart VERBOSE=1
 ## 8. Current State
 
 ### Working Features
-- **Intelligent Device Juggling**: Automatic CPU/GPU selection based on workload ✅
+- **Automatic Device Selection**: Heuristic-based selection with performance learning ✅
+- **Intelligent Device Juggling**: Seamless CPU/GPU execution with async pipeline ✅
 - **CPU Backend**: 90-160 GFLOPS with adaptive K×N tiling and AVX-512 ✅
 - **GPU Backend (Sync)**: 400+ GFLOPS with dynamic shader compilation ✅
 - **GPU Backend (Async)**: 3,630 GFLOPS with triple buffering pipeline ✅

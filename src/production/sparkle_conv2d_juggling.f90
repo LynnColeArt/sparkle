@@ -42,6 +42,7 @@ module sparkle_conv2d_juggling
   logical, save :: async_gpu_enabled = .true.  ! Enable by default for 3,630 GFLOPS!
   logical, save :: async_gpu_initialized = .false.
   integer, save :: gpu_weight_buffer = 0
+  integer(int64), save :: weight_hash = 0  ! Simple hash to detect weight changes
   
   ! OpenMP function interface
   interface
@@ -213,6 +214,23 @@ contains
     print *, "ℹ️  Async GPU execution disabled (using synchronous 400 GFLOPS)"
   end subroutine disable_async_gpu
   
+  ! Simple hash function for weight change detection
+  function compute_weight_hash(weights) result(hash)
+    real(real32), intent(in) :: weights(:)
+    integer(int64) :: hash
+    integer :: i
+    
+    ! Simple hash: sum of first, last, and every 100th element
+    hash = 0
+    if (size(weights) > 0) then
+      hash = transfer(weights(1), 0_int64)
+      hash = hash + transfer(weights(size(weights)), 0_int64)
+      do i = 100, size(weights), 100
+        hash = hash + transfer(weights(i), 0_int64)
+      end do
+    end if
+  end function compute_weight_hash
+  
   ! Private helper function for async GPU execution
   function execute_gpu_async(input, weights, output, &
                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
@@ -222,9 +240,12 @@ contains
     real(real32) :: time_ms
     
     integer :: compute_program
-    integer(int64) :: weight_size
+    integer(int64) :: weight_size, new_hash
     integer(int64) :: start_time, end_time
     real(real64) :: clock_rate
+    
+    ! Check if weights have changed
+    new_hash = compute_weight_hash(weights)
     
     ! Initialize async executor if needed
     if (.not. async_gpu_initialized) then
@@ -241,9 +262,15 @@ contains
       ! Initialize async executor
       call gpu_async_executor_init(async_state, compute_program, gpu_weight_buffer)
       async_gpu_initialized = .true.
-    else
-      ! Update weights if needed (for now, assume weights don't change)
-      ! In production, you'd check if weights changed and update buffer
+      weight_hash = new_hash
+    else if (new_hash /= weight_hash) then
+      ! Weights have changed - update buffer
+      print *, "ℹ️  Weights changed, updating GPU buffer..."
+      weight_size = int(size(weights), int64) * 4
+      call glBindBuffer(GL_SHADER_STORAGE_BUFFER, gpu_weight_buffer)
+      call glBufferData(GL_SHADER_STORAGE_BUFFER, weight_size, &
+                       c_loc(weights), GL_STATIC_DRAW)
+      weight_hash = new_hash
     end if
     
     ! Execute using async pipeline
