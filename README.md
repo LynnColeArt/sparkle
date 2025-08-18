@@ -154,24 +154,26 @@ Sporkle implements a sophisticated async execution pipeline that achieves dramat
 - Zero idle time between kernel executions
 - OpenGL sync objects (glFenceSync) for lightweight synchronization
 
-**Performance Breakthrough - Two Perspectives**:
+**Performance Breakthrough - Two Metrics, Two Workloads**:
 
-*Pipeline Efficiency (ResNet-50 first layer, 224×224)*:
-- Synchronous: 1.70ms per kernel (averaged over batch)
-- Async Pipeline: 0.26ms per kernel 
-- **6.5x reduction** in per-kernel overhead
-- 3,630 GFLOPS aggregate throughput
+*Latency Reduction (ResNet-50 first layer: 3×224×224 → 64×112×112, batch=4)*:
+- **Metric**: Per-kernel latency in pipeline
+- Synchronous: 1.70ms per kernel (with CPU-GPU sync overhead)
+- Async Pipeline: 0.26ms per kernel (overlapped execution)
+- **Result**: 6.5x reduction in kernel launch latency
+- Throughput: 3,630 GFLOPS aggregate
 
-*Throughput Improvement (ResNet-50 layer 3, 28×28)*:
+*Throughput Improvement (ResNet-50 layer 3: 128×28×28 → 256×28×28, batch=1)*:
+- **Metric**: Total GFLOPS throughput
 - Synchronous: 1,522 GFLOPS
 - Async Pipeline: 3,515 GFLOPS
-- **2.3x speedup** in total throughput
-- 100% GPU utilization achieved
+- **Result**: 2.3x speedup in total throughput
+- GPU utilization: 100% (vs 84% synchronous)
 
 The async executor provides different benefits depending on workload:
-- Larger kernels (224×224): Maximize pipeline efficiency, approaching theoretical 6.5x
-- Smaller kernels (28×28): Still achieve 2.3x speedup with perfect GPU utilization
-- All workloads benefit from eliminating CPU-GPU synchronization overhead
+- **Large kernels** (224×224, high arithmetic intensity): Approach theoretical 6.5x latency reduction
+- **Small kernels** (28×28, memory-bound): Still achieve 2.3x throughput with perfect GPU utilization
+- **All workloads**: Eliminate CPU-GPU synchronization overhead, achieve 100% GPU utilization
 
 This demonstrates that intelligent architecture can provide dramatic speedups without changing the underlying compute kernels.
 

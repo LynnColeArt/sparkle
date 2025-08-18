@@ -199,8 +199,8 @@ contains
       
       print *, ""
       print *, "=== Async Executor Statistics ==="
-      print *, "Completed operations:", state%completed_operations
-      print '(A,F8.2,A)', "Average GPU time per op: ", avg_gpu_time / 1.0e6, " ms"
+      print *, "Completed kernels:", state%completed_operations
+      print '(A,F8.2,A)', "Average GPU time per kernel: ", avg_gpu_time / 1.0e6, " ms"
       print '(A,F8.2,A)', "Total GPU compute time: ", &
         real(state%total_gpu_time) / 1.0e9, " seconds"
       print '(A,F8.2,A)', "Total idle time: ", &
