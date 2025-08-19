@@ -35,13 +35,13 @@ contains
     
     integer(i64) :: base, va_size
     
-    ! Default base address: 4TB mark (well above any CPU addresses)
-    ! This avoids conflicts with kernel/driver reserved ranges
-    base = int(z'40000000000', int64)  ! 4TB
+    ! Default base address: Use 1MB mark (tested working range)
+    ! Based on debug testing with AMDGPU driver
+    base = int(z'100000', int64)  ! 1MB
     if (present(base_addr)) base = base_addr
     
-    ! Default size: 1TB of VA space
-    va_size = int(z'10000000000', int64)  ! 1TB
+    ! Default size: 256MB of VA space (conservative)
+    va_size = int(z'10000000', int64)  ! 256MB
     if (present(size)) va_size = size
     
     g_allocator%base_address = base
@@ -52,7 +52,7 @@ contains
     print '(A)', "🗺️ GPU VA Allocator initialized:"
     print '(A,Z16)', "   Base address: 0x", base
     print '(A,Z16)', "   Max address:  0x", g_allocator%max_address
-    print '(A,F0.1,A)', "   Total space:  ", real(va_size) / (1024.0**4), " TB"
+    print '(A,F0.1,A)', "   Total space:  ", real(va_size) / (1024.0**2), " MB"
     
   end subroutine gpu_va_init
   

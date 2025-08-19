@@ -21,6 +21,7 @@ module sporkle_pm4_compute
   public :: pm4_init_compute, pm4_cleanup_compute
   public :: pm4_compile_shader, pm4_execute_compute
   public :: pm4_conv2d_direct
+  public :: g_context  ! Export global context for debugging
   
   ! Simple device info
   type :: amdgpu_device_info
@@ -235,19 +236,25 @@ contains
     ! Unmap buffer
     ! TODO: Add unmap function
     
-    ! Map to GPU address space
-    shader_buffer%va_addr = gpu_va_allocate(shader_buffer%size)
-    if (shader_buffer%va_addr == 0) then
-      print *, "❌ Failed to allocate VA"
-      shader_addr = 0
-      return
-    end if
+    ! Map to GPU address space using known working address
+    ! Start shaders at 2MB to avoid conflicts with our test buffer at 1MB
+    shader_buffer%va_addr = int(z'200000', int64)  ! 2MB
     
     status = amdgpu_map_va(g_context%device, shader_buffer, shader_buffer%va_addr)
     if (status /= 0) then
       print *, "❌ Failed to map shader VA"
-      shader_addr = 0
-      return
+      ! Try alternative addresses
+      shader_buffer%va_addr = int(z'300000', int64)  ! 3MB
+      status = amdgpu_map_va(g_context%device, shader_buffer, shader_buffer%va_addr)
+      if (status /= 0) then
+        shader_buffer%va_addr = int(z'400000', int64)  ! 4MB
+        status = amdgpu_map_va(g_context%device, shader_buffer, shader_buffer%va_addr)
+        if (status /= 0) then
+          print *, "❌ Failed to map shader VA at any address"
+          shader_addr = 0
+          return
+        end if
+      end if
     end if
     
     shader_addr = shader_buffer%va_addr  ! Use the VA address
