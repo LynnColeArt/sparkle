@@ -6,6 +6,7 @@
 
 module memory_wall_breakthrough
   use iso_fortran_env, only: real32, real64, int32, int64
+  use flopcount
   use omp_lib
   use universal_memory_optimization, only: gemm_universal_memory, im2col_cache_optimal
   implicit none
@@ -64,11 +65,12 @@ contains
     call system_clock(clock_end)
     fused_conv2d_hot_cache = real(clock_end - clock_start, real32) * 1000.0 / real(clock_rate, real32)
     
-    total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
-                  int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+    total_flops = conv2d_flops(int(N, int64), int(H_out, int64), int(W_out, int64), &
+                              int(K, int64), int(C, int64), &
+                              int(kernel_size, int64), int(kernel_size, int64))
     
     print '(A,F8.2,A,F8.1,A)', "   Time: ", fused_conv2d_hot_cache, " ms, ", &
-                               real(total_flops) / (fused_conv2d_hot_cache * 1.0e6), " GFLOPS"
+                               real(total_flops) / (fused_conv2d_hot_cache * 1.0d6), " GFLOPS"
     
   end function fused_conv2d_hot_cache
 
@@ -122,8 +124,9 @@ contains
     call system_clock(clock_end)
     naive_conv2d_cold_cache = real(clock_end - clock_start, real32) * 1000.0 / real(clock_rate, real32)
     
-    total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
-                  int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+    total_flops = conv2d_flops(int(N, int64), int(H_out, int64), int(W_out, int64), &
+                              int(K, int64), int(C, int64), &
+                              int(kernel_size, int64), int(kernel_size, int64))
     
     print '(A,F8.2,A,F8.1,A)', "   Time: ", naive_conv2d_cold_cache, " ms, ", &
                                real(total_flops) / (naive_conv2d_cold_cache * 1.0e6), " GFLOPS"

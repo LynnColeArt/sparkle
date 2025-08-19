@@ -91,7 +91,9 @@ ifeq ($(PLATFORM),LINUX)
             $(SRC_DIR)/sparkle_amdgpu_shader_binary.f90 \
             $(SRC_DIR)/sparkle_amdgpu_memory.f90 \
             $(SRC_DIR)/sparkle_amdgpu_shaders.f90 \
-            $(SRC_DIR)/amdgpu_device.f90
+            $(SRC_DIR)/amdgpu_device.f90 \
+            $(SRC_DIR)/sparkle_pm4_packets.f90 \
+            $(SRC_DIR)/sparkle_pm4_compute.f90
             
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
@@ -111,7 +113,12 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/production/sparkle_conv2d_juggling.f90 \
                                 $(SRC_DIR)/production/sparkle_conv2d_auto_selector.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache.f90 \
-                                $(SRC_DIR)/production/gpu_opengl_cached.f90
+                                $(SRC_DIR)/production/gpu_opengl_cached.f90 \
+                                $(SRC_DIR)/production/gpu_binary_cache.f90 \
+                                $(SRC_DIR)/production/gpu_program_cache_v2.f90 \
+                                $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90 \
+                                $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
+                                $(SRC_DIR)/production/sparkle_conv2d_v3.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c \
                                   $(SRC_DIR)/production/aligned_alloc.c
@@ -172,6 +179,9 @@ info:
 	@echo "  make test_universal_device_selector - Test universal device selection"
 	@echo "  make test_program_cache - Test GPU program cache"
 	@echo "  make test_persistent_kernels - Test persistent kernel framework"
+	@echo "  make test_binary_persistence - Test Phase 2 binary persistence"
+	@echo "  make test_thread_safe_cache - Test thread-safe GPU program cache"
+	@echo "  make benchmark_v3       - Run V3 comprehensive performance benchmark"
 	@echo "  make benchmark          - Run performance benchmarks"
 	@echo ""
 
@@ -576,7 +586,77 @@ $(BUILD_DIR)/test_persistent_kernels: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/te
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_persistent_kernels.f90 -o $@ $(LDFLAGS)
 
-.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector test_program_cache test_persistent_kernels
+# Binary persistence test (Phase 2)
+test_binary_persistence: $(BUILD_DIR)/test_binary_persistence
+	@echo "🚀 Testing GPU binary persistence..."
+	@./$(BUILD_DIR)/test_binary_persistence
+
+$(BUILD_DIR)/test_binary_persistence: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_binary_persistence.f90
+	@echo "🔨 Building binary persistence test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_binary_persistence.f90 -o $@ $(LDFLAGS)
+
+# Thread-safe cache test
+test_thread_safe_cache: $(BUILD_DIR)/test_thread_safe_cache
+	@echo "🚀 Testing thread-safe GPU program cache..."
+	@OMP_NUM_THREADS=4 ./$(BUILD_DIR)/test_thread_safe_cache
+
+$(BUILD_DIR)/test_thread_safe_cache: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_thread_safe_cache.f90
+	@echo "🔨 Building thread-safe cache test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_thread_safe_cache.f90 -o $@ $(LDFLAGS)
+
+# V3 Performance benchmark
+benchmark_v3: $(BUILD_DIR)/benchmark_v3_performance
+	@echo "🚀 Running V3 performance benchmark..."
+	@OMP_NUM_THREADS=8 ./$(BUILD_DIR)/benchmark_v3_performance
+
+$(BUILD_DIR)/benchmark_v3_performance: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/benchmark_v3_performance.f90
+	@echo "🔨 Building V3 performance benchmark..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/benchmark_v3_performance.f90 -o $@ $(LDFLAGS)
+
+# Thread-safe performance benchmark
+benchmark_thread_safe: $(BUILD_DIR)/benchmark_thread_safe_performance
+	@echo "🚀 Running thread-safe cache performance benchmark..."
+	@OMP_NUM_THREADS=8 ./$(BUILD_DIR)/benchmark_thread_safe_performance
+
+$(BUILD_DIR)/benchmark_thread_safe_performance: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/benchmark_thread_safe_performance.f90
+	@echo "🔨 Building thread-safe performance benchmark..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/benchmark_thread_safe_performance.f90 -o $@ $(LDFLAGS)
+
+# Simple V3 test
+test_v3_simple: $(BUILD_DIR)/test_v3_simple
+	@echo "🚀 Running simple V3 test..."
+	@./$(BUILD_DIR)/test_v3_simple
+
+$(BUILD_DIR)/test_v3_simple: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_v3_simple.f90
+	@echo "🔨 Building simple V3 test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_v3_simple.f90 -o $@ $(LDFLAGS)
+
+# Fixed V3 benchmark
+benchmark_v3_fixed: $(BUILD_DIR)/benchmark_v3_fixed
+	@echo "🚀 Running fixed V3 performance benchmark..."
+	@./$(BUILD_DIR)/benchmark_v3_fixed
+
+$(BUILD_DIR)/benchmark_v3_fixed: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/benchmark_v3_fixed.f90
+	@echo "🔨 Building fixed V3 benchmark..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/benchmark_v3_fixed.f90 -o $@ $(LDFLAGS)
+
+# PM4 basic test
+test_pm4_basic: $(BUILD_DIR)/test_pm4_basic
+	@echo "🚀 Running PM4 basic test..."
+	@./$(BUILD_DIR)/test_pm4_basic
+
+$(BUILD_DIR)/test_pm4_basic: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_pm4_basic.f90
+	@echo "🔨 Building PM4 basic test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		$(EXAMPLES_DIR)/test_pm4_basic.f90 -o $@ $(LDFLAGS)
+
+.PHONY: info test_platform test_gpu clean clean-all test_adaptive_convolution benchmark_convolution test_production_conv2d test_memory_wall_breakthrough test_memory_wall_simple test_peak_cpu test_simd test_universal_device_selector test_program_cache test_persistent_kernels test_binary_persistence test_thread_safe_cache benchmark_v3 benchmark_thread_safe test_v3_simple benchmark_v3_fixed test_pm4_basic
 
 $(BUILD_DIR)/test_gpu_async_honest: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_gpu_async_honest.f90
 	@echo "🔨 Building honest GPU async test..."

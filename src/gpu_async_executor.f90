@@ -52,6 +52,7 @@ module gpu_async_executor
     integer(int64) :: total_gpu_time = 0
     integer(int64) :: total_idle_time = 0
     integer :: completed_operations = 0
+    integer :: clock_rate = 0  ! system_clock ticks per second
     
     ! Configuration
     logical :: initialized = .false.
@@ -148,6 +149,9 @@ contains
     state%total_idle_time = 0
     state%completed_operations = 0
     
+    ! Capture system clock rate for proper timing math
+    call system_clock(count_rate=state%clock_rate)
+    
     ! Create buffer sets
     do i = 1, MAX_IN_FLIGHT
       ! Create input/output buffers for this set
@@ -168,6 +172,7 @@ contains
     type(gpu_async_state), intent(inout) :: state
     integer :: i
     real(real64) :: avg_gpu_time, utilization
+    real(real64) :: avg_ms, total_gpu_s, total_idle_s
     
     if (.not. state%initialized) return
     
@@ -193,18 +198,20 @@ contains
     
     ! Report statistics
     if (state%completed_operations > 0) then
-      avg_gpu_time = real(state%total_gpu_time) / real(state%completed_operations)
-      utilization = real(state%total_gpu_time) / &
-                    real(state%total_gpu_time + state%total_idle_time) * 100.0
+      ! Proper timing math using clock rate
+      
+      avg_ms = (real(state%total_gpu_time,real64)/real(state%clock_rate,real64)) * &
+               1.0d3 / real(state%completed_operations,real64)
+      total_gpu_s  =  real(state%total_gpu_time,real64)/real(state%clock_rate,real64)
+      total_idle_s =  real(state%total_idle_time,real64)/real(state%clock_rate,real64)
+      utilization  = 100.0d0 * total_gpu_s / max(1.0d-12, total_gpu_s + total_idle_s)
       
       print *, ""
       print *, "=== Async Executor Statistics ==="
       print *, "Completed operations:", state%completed_operations
-      print '(A,F8.2,A)', "Average GPU time per op: ", avg_gpu_time / 1.0e6, " ms"
-      print '(A,F8.2,A)', "Total GPU compute time: ", &
-        real(state%total_gpu_time) / 1.0e9, " seconds"
-      print '(A,F8.2,A)', "Total idle time: ", &
-        real(state%total_idle_time) / 1.0e9, " seconds"
+      print '(A,F8.2,A)', "Average GPU time per op: ", avg_ms, " ms"
+      print '(A,F8.3,A)', "Total GPU busy time: ", total_gpu_s, " seconds"
+      print '(A,F8.3,A)', "Total GPU idle time: ", total_idle_s, " seconds"
       print '(A,F6.1,A)', "GPU utilization: ", utilization, "%"
     end if
     

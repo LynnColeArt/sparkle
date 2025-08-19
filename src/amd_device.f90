@@ -72,8 +72,11 @@ contains
         return
       end if
       
-      call c_f_pointer(src%data, src_bytes, [size_bytes])
-      call c_f_pointer(dst%data, dst_bytes, [size_bytes])
+      ! Fix: Convert int64 size_bytes to default integer for c_f_pointer shape
+      integer :: n
+      n = int(size_bytes, kind(n))
+      call c_f_pointer(src%data, src_bytes, [n])
+      call c_f_pointer(dst%data, dst_bytes, [n])
       dst_bytes = src_bytes
       status = 0
     end block

@@ -21,6 +21,7 @@
 
 module cpu_conv2d_reference
   use iso_fortran_env, only: real32, real64, int64
+  use flopcount
   use universal_memory_optimization, only: memory_params, detect_memory_params, &
                                           fused_conv2d_cpu, arithmetic_intensity
   implicit none
@@ -87,10 +88,11 @@ contains
     conv2d_cpu_benchmark = real(total_time * 1000.0 / bench_iters, real32)
     
     ! Performance analysis
-    total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
-                  int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+    total_flops = conv2d_flops(int(N, int64), int(H_out, int64), int(W_out, int64), &
+                              int(K, int64), int(C, int64), &
+                              int(kernel_size, int64), int(kernel_size, int64))
     
-    gflops = real(total_flops, real64) / (real(conv2d_cpu_benchmark, real64) * 1.0e6_real64)
+    gflops = real(total_flops, real64) / (real(conv2d_cpu_benchmark, real64) * 1.0d6)
     
     print *, ""
     print *, "📊 CPU Performance Summary:"

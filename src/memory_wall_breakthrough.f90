@@ -12,9 +12,10 @@
 
 module memory_wall_breakthrough
   use iso_fortran_env, only: real32, real64, int32, int64
+  use flopcount
   use iso_c_binding
   use omp_lib
-  use universal_memory_optimization, only: gemm_universal_memory, im2col_cpu
+  use universal_memory_optimization, only: gemm_universal_memory, im2col_cache_optimal
   implicit none
   
   private
@@ -99,9 +100,16 @@ contains
     real(real32), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    real(real32), allocatable :: col_buffer(:), weights_ready(:)
+    real(real32), allocatable, target :: col_buffer(:), weights_ready(:)
     integer :: clock_start, clock_end, clock_rate
     integer(int64) :: total_flops
+    
+    ! Declare missing tile variables
+    integer :: num_tiles_h, num_tiles_w, tile_h, tile_w
+    integer :: h_start, w_start, h_end, w_end, actual_tile_h, actual_tile_w
+    integer :: th, tw  ! Loop variables
+    real(real32), allocatable :: tile_input(:), tile_output(:), workspace(:)
+    real(real32), pointer     :: tile_weights(:) => null()  ! alias
     
     call system_clock(clock_start, clock_rate)
     
@@ -115,8 +123,22 @@ contains
     ! Prepare weights ONCE (enters cache) 
     weights_ready = weights
     
+    ! Choose tiles that fit L2
+    tile_h = TILE_SIZE
+    tile_w = TILE_SIZE
+    num_tiles_h = (H_out + tile_h - 1) / tile_h
+    num_tiles_w = (W_out + tile_w - 1) / tile_w
+
+    ! Allocate once to the max tile size
+    allocate(tile_input(C*kernel_size*kernel_size * tile_h*tile_w))
+    allocate(tile_output(K * tile_h*tile_w))
+    allocate(workspace( max(1, K * tile_h*tile_w) ))
+
+    ! Alias weights once (or use weights_ready if that was the intent)
+    tile_weights => weights_ready
+    
     print *, "🔥 Fused Hot Cache Convolution"
-    print '(A,I0,A,I0)', "   Processing ", num_tiles_h * num_tiles_w, " tiles of ", tile_h, "×", tile_w
+    print '(A,I0,A,I0,A,I0)', "   Processing ", num_tiles_h * num_tiles_w, " tiles of ", tile_h, "×", tile_w
     print *, "   Weights stay hot in L2/L3 cache across all tiles"
     !$OMP PARALLEL
     !$OMP SINGLE
@@ -148,10 +170,9 @@ contains
         ! This is the key difference - we don't go back to memory!
         
         ! Operation 1: Initial GEMM using the proven 50+ GFLOPS implementation
-        call gemm_universal_memory(K, actual_tile_h * actual_tile_w, C * kernel_size * kernel_size, &
-                                  1.0, tile_weights, K, &
-                                  tile_input, C * kernel_size * kernel_size, &
-                                  0.0, tile_output, K)
+        call gemm_universal_memory(tile_weights, tile_input, tile_output, &
+                                  K, actual_tile_h * actual_tile_w, C * kernel_size * kernel_size, &
+                                  1.0_real32, 0.0_real32)
         
         ! Operation 2: Additional processing (e.g., bias, activation)
         ! Data is STILL in cache!
@@ -168,14 +189,16 @@ contains
     fused_conv2d_hot_cache = real(clock_end - clock_start, real32) * 1000.0 / real(clock_rate, real32)
     
     ! Calculate performance
-    total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
-                  int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+    total_flops = conv2d_flops(int(N, int64), int(H_out, int64), int(W_out, int64), &
+                              int(K, int64), int(C, int64), &
+                              int(kernel_size, int64), int(kernel_size, int64))
     
     print '(A,F7.2,A,F7.1,A)', "   Performance: ", fused_conv2d_hot_cache, " ms, ", &
-                               real(total_flops) / (fused_conv2d_hot_cache * 1.0e6), " GFLOPS"
+                               real(total_flops) / (fused_conv2d_hot_cache * 1.0d6), " GFLOPS"
     
     ! Cleanup
-    deallocate(tile_input, tile_weights, tile_output, workspace)
+    deallocate(tile_input, tile_output, workspace)
+    deallocate(col_buffer, weights_ready)
     
   end function fused_conv2d_hot_cache
 
@@ -240,7 +263,7 @@ contains
     !$OMP SIMD COLLAPSE(2)
     do j = 1, cols
       do i = 1, rows
-        tile(i, j) = max(0.0, tile(i, j))
+        tile(i, j) = max(0.0_real32, tile(i, j))
       end do
     end do
   end subroutine process_tile_hot
@@ -342,18 +365,18 @@ contains
     weights_transposed = weights
     
     ! Single GEMM but with cold cache
-    call gemm_universal_memory(K, H_out * W_out, C * kernel_size * kernel_size, &
-                              1.0, weights_transposed, K, &
-                              col_buffer, C * kernel_size * kernel_size, &
-                              0.0, output, K)
+    call gemm_universal_memory(weights_transposed, col_buffer, output, &
+                              K, H_out * W_out, C * kernel_size * kernel_size, &
+                              1.0, 0.0)
     
     deallocate(col_buffer, weights_transposed)
     
     call system_clock(clock_end)
     naive_conv2d_cold_cache = real(clock_end - clock_start, real32) * 1000.0 / real(clock_rate, real32)
     
-    total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
-                  int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+    total_flops = conv2d_flops(int(N, int64), int(H_out, int64), int(W_out, int64), &
+                              int(K, int64), int(C, int64), &
+                              int(kernel_size, int64), int(kernel_size, int64))
     
     print '(A,F7.2,A,F7.1,A)', "   Naive performance: ", naive_conv2d_cold_cache, " ms, ", &
                                real(total_flops) / (naive_conv2d_cold_cache * 1.0e6), " GFLOPS"
