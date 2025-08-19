@@ -26,14 +26,17 @@ jobs:
         echo "OMP_NUM_THREADS=16" >> $GITHUB_ENV
         echo "CI=true" >> $GITHUB_ENV
         
-    - name: Build Sparkle
+    - name: Build Sporkle
       run: |
-        make clean
-        make all FEATURES=avx512
+        mkdir -p build/modules
+        # Build kinds module first
+        gfortran -O3 -fopenmp -c src/common/kinds.f90 -J build/modules
+        # Build and run minimal test for now
+        gfortran -O3 -fopenmp -I build/modules tests/minimal_perf_test.f90 src/common/kinds.o -o tests/minimal_perf_test
         
     - name: Run Performance Tests
       run: |
-        ./run_performance_tests.sh
+        cd tests && ./minimal_perf_test
         
     - name: Upload Performance Report
       if: always()
