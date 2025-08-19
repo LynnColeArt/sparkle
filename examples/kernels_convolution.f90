@@ -14,18 +14,18 @@ pure subroutine im2col_nhwc(idx, input, col_matrix, &
                             stride_h, stride_w, &
                             pad_h, pad_w, &
                             output_h, output_w)
-  use iso_fortran_env
-  integer(int32), value :: idx
-  real(real32), intent(in) :: input         ! Input tensor (flattened NHWC)
-  real(real32), intent(out) :: col_matrix   ! Output column matrix
+  use kinds
+  integer(i32), value :: idx
+  real(sp), intent(in) :: input         ! Input tensor (flattened NHWC)
+  real(sp), intent(out) :: col_matrix   ! Output column matrix
   
   ! All these are scalar parameters - perfect for adaptive passing!
-  integer(int32), value :: batch_size
-  integer(int32), value :: height, width, channels
-  integer(int32), value :: kernel_h, kernel_w
-  integer(int32), value :: stride_h, stride_w
-  integer(int32), value :: pad_h, pad_w
-  integer(int32), value :: output_h, output_w
+  integer(i32), value :: batch_size
+  integer(i32), value :: height, width, channels
+  integer(i32), value :: kernel_h, kernel_w
+  integer(i32), value :: stride_h, stride_w
+  integer(i32), value :: pad_h, pad_w
+  integer(i32), value :: output_h, output_w
   
   ! Local variables for computation
   integer :: n, h_out, w_out, h_in, w_in, kh, kw, c
@@ -70,21 +70,21 @@ end subroutine im2col_nhwc
 pure subroutine gemm_tiled(idx, idy, A, B, C, &
                            M, N, K, alpha, beta, &
                            tile_m, tile_n, tile_k)
-  use iso_fortran_env
-  integer(int32), value :: idx, idy
-  real(real32), intent(in) :: A      ! Weight matrix (M x K)
-  real(real32), intent(in) :: B      ! Col matrix (K x N)
-  real(real32), intent(inout) :: C   ! Output (M x N)
+  use kinds
+  integer(i32), value :: idx, idy
+  real(sp), intent(in) :: A      ! Weight matrix (M x K)
+  real(sp), intent(in) :: B      ! Col matrix (K x N)
+  real(sp), intent(inout) :: C   ! Output (M x N)
   
   ! Matrix dimensions and parameters
-  integer(int32), value :: M, N, K
-  real(real32), value :: alpha, beta
-  integer(int32), value :: tile_m, tile_n, tile_k
+  integer(i32), value :: M, N, K
+  real(sp), value :: alpha, beta
+  integer(i32), value :: tile_m, tile_n, tile_k
   
   ! Thread block and position
   integer :: bx, by, tx, ty
   integer :: row, col
-  real(real32) :: sum
+  real(sp) :: sum
   integer :: k_idx
   
   ! For now, simple non-tiled version
@@ -115,22 +115,22 @@ pure subroutine conv2d_direct(idx, input, kernel, output, &
                               in_channels, out_channels, &
                               kernel_h, kernel_w, &
                               stride_h, stride_w)
-  use iso_fortran_env
-  integer(int32), value :: idx
-  real(real32), intent(in) :: input    ! NCHW format
-  real(real32), intent(in) :: kernel   ! OIHW format
-  real(real32), intent(out) :: output  ! NCHW format
+  use kinds
+  integer(i32), value :: idx
+  real(sp), intent(in) :: input    ! NCHW format
+  real(sp), intent(in) :: kernel   ! OIHW format
+  real(sp), intent(out) :: output  ! NCHW format
   
-  integer(int32), value :: batch_size
-  integer(int32), value :: height, width
-  integer(int32), value :: in_channels, out_channels
-  integer(int32), value :: kernel_h, kernel_w
-  integer(int32), value :: stride_h, stride_w
+  integer(i32), value :: batch_size
+  integer(i32), value :: height, width
+  integer(i32), value :: in_channels, out_channels
+  integer(i32), value :: kernel_h, kernel_w
+  integer(i32), value :: stride_h, stride_w
   
   integer :: n, oc, oh, ow, ic, kh, kw
   integer :: out_h, out_w
   integer :: in_h, in_w
-  real(real32) :: sum
+  real(sp) :: sum
   integer :: out_idx, in_idx, k_idx
   
   ! Output dimensions

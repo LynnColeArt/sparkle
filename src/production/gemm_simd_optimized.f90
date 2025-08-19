@@ -3,7 +3,7 @@
 ! Properly vectorized for AVX-512 and other SIMD architectures
 
 module gemm_simd_optimized
-  use iso_fortran_env, only: real32, int32
+  use kinds
   use omp_lib
   implicit none
   
@@ -14,15 +14,15 @@ contains
 
   ! SIMD-optimized GEMM targeting AVX-512 (16 floats per vector)
   subroutine gemm_simd_avx512(A, B, C, m, n, k, alpha, beta)
-    real(real32), intent(in) :: A(:), B(:), alpha, beta
-    real(real32), intent(inout) :: C(:)
+    real(sp), intent(in) :: A(:), B(:), alpha, beta
+    real(sp), intent(inout) :: C(:)
     integer, intent(in) :: m, n, k
     
     integer :: i, j, kk
     integer :: ii, jj, kk_tile
     integer :: tile_m, tile_n, tile_k
     integer :: i_end, j_end, kk_end
-    real(real32) :: sum
+    real(sp) :: sum
     
     ! Tile sizes optimized for cache hierarchy
     ! AVX-512 processes 16 floats at once

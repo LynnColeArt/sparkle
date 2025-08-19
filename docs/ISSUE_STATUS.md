@@ -24,7 +24,7 @@
 
 6. **GLSL compute shader generation**
    - Status: COMPLETE
-   - Evidence: sparkle_glsl_generator.f90 creates valid GLSL
+   - Evidence: sporkle_glsl_generator.f90 creates valid GLSL
 
 7. **Adaptive kernel framework**
    - Status: COMPLETE

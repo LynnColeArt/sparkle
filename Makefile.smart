@@ -1,4 +1,4 @@
-# Smart Makefile for Sparkle
+# Smart Makefile for Sporkle
 # Detects platform and builds accordingly
 
 # Base settings
@@ -58,47 +58,47 @@ $(shell mkdir -p $(BUILD_DIR)/production)
 
 # Common modules (platform-independent)
 COMMON_MODULES = \
-    $(SRC_DIR)/sparkle_types.f90 \
-    $(SRC_DIR)/sparkle_mesh_types.f90 \
-    $(SRC_DIR)/sparkle_error_handling.f90 \
-    $(SRC_DIR)/sparkle_config.f90 \
-    $(SRC_DIR)/sparkle_memory.f90 \
-    $(SRC_DIR)/sparkle_kernels.f90 \
-    $(SRC_DIR)/sparkle_safe_kernels.f90 \
-    $(SRC_DIR)/sparkle_platform.f90 \
+    $(SRC_DIR)/sporkle_types.f90 \
+    $(SRC_DIR)/sporkle_mesh_types.f90 \
+    $(SRC_DIR)/sporkle_error_handling.f90 \
+    $(SRC_DIR)/sporkle_config.f90 \
+    $(SRC_DIR)/sporkle_memory.f90 \
+    $(SRC_DIR)/sporkle_kernels.f90 \
+    $(SRC_DIR)/sporkle_safe_kernels.f90 \
+    $(SRC_DIR)/sporkle_platform.f90 \
     $(SRC_DIR)/gl_constants.f90 \
-    $(SRC_DIR)/sparkle_gpu_kernels.f90 \
-    $(SRC_DIR)/sparkle_glsl_generator.f90 \
-    $(SRC_DIR)/sparkle_rdna_shader_generator.f90 \
-    $(SRC_DIR)/sparkle_dynamic_shader_system.f90 \
-    $(SRC_DIR)/sparkle_adaptive_kernel.f90 \
-    $(SRC_DIR)/sparkle_kernel_variants.f90 \
-    $(SRC_DIR)/sparkle_shader_parser.f90 \
-    $(SRC_DIR)/sparkle_fortran_shaders.f90 \
-    $(SRC_DIR)/sparkle_fortran_params.f90 \
-    $(SRC_DIR)/sparkle_shader_parser_v2.f90 \
-    $(SRC_DIR)/sparkle_fortran_shaders_v2.f90 \
-    $(SRC_DIR)/sparkle_universal_device_selector.f90
+    $(SRC_DIR)/sporkle_gpu_kernels.f90 \
+    $(SRC_DIR)/sporkle_glsl_generator.f90 \
+    $(SRC_DIR)/sporkle_rdna_shader_generator.f90 \
+    $(SRC_DIR)/sporkle_dynamic_shader_system.f90 \
+    $(SRC_DIR)/sporkle_adaptive_kernel.f90 \
+    $(SRC_DIR)/sporkle_kernel_variants.f90 \
+    $(SRC_DIR)/sporkle_shader_parser.f90 \
+    $(SRC_DIR)/sporkle_fortran_shaders.f90 \
+    $(SRC_DIR)/sporkle_fortran_params.f90 \
+    $(SRC_DIR)/sporkle_shader_parser_v2.f90 \
+    $(SRC_DIR)/sporkle_fortran_shaders_v2.f90 \
+    $(SRC_DIR)/sporkle_universal_device_selector.f90
 
 # Platform-specific modules
 ifeq ($(PLATFORM),LINUX)
     ifeq ($(GPU_TYPE),AMD)
         PLATFORM_MODULES = \
-            $(SRC_DIR)/sparkle_gpu_safe_detect.f90 \
-            $(SRC_DIR)/sparkle_gpu_backend_detect.f90 \
-            $(SRC_DIR)/sparkle_gpu_backend.f90 \
-            $(SRC_DIR)/sparkle_amdgpu_direct.f90 \
-            $(SRC_DIR)/sparkle_amdgpu_shader_binary.f90 \
-            $(SRC_DIR)/sparkle_amdgpu_memory.f90 \
-            $(SRC_DIR)/sparkle_amdgpu_shaders.f90 \
+            $(SRC_DIR)/sporkle_gpu_safe_detect.f90 \
+            $(SRC_DIR)/sporkle_gpu_backend_detect.f90 \
+            $(SRC_DIR)/sporkle_gpu_backend.f90 \
+            $(SRC_DIR)/sporkle_amdgpu_direct.f90 \
+            $(SRC_DIR)/sporkle_amdgpu_shader_binary.f90 \
+            $(SRC_DIR)/sporkle_amdgpu_memory.f90 \
+            $(SRC_DIR)/sporkle_amdgpu_shaders.f90 \
             $(SRC_DIR)/amdgpu_device.f90 \
-            $(SRC_DIR)/sparkle_pm4_packets.f90 \
-            $(SRC_DIR)/sparkle_pm4_compute.f90
+            $(SRC_DIR)/sporkle_pm4_packets.f90 \
+            $(SRC_DIR)/sporkle_pm4_compute.f90
             
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
-                                $(SRC_DIR)/sparkle_gpu_opengl.f90 \
-                                $(SRC_DIR)/sparkle_gpu_dispatch.f90 \
+                                $(SRC_DIR)/sporkle_gpu_opengl.f90 \
+                                $(SRC_DIR)/sporkle_gpu_dispatch.f90 \
                                 $(SRC_DIR)/reference/universal_memory_optimization.f90 \
                                 $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
                                 $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
@@ -109,16 +109,16 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
                                 $(SRC_DIR)/gpu_dynamic_execution.f90 \
                                 $(SRC_DIR)/gpu_async_executor.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d_juggling.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d_auto_selector.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d_juggling.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d_auto_selector.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache.f90 \
                                 $(SRC_DIR)/production/gpu_opengl_cached.f90 \
                                 $(SRC_DIR)/production/gpu_binary_cache.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_v2.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90 \
                                 $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
-                                $(SRC_DIR)/production/sparkle_conv2d_v3.f90
+                                $(SRC_DIR)/production/sporkle_conv2d_v3.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c \
                                   $(SRC_DIR)/production/aligned_alloc.c
@@ -128,12 +128,12 @@ endif
 
 ifeq ($(PLATFORM),MACOS)
     PLATFORM_MODULES = \
-        $(SRC_DIR)/sparkle_gpu_metal.f90 \
-        $(SRC_DIR)/sparkle_memory_metal.f90 \
-        $(SRC_DIR)/sparkle_metal_kernels.f90 \
-        $(SRC_DIR)/sparkle_amx.f90 \
-        $(SRC_DIR)/sparkle_neural_engine.f90 \
-        $(SRC_DIR)/sparkle_apple_orchestrator.f90
+        $(SRC_DIR)/sporkle_gpu_metal.f90 \
+        $(SRC_DIR)/sporkle_memory_metal.f90 \
+        $(SRC_DIR)/sporkle_metal_kernels.f90 \
+        $(SRC_DIR)/sporkle_amx.f90 \
+        $(SRC_DIR)/sporkle_neural_engine.f90 \
+        $(SRC_DIR)/sporkle_apple_orchestrator.f90
         
     PLATFORM_C_SOURCES = \
         $(SRC_DIR)/metal_wrapper.m \
@@ -157,7 +157,7 @@ endif
 
 # Info target
 info:
-	@echo "🌟 Sparkle Smart Build System"
+	@echo "🌟 Sporkle Smart Build System"
 	@echo "============================"
 	@echo "Platform: $(PLATFORM)"
 	@echo "Architecture: $(UNAME_M)"
@@ -497,13 +497,13 @@ test_dynamic_shader_system: $(BUILD_DIR)/test_dynamic_shader_system
 	@echo "🚀 Testing dynamic shader system..."
 	@./$(BUILD_DIR)/test_dynamic_shader_system
 
-$(BUILD_DIR)/test_dynamic_shader_system: $(BUILD_DIR)/sparkle_types.o $(BUILD_DIR)/sparkle_glsl_generator.o $(BUILD_DIR)/sparkle_rdna_shader_generator.o $(BUILD_DIR)/sparkle_dynamic_shader_system.o $(EXAMPLES_DIR)/test_dynamic_shader_system.f90
+$(BUILD_DIR)/test_dynamic_shader_system: $(BUILD_DIR)/sporkle_types.o $(BUILD_DIR)/sporkle_glsl_generator.o $(BUILD_DIR)/sporkle_rdna_shader_generator.o $(BUILD_DIR)/sporkle_dynamic_shader_system.o $(EXAMPLES_DIR)/test_dynamic_shader_system.f90
 	@echo "🔨 Building dynamic shader system test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) \
-		$(BUILD_DIR)/sparkle_types.o \
-		$(BUILD_DIR)/sparkle_glsl_generator.o \
-		$(BUILD_DIR)/sparkle_rdna_shader_generator.o \
-		$(BUILD_DIR)/sparkle_dynamic_shader_system.o \
+		$(BUILD_DIR)/sporkle_types.o \
+		$(BUILD_DIR)/sporkle_glsl_generator.o \
+		$(BUILD_DIR)/sporkle_rdna_shader_generator.o \
+		$(BUILD_DIR)/sporkle_dynamic_shader_system.o \
 		$(EXAMPLES_DIR)/test_dynamic_shader_system.f90 -o $@
 
 # GPU shader variants benchmark

@@ -1,11 +1,11 @@
 program test_v3_simple
-  use iso_fortran_env, only: real32
-  use sparkle_conv2d_v3
+  use kinds
+  use sporkle_conv2d_v3
   implicit none
   
-  real(real32), allocatable :: input(:,:,:,:)
-  real(real32), allocatable :: weights(:,:,:,:)
-  real(real32), allocatable :: output(:,:,:,:)
+  real(sp), allocatable :: input(:,:,:,:)
+  real(sp), allocatable :: weights(:,:,:,:)
+  real(sp), allocatable :: output(:,:,:,:)
   
   integer :: N=1, H=32, W=32, C=3, K=16, KH=3, KW=3
   integer :: OH, OW, i
@@ -24,12 +24,12 @@ program test_v3_simple
   call random_number(weights)
   
   ! Initialize V3
-  call sparkle_conv2d_v3_init()
+  call sporkle_conv2d_v3_init()
   
   print *, "🧪 Testing simple V3 execution..."
   
   ! Single execution
-  call sparkle_conv2d_v3_execute(input, weights, output=output)
+  call sporkle_conv2d_v3_execute(input, weights, output=output)
   
   print *, "✅ Single execution completed"
   print *, "Output sum:", sum(output)
@@ -38,12 +38,12 @@ program test_v3_simple
   print *, ""
   print *, "🧪 Testing multiple executions..."
   do i = 1, 5
-    call sparkle_conv2d_v3_execute(input, weights, output=output)
+    call sporkle_conv2d_v3_execute(input, weights, output=output)
     print '(A,I0,A,F10.2)', "  Iteration ", i, " - sum: ", sum(output)
   end do
   
   ! Cleanup
-  call sparkle_conv2d_v3_cleanup()
+  call sporkle_conv2d_v3_cleanup()
   
   deallocate(input, weights, output)
   

@@ -14,7 +14,7 @@ We've successfully built a Fortran DSL that translates to GLSL for AMD GPUs with
 ## Technical Approach
 
 ### 1. Parser Extensions
-Extend `sparkle_shader_parser_v2` to support multiple backends:
+Extend `sporkle_shader_parser_v2` to support multiple backends:
 ```fortran
 type :: shader_kernel_v2
   ! ... existing fields ...
@@ -50,7 +50,7 @@ end subroutine
 - Handle Metal-specific features (threadgroup memory)
 
 ### Phase 2: Integration (1 week)
-- Hook into existing sparkle_metal backend
+- Hook into existing sporkle_metal backend
 - Ensure compatibility with Metal Performance Shaders
 - Test on M1/M2/M3 hardware
 

@@ -264,7 +264,7 @@ module gl_constants
     end subroutine
     
     subroutine glGetQueryObjectui64v(id, pname, params) bind(C, name="glGetQueryObjectui64v")
-      import :: c_int, c_int64_t
+      import :: c_int, c_, i64_t
       integer(c_int), value :: id, pname
       integer(c_int64_t), intent(out) :: params
     end subroutine glGetQueryObjectui64v
@@ -276,7 +276,7 @@ module gl_constants
     end subroutine
     
     subroutine glGetQueryObjecti64v(id, pname, params) bind(C, name="glGetQueryObjecti64v")
-      import :: c_int, c_int64_t
+      import :: c_int, c_, i64_t
       integer(c_int), value :: id, pname
       integer(c_int64_t), intent(out) :: params
     end subroutine

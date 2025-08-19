@@ -46,13 +46,13 @@ Every benchmarking method now has detailed comments explaining:
 └───────────┬─────────────┘
             │ parse
 ┌───────────▼─────────────┐
-│ sparkle_shader_parser_v2│
+│ sporkle_shader_parser_v2│
 │  - Identifies scalars   │
 │  - Generates GLSL       │
 └───────────┬─────────────┘
             │ 
 ┌───────────▼─────────────┐
-│ sparkle_fortran_params  │
+│ sporkle_fortran_params  │
 │  - Benchmarks methods   │
 │  - Selects optimal      │
 └───────────┬─────────────┘
@@ -68,7 +68,7 @@ Every benchmarking method now has detailed comments explaining:
 1. **GPU Execution**: Currently mocked - needs real shader compilation
 2. **INLINE Method**: Placeholder substitution not implemented
 3. **GPU Timing**: Using CPU time instead of GPU timer queries
-4. **Integration**: Connect to sparkle_fortran_shaders_v2 for full pipeline
+4. **Integration**: Connect to sporkle_fortran_shaders_v2 for full pipeline
 
 ## Example Output
 

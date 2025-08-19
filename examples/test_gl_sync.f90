@@ -1,6 +1,6 @@
 program test_gl_sync
   use iso_c_binding
-  use sparkle_fortran_shaders
+  use sporkle_fortran_shaders
   use gl_constants
   implicit none
   

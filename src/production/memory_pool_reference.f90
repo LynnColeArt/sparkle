@@ -11,14 +11,14 @@
 !   - Clean error handling
 !
 ! Last verified: 2024-12-20
-! Original source: src/sparkle_memory.f90
+! Original source: src/sporkle_memory.f90
 !
 ! DO NOT MODIFY THIS FILE DIRECTLY
 
-module sparkle_memory_reference
-  use iso_fortran_env, only: int32, int64, real32, real64, int8
+module sporkle_memory_reference
+  use kinds
   use iso_c_binding
-  use sparkle_types
+  use sporkle_types
   implicit none
   
   private
@@ -45,7 +45,7 @@ module sparkle_memory_reference
   
   type :: memory_handle
     type(c_ptr) :: ptr = c_null_ptr
-    integer(int64) :: size = 0
+    integer(i64) :: size = 0
     integer :: device_id = -1  ! -1 for host memory
     integer :: flags = MEM_DEFAULT
     logical :: is_allocated = .false.
@@ -56,8 +56,8 @@ module sparkle_memory_reference
     type(memory_handle), allocatable :: allocations(:)
     integer :: num_allocations = 0
     integer :: max_allocations = 0
-    integer(int64) :: total_allocated = 0
-    integer(int64) :: peak_allocated = 0
+    integer(i64) :: total_allocated = 0
+    integer(i64) :: peak_allocated = 0
   contains
     procedure :: init => pool_init
     procedure :: allocate => pool_allocate
@@ -107,7 +107,7 @@ module sparkle_memory_reference
 contains
 
   function create_memory_host(size, flags, tag) result(handle)
-    integer(int64), intent(in) :: size
+    integer(i64), intent(in) :: size
     integer, intent(in), optional :: flags
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
@@ -154,7 +154,7 @@ contains
   
   function create_memory_device(device, size, flags, tag) result(handle)
     class(compute_device), intent(in) :: device
-    integer(int64), intent(in) :: size
+    integer(i64), intent(in) :: size
     integer, intent(in), optional :: flags
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
@@ -210,7 +210,7 @@ contains
   function memory_copy_sync(dst, src, size, direction) result(success)
     type(memory_handle), intent(inout) :: dst
     type(memory_handle), intent(in) :: src
-    integer(int64), intent(in) :: size
+    integer(i64), intent(in) :: size
     integer, intent(in) :: direction
     logical :: success
     
@@ -250,7 +250,7 @@ contains
   function memory_copy_async(dst, src, size, direction, stream) result(success)
     type(memory_handle), intent(inout) :: dst
     type(memory_handle), intent(in) :: src
-    integer(int64), intent(in) :: size
+    integer(i64), intent(in) :: size
     integer, intent(in) :: direction
     type(c_ptr), intent(in) :: stream
     logical :: success
@@ -263,7 +263,7 @@ contains
   subroutine memory_set(handle, value, size)
     type(memory_handle), intent(inout) :: handle
     integer(int8), intent(in) :: value
-    integer(int64), intent(in), optional :: size
+    integer(i64), intent(in), optional :: size
     
     integer(c_size_t) :: set_size
     
@@ -310,7 +310,7 @@ contains
   
   function pool_allocate(pool, size, device, tag) result(handle)
     class(memory_pool), intent(inout) :: pool
-    integer(int64), intent(in) :: size
+    integer(i64), intent(in) :: size
     class(compute_device), intent(in), optional :: device
     character(len=*), intent(in), optional :: tag
     type(memory_handle) :: handle
@@ -398,4 +398,4 @@ contains
     
   end subroutine pool_cleanup
   
-end module sparkle_memory
+end module sporkle_memory

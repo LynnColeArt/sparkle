@@ -1,7 +1,7 @@
-# Sparkle Coding Standards & Style Guide
+# Sporkle Coding Standards & Style Guide
 
 > "Code is read far more often than it is written." - Guido van Rossum  
-> "Yeah, but let's make it fun to read." - The Sparkle Way
+> "Yeah, but let's make it fun to read." - The Sporkle Way
 
 This guide ensures Sparkle code is elegant, strongly-typed, and actually enjoyable to work with. We write Fortran like it's 2024, not 1974.
 
@@ -16,12 +16,12 @@ This guide ensures Sparkle code is elegant, strongly-typed, and actually enjoyab
 ## 📐 Module Structure (or: How to Not Write Spaghetti)
 
 ```fortran
-module sparkle_example
+module sporkle_example
   ! 1. Use statements (like a civilized person)
   use iso_fortran_env, only: int32, int64, real32, real64
   use iso_c_binding, only: c_ptr, c_int
-  use sparkle_types
-  use sparkle_memory
+  use sporkle_types
+  use sporkle_memory
   
   ! 2. Implicit none ALWAYS (because we're not psychics)
   implicit none
@@ -46,7 +46,7 @@ module sparkle_example
   
 contains
   ! Implementation here (the fun part)
-end module sparkle_example
+end module sporkle_example
 ```
 
 ## 🔤 Naming Conventions (or: How to Not Name Things 'tmp2_final_v3')
@@ -72,8 +72,8 @@ end module sparkle_example
 - No magic numbers lurking around: `GIGABYTE` not `1073741824`
 
 ### Module Names
-- **snake_case** with `sparkle_` prefix: `sparkle_memory`, `sparkle_wizardry`
-- Say what it does: `sparkle_scheduler` not `sparkle_utils` (everything is utils)
+- **snake_case** with `sporkle_` prefix: `sporkle_memory`, `sporkle_wizardry`
+- Say what it does: `sporkle_scheduler` not `sporkle_utils` (everything is utils)
 
 ## 💪 Strong Typing Rules (or: How to Not Shoot Yourself in the Foot)
 
@@ -158,7 +158,7 @@ call ridiculously_long_function_name(input_array, &
 
 ```fortran
 ! Good spacing - room to breathe
-module sparkle_arrays
+module sporkle_arrays
   use iso_fortran_env
   implicit none
   
@@ -244,7 +244,7 @@ end type
 !>   mem = pool%allocate(megabytes=100)
 !>   ! Do awesome compute stuff
 !>   call pool%deallocate(mem)
-module sparkle_memory_pool
+module sporkle_memory_pool
 ```
 
 ### Inline Comments: Explain Why, Not What
@@ -306,7 +306,7 @@ function create_device(device_type, device_id) result(device)
     allocate(cpu_device :: device)
   case (DEVICE_AMD)
     allocate(amd_device :: device)
-    ! No CUDA because we read The Sparkle Way
+    ! No CUDA because we read The Sporkle Way
   case default
     error stop "Unknown device type - did you invent new hardware?"
   end select
@@ -347,10 +347,10 @@ Before submitting code, ensure:
 ## 🚀 Example: Code That Doesn't Suck
 
 ```fortran
-module sparkle_algorithms
+module sporkle_algorithms
   use iso_fortran_env, only: int32, int64, real32, real64
-  use sparkle_types, only: compute_device
-  use sparkle_memory, only: memory_handle
+  use sporkle_types, only: compute_device
+  use sporkle_memory, only: memory_handle
   implicit none
   private
   
@@ -424,14 +424,14 @@ contains
     
   end function parallel_reduce
 
-end module sparkle_algorithms
+end module sporkle_algorithms
 ```
 
 ## 📚 References (For the Curious)
 
 1. Modern Fortran Explained (because it's not your grandpa's Fortran)
 2. [The Zen of Python](https://www.python.org/dev/peps/pep-0020/) (we steal the good parts)
-3. [The Sparkle Way](docs/the_sparkle_way.md) (required reading)
+3. [The Sporkle Way](docs/the_sporkle_way.md) (required reading)
 4. Your future self (who has to maintain this code)
 
 ---

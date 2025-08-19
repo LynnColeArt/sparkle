@@ -1,19 +1,19 @@
 program test_gemm_correctness
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_config
-  use sparkle_cache_aware
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_config
+  use sporkle_cache_aware
   implicit none
   
   integer :: n, i, j, k
   type(memory_handle) :: a_mem, b_mem, c_ref_mem, c_test_mem
-  real(real32), pointer :: a(:,:), b(:,:), c_ref(:,:), c_test(:,:)
-  real(real32) :: max_error, avg_error, element_error
-  real(real32) :: sum_ref, sum_test
+  real(sp), pointer :: a(:,:), b(:,:), c_ref(:,:), c_test(:,:)
+  real(sp) :: max_error, avg_error, element_error
+  real(sp) :: sum_ref, sum_test
   integer :: error_count
-  type(sparkle_config_type) :: config
+  type(sporkle_config_type) :: config
   
   print *, "🔍 GEMM Correctness Verification"
   print *, "================================"
@@ -21,7 +21,7 @@ program test_gemm_correctness
   
   ! Configure for safety
   config%max_cpu_threads = 14
-  call sparkle_set_config(config)
+  call sporkle_set_config(config)
   
   ! Test small matrices first where we can verify by hand
   print *, "Test 1: Small Matrix (4x4)"

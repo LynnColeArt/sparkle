@@ -35,13 +35,13 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 ## 2. Automatic Device Selection ✅ Built, ✅ Integrated
 
 ### What We Built
-- `sparkle_conv2d_auto_selector.f90` - Heuristic-based device selection
+- `sporkle_conv2d_auto_selector.f90` - Heuristic-based device selection
 - Performance learning with exponential moving average
 - Automatic CPU/GPU selection based on workload
 
 ### Current Status
 - ✅ Fully integrated into production
-- ✅ Working in sparkle_conv2d_juggling
+- ✅ Working in sporkle_conv2d_juggling
 - ✅ Tested and validated
 
 ## 3. GPU Async Executor ✅ Built, ✅ Integrated
@@ -52,15 +52,15 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 - Fence-based synchronization
 
 ### Current Status
-- ✅ Integrated with sparkle_conv2d_juggling
+- ✅ Integrated with sporkle_conv2d_juggling
 - ✅ Enabled by default
 - ✅ Production ready
 
 ## 4. Dynamic Shader System ✅ Built, ⚠️ Not Integrated
 
 ### What We Built
-- `sparkle_dynamic_shader_system.f90` - Runtime shader generation
-- `sparkle_rdna_shader_generator.f90` - RDNA-optimized shaders
+- `sporkle_dynamic_shader_system.f90` - Runtime shader generation
+- `sporkle_rdna_shader_generator.f90` - RDNA-optimized shaders
 - Performance-based variant selection
 
 ### Current Status
@@ -77,7 +77,7 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 ## 5. Direct AMDGPU PM4 Interface ✅ Built, ⚠️ Not Integrated
 
 ### What We Built
-- `sparkle_amdgpu_direct.f90` - Direct kernel driver interface
+- `sporkle_amdgpu_direct.f90` - Direct kernel driver interface
 - PM4 packet generation
 - Memory management via GEM
 
@@ -105,7 +105,7 @@ program_id = get_cached_program_v2(cache, shader_source, cache_key, compile_real
 - ✅ OpenMP critical sections working
 - ✅ Atomic operations for counters
 - ⚠️ Not integrated with production pipeline
-- ⚠️ Original cache still used in sparkle_conv2d
+- ⚠️ Original cache still used in sporkle_conv2d
 
 ### Integration Needed
 1. Replace gpu_program_cache_v2 usage with thread-safe version

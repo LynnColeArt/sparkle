@@ -1,9 +1,9 @@
 program test_gpu_async_poc
   ! Proof of concept: Can we reduce GPU idle time with simple async?
-  use iso_fortran_env, only: real32, real64, int64
+  use kinds
   use iso_c_binding
   use gpu_opengl_interface
-  use sparkle_types
+  use sporkle_types
   implicit none
   
   ! Test parameters - smaller to show idle time
@@ -21,23 +21,23 @@ program test_gpu_async_poc
   integer, parameter :: W_out = 112
   
   ! Buffers for double buffering
-  real(real32), allocatable, target :: input_a(:), input_b(:)
-  real(real32), allocatable, target :: weights(:)
-  real(real32), allocatable, target :: output_a(:), output_b(:)
+  real(sp), allocatable, target :: input_a(:), input_b(:)
+  real(sp), allocatable, target :: weights(:)
+  real(sp), allocatable, target :: output_a(:), output_b(:)
   
   ! Timing
-  integer(int64) :: start_time, end_time, gpu_start, gpu_end
-  integer(int64) :: cpu_prep_time, gpu_compute_time, cpu_post_time
-  integer(int64) :: total_gpu_time, total_wall_time
-  real(real64) :: clock_rate
-  real(real32) :: gpu_time_ms
+  integer(i64) :: start_time, end_time, gpu_start, gpu_end
+  integer(i64) :: cpu_prep_time, gpu_compute_time, cpu_post_time
+  integer(i64) :: total_gpu_time, total_wall_time
+  real(dp) :: clock_rate
+  real(sp) :: gpu_time_ms
   integer :: i
   logical :: use_buffer_a
   
   ! Calculate sizes
-  integer(int64) :: input_size, weight_size, output_size
-  integer(int64) :: flop_count
-  real(real64) :: total_gflops
+  integer(i64) :: input_size, weight_size, output_size
+  integer(i64) :: flop_count
+  real(dp) :: total_gflops
   
   print *, "=== GPU Async Proof of Concept ==="
   print *, ""
@@ -228,8 +228,8 @@ contains
 
   subroutine simulate_cpu_work(time_ms)
     real, intent(in) :: time_ms
-    integer(int64) :: start, current
-    real(real64) :: elapsed_ms
+    integer(i64) :: start, current
+    real(dp) :: elapsed_ms
     
     call system_clock(start)
     do

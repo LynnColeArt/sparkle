@@ -1,7 +1,7 @@
 program test_multiline_parser
   ! Test the parser with multi-line signatures
-  use sparkle_shader_parser_v2
-  use sparkle_fortran_params
+  use sporkle_shader_parser_v2
+  use sporkle_fortran_params
   implicit none
   
   type(shader_kernel_v2) :: kernel

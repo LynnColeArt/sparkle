@@ -11,7 +11,7 @@
 ! - Eliminates system_clock arithmetic errors
 
 module time_utils
-  use iso_fortran_env, only: int64, real64
+  use kinds
   implicit none
   
   private
@@ -19,13 +19,13 @@ module time_utils
   public :: tic_safe, toc_seconds_safe
   
   ! Cached clock rate to avoid repeated system calls
-  integer(int64) :: clock_rate_cached = -1_int64
+  integer(i64) :: clock_rate_cached = -1_int64
 
 contains
 
   ! Get system clock rate (cached for performance)
   subroutine clock_rate_hz(rate)
-    integer(int64), intent(out) :: rate
+    integer(i64), intent(out) :: rate
     integer :: r32
     
     if (clock_rate_cached < 0) then
@@ -37,7 +37,7 @@ contains
 
   ! Start timing - capture current tick count
   subroutine tic(t0)
-    integer(int64), intent(out) :: t0
+    integer(i64), intent(out) :: t0
     integer :: c
     
     call system_clock(count=c)
@@ -46,7 +46,7 @@ contains
 
   ! Safe timing with wraparound detection
   subroutine tic_safe(t0, success)
-    integer(int64), intent(out) :: t0
+    integer(i64), intent(out) :: t0
     logical, intent(out) :: success
     integer :: c
     
@@ -59,10 +59,10 @@ contains
 
   ! End timing - return elapsed seconds since tic()
   function toc_seconds(t0) result(s)
-    integer(int64), intent(in) :: t0
-    real(real64) :: s
+    integer(i64), intent(in) :: t0
+    real(dp) :: s
     integer :: c
-    integer(int64) :: rate, t1
+    integer(i64) :: rate, t1
     
     call system_clock(count=c)
     t1 = int(c, int64)
@@ -72,11 +72,11 @@ contains
 
   ! Safe timing with wraparound detection
   function toc_seconds_safe(t0, success) result(s)
-    integer(int64), intent(in) :: t0
+    integer(i64), intent(in) :: t0
     logical, intent(out) :: success
-    real(real64) :: s
+    real(dp) :: s
     integer :: c
-    integer(int64) :: rate, t1
+    integer(i64) :: rate, t1
     
     call system_clock(count=c)
     t1 = int(c, int64)
@@ -96,9 +96,9 @@ contains
   ! Convert raw tick count to seconds (for accumulated timing)
   ! Note: Not pure due to clock_rate_hz call - use with rate parameter for pure contexts
   function ticks_to_seconds(ticks) result(s)
-    integer(int64), intent(in) :: ticks
-    real(real64) :: s
-    integer(int64) :: rate
+    integer(i64), intent(in) :: ticks
+    real(dp) :: s
+    integer(i64) :: rate
     
     call clock_rate_hz(rate)
     s = real(ticks, real64) / real(rate, real64)

@@ -16,8 +16,8 @@ This directory contains the production interfaces that link to the current best 
 Each production module should follow this pattern:
 
 ```fortran
-module sparkle_conv2d
-  use sparkle_conv2d_reference  ! Default to reference
+module sporkle_conv2d
+  use sporkle_conv2d_reference  ! Default to reference
   implicit none
   
   private
@@ -39,7 +39,7 @@ contains
     case("reference")
       conv2d_impl => conv2d_reference
     case("experimental_im2col")
-      use sparkle_conv2d_im2col
+      use sporkle_conv2d_im2col
       conv2d_impl => conv2d_im2col
     case default
       print *, "Unknown implementation, using reference"
@@ -52,9 +52,9 @@ end module
 
 ## Current Production Modules
 
-- [ ] `sparkle_conv2d.f90` - Convolution interface
-- [ ] `sparkle_matmul.f90` - Matrix multiplication interface
-- [ ] `sparkle_memory.f90` - Memory management interface
+- [ ] `sporkle_conv2d.f90` - Convolution interface
+- [ ] `sporkle_matmul.f90` - Matrix multiplication interface
+- [ ] `sporkle_memory.f90` - Memory management interface
 
 ## Testing Requirements
 

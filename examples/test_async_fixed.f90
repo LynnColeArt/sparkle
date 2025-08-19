@@ -1,23 +1,23 @@
 program test_async_fixed
-  use iso_fortran_env, only: real32, int64
+  use kinds
   use gpu_async_executor_fixed
-  use sparkle_opengl_context
-  use sparkle_conv2d_reference
+  use sporkle_opengl_context
+  use sporkle_conv2d_reference
   implicit none
   
   type(gpu_async_state) :: async_state
   integer :: width, height, compute_program, weight_buffer
   integer :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
-  real(real32), allocatable :: input(:), weights(:), output(:)
-  real(real32), allocatable :: batch_outputs(:,:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: batch_outputs(:,:)
   integer :: i, batch, num_batches
   integer :: set_ids(10)
   logical :: all_done
-  integer(int64) :: start_time, end_time, rate
+  integer(i64) :: start_time, end_time, rate
   real :: total_time, throughput
   
   ! Initialize OpenGL
-  call sparkle_init_gl(width, height)
+  call sporkle_init_gl(width, height)
   
   ! Create compute program
   compute_program = create_compute_shader()
@@ -161,7 +161,7 @@ program test_async_fixed
   
   ! Cleanup
   call gpu_async_cleanup(async_state)
-  call sparkle_cleanup_gl()
+  call sporkle_cleanup_gl()
   
   print *, ""
   print *, "✅ All tests complete!"
@@ -170,7 +170,7 @@ contains
 
   subroutine sleep_ms(ms)
     integer, intent(in) :: ms
-    integer(int64) :: start, now, rate
+    integer(i64) :: start, now, rate
     real :: elapsed
     
     call system_clock(start, rate)
@@ -188,7 +188,7 @@ contains
   end function
   
   function create_weight_buffer(weights) result(buffer)
-    real(real32), intent(in) :: weights(:)
+    real(sp), intent(in) :: weights(:)
     integer :: buffer
     ! Simplified - would create real buffer
     buffer = 2

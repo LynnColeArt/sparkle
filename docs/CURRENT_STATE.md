@@ -1,4 +1,4 @@
-# Sparkle Current State - August 2025 (Updated with SIMD Breakthrough)
+# Sporkle Current State - August 2025 (Updated with SIMD Breakthrough)
 
 ## 🚀 Revolutionary Breakthrough: Universal Memory Optimization Framework
 
@@ -24,7 +24,7 @@ Sparkle has achieved a fundamental breakthrough in heterogeneous computing: **th
 - **Fortran Interface**: `src/reference/gpu_opengl_interface.f90` - Clean API bridge
 - **Universal Memory Optimization**: `src/reference/universal_memory_optimization.f90` - Cross-architecture patterns
 - **Intelligent Device Juggling**: `src/reference/intelligent_device_juggling.f90` - Smart scheduling system
-- **Production Module**: `src/production/sparkle_conv2d.f90` - User-facing interface
+- **Production Module**: `src/production/sporkle_conv2d.f90` - User-facing interface
 - **Build Integration**: Complete C/Fortran linking with OpenGL/EGL libraries
 
 **Test Results**:
@@ -76,7 +76,7 @@ GPU conv2d: 2.98 ms, 414+ GFLOPS  # Production performance achieved
 │                 User Applications                   │
 ├─────────────────────────────────────────────────────┤
 │              Production Interface                   │
-│         (sparkle_conv2d, auto-selection)           │
+│         (sporkle_conv2d, auto-selection)           │
 ├─────────────────────────────────────────────────────┤
 │            Intelligent Orchestration               │
 │    (Device Discovery + Adaptive Dispatching)       │

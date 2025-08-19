@@ -5,7 +5,7 @@
 ! without unnecessary complexity
 
 module memory_wall_breakthrough
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use flopcount
   use omp_lib
   use universal_memory_optimization, only: gemm_universal_memory, im2col_cache_optimal
@@ -17,15 +17,15 @@ module memory_wall_breakthrough
 contains
 
   ! Hot cache convolution - the breakthrough approach
-  real(real32) function fused_conv2d_hot_cache(input, weights, output, &
+  real(sp) function fused_conv2d_hot_cache(input, weights, output, &
                                                N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    real(real32), allocatable :: col_buffer(:)
+    real(sp), allocatable :: col_buffer(:)
     integer :: clock_start, clock_end, clock_rate
-    integer(int64) :: total_flops
+    integer(i64) :: total_flops
     integer :: i
     
     call system_clock(clock_start, clock_rate)
@@ -75,15 +75,15 @@ contains
   end function fused_conv2d_hot_cache
 
   ! Cold cache convolution - traditional approach
-  real(real32) function naive_conv2d_cold_cache(input, weights, output, &
+  real(sp) function naive_conv2d_cold_cache(input, weights, output, &
                                                 N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    real(real32), allocatable :: col_buffer(:)
+    real(sp), allocatable :: col_buffer(:)
     integer :: clock_start, clock_end, clock_rate
-    integer(int64) :: total_flops
+    integer(i64) :: total_flops
     integer :: i
     
     call system_clock(clock_start, clock_rate)
@@ -135,7 +135,7 @@ contains
   
   ! Simulate cache flush by touching a large array
   subroutine flush_cache_simulation()
-    real(real32), allocatable :: dummy(:)
+    real(sp), allocatable :: dummy(:)
     integer :: i
     integer, parameter :: CACHE_SIZE = 64 * 1024 * 1024 / 4  ! 64MB in floats
     

@@ -1,4 +1,4 @@
-# Sparkle Development Patterns
+# Sporkle Development Patterns
 
 ## The Reference Pattern
 
@@ -47,7 +47,7 @@ src/
    - Add comprehensive tests
    - Document optimizations
    - Move to reference after review
-4. Update `src/production/sparkle_conv2d.f90` to make it available
+4. Update `src/production/sporkle_conv2d.f90` to make it available
 
 ### Protection Against Regression
 
@@ -82,7 +82,7 @@ Each reference implementation must start with:
 
 ### Migration Plan
 
-1. Move `sparkle_memory.f90` → `src/reference/memory_pool_reference.f90` ✓
+1. Move `sporkle_memory.f90` → `src/reference/memory_pool_reference.f90` ✓
 2. Find the 250 GFLOPS convolution → `src/reference/conv2d_reference.f90`
 3. Move working GPU shader → `src/reference/conv2d_glsl_reference.glsl`
 4. Create production interfaces in `src/production/`

@@ -12,11 +12,11 @@ Following QA security audit, implement critical security fixes and hardening mea
 ## Completed Tasks ✅
 
 - [x] Replace command injection vulnerability in GPU detection
-  - Created `sparkle_gpu_safe_detect.f90` using `/sys` filesystem reads
-  - Updated `sparkle_gpu_dispatch.f90` to use safe detection
+  - Created `sporkle_gpu_safe_detect.f90` using `/sys` filesystem reads
+  - Updated `sporkle_gpu_dispatch.f90` to use safe detection
   
 - [x] Create comprehensive error handling module
-  - Created `sparkle_error_handling.f90` with error codes
+  - Created `sporkle_error_handling.f90` with error codes
   - Added safe allocation wrappers with size validation
   - Added bounds checking functions
   
@@ -28,12 +28,12 @@ Following QA security audit, implement critical security fixes and hardening mea
   - Updated documentation in BENCHMARKS.md
 
 - [x] Create safe kernel execution framework
-  - Created `sparkle_safe_kernels.f90` with validation
+  - Created `sporkle_safe_kernels.f90` with validation
 
 ## Remaining Tasks 📋
 
 ### High Priority
-- [ ] Update all modules to use `sparkle_error_handling` 
+- [ ] Update all modules to use `sporkle_error_handling` 
 - [ ] Add input validation to user-facing functions
 - [ ] Complete GPU implementation or clearly separate mock/real
 

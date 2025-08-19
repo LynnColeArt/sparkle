@@ -8,7 +8,7 @@ The adaptive parameter passing system is designed to benchmark and select the op
 ## Current State
 
 ### ✅ Working Components
-- **Parser** (`sparkle_shader_parser_v2.f90`)
+- **Parser** (`sporkle_shader_parser_v2.f90`)
   - Correctly identifies scalar vs array parameters
   - Generates valid GLSL for all three methods
   - Handles parameter classification and body extraction
@@ -20,7 +20,7 @@ The adaptive parameter passing system is designed to benchmark and select the op
 
 ### ⚠️ Mocked/Incomplete Components
 
-#### 1. GPU Execution (`sparkle_fortran_params.f90`)
+#### 1. GPU Execution (`sporkle_fortran_params.f90`)
 - **Lines 126**: Returns mock shader program ID
 - **Lines 129, 138-139**: GL uniform calls commented out
 - **Lines 180-181**: Buffer update and dispatch commented out
@@ -31,7 +31,7 @@ The adaptive parameter passing system is designed to benchmark and select the op
 - `glUniform4i` - Commented out due to interface issues
 - `glBufferSubData` - Commented with TODO
 
-#### 3. Shader Compilation (`sparkle_fortran_shaders_v2.f90`)
+#### 3. Shader Compilation (`sporkle_fortran_shaders_v2.f90`)
 - Real shader compilation happens but error logs not retrieved
 - Lines 247-250, 260-263: Error handling incomplete
 
@@ -39,8 +39,8 @@ The adaptive parameter passing system is designed to benchmark and select the op
 
 1. **Hardcoded Magic Numbers**
    - Binding slot 15 for parameter buffer (should be configurable)
-   - Max 64 parameters limit (line 159 in sparkle_fortran_shaders_v2.f90)
-   - Cache size 128 (line 25 in sparkle_fortran_shaders_v2.f90)
+   - Max 64 parameters limit (line 159 in sporkle_fortran_shaders_v2.f90)
+   - Cache size 128 (line 25 in sporkle_fortran_shaders_v2.f90)
 
 2. **INLINE Method Placeholders**
    - No mechanism to replace PLACEHOLDER_varname with actual values

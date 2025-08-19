@@ -1,8 +1,8 @@
 program test_correctness_all_paths
-  use iso_fortran_env, only: real32, real64, int32, int64
-  use sparkle_conv2d
-  use sparkle_conv2d_juggling
-  use sparkle_conv2d_auto_selector
+  use kinds
+  use sporkle_conv2d
+  use sporkle_conv2d_juggling
+  use sporkle_conv2d_auto_selector
   use cpu_conv2d_adaptive
   use gpu_opengl_interface
   implicit none
@@ -13,13 +13,13 @@ program test_correctness_all_paths
   integer, parameter :: H_out = 32, W_out = 32
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:)
-  real(real32), allocatable :: output_cpu(:), output_gpu(:), output_auto(:)
-  real(real32), allocatable :: output_juggling(:), output_reference(:)
+  real(sp), allocatable :: input(:), weights(:)
+  real(sp), allocatable :: output_cpu(:), output_gpu(:), output_auto(:)
+  real(sp), allocatable :: output_juggling(:), output_reference(:)
   
   ! Timing and accuracy
-  real(real32) :: time_ms, max_diff, diff
-  real(real64) :: total_flops
+  real(sp) :: time_ms, max_diff, diff
+  real(dp) :: total_flops
   integer :: i, num_errors
   logical :: all_tests_passed
   
@@ -53,9 +53,9 @@ program test_correctness_all_paths
   ! Use CPU as reference
   output_reference = output_cpu
   
-  ! Test 2: Production CPU via sparkle_conv2d
+  ! Test 2: Production CPU via sporkle_conv2d
   print *, ""
-  print *, "2️⃣  Testing Production CPU (sparkle_conv2d)..."
+  print *, "2️⃣  Testing Production CPU (sporkle_conv2d)..."
   call conv2d_select_implementation("cpu", "adaptive")
   call conv2d_cpu(input, weights, output_cpu, &
                   N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
@@ -228,7 +228,7 @@ contains
 
   subroutine init_test_data()
     integer :: i, j, k
-    real(real32) :: x, y
+    real(sp) :: x, y
     
     ! Initialize input with a gradient pattern
     do i = 1, size(input)

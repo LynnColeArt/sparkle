@@ -4,7 +4,7 @@
 ! This module provides CUDA device discovery for NVIDIA GPUs.
 ! 
 ! IMPORTANT: This code requires proprietary NVIDIA CUDA runtime
-! and goes against Sparkle's philosophy of democratized compute.
+! and goes against Sporkle's philosophy of democratized compute.
 ! 
 ! Use this ONLY when:
 ! - No other option exists (OpenCL, Vulkan, OpenGL compute)
@@ -21,7 +21,7 @@
 ! mission of democratizing AI compute for everyone.
 
 module cuda_discovery
-  use sparkle_mesh_types
+  use sporkle_mesh_types
   use iso_c_binding
   implicit none
   private

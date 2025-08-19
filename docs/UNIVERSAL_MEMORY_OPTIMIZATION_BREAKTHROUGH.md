@@ -167,7 +167,7 @@ Key functions:
 - `update_performance_model()`: Adaptive learning based on actual results
 
 ### Production Integration
-**Location**: `src/production/sparkle_conv2d.f90`
+**Location**: `src/production/sporkle_conv2d.f90`
 
 The universal patterns are fully integrated into production:
 ```fortran
@@ -236,4 +236,4 @@ The Universal Memory Optimization Breakthrough represents a fundamental shift in
 - **Weekend2 Epic**: `docs/Weekend2.md`  
 - **Implementation**: `src/reference/universal_memory_optimization.f90`
 - **Smart Scheduling**: `src/reference/intelligent_device_juggling.f90`
-- **Production Code**: `src/production/sparkle_conv2d.f90`
+- **Production Code**: `src/production/sporkle_conv2d.f90`

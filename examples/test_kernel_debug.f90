@@ -1,14 +1,14 @@
 program test_kernel_debug
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_kernels
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_kernels
   implicit none
   
-  type(sparkle_kernel) :: kernel
+  type(sporkle_kernel) :: kernel
   type(memory_handle) :: data_mem
-  real(real32), pointer :: data(:)
+  real(sp), pointer :: data(:)
   integer :: i
   
   print *, "🧪 Kernel Debug Test"
@@ -57,7 +57,7 @@ contains
 
   subroutine simple_kernel(args)
     type(kernel_argument), intent(inout) :: args(:)
-    real(real32), pointer :: data(:)
+    real(sp), pointer :: data(:)
     integer :: i
     
     print *, "  Inside kernel, num args:", size(args)

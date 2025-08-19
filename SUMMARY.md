@@ -1,4 +1,4 @@
-# Sparkle/Sporkle Project Summary
+# Sporkle/Sporkle Project Summary
 
 ## What We've Built
 

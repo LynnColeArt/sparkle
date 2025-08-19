@@ -1,4 +1,4 @@
-# Sparkle Development Session - August 10, 2025
+# Sporkle Development Session - August 10, 2025
 
 ## 🎯 Session Goals Achieved
 
@@ -13,13 +13,13 @@
 - **Cache-aware algorithms**: 294x speedup on reductions!
 - **Operation fusion**: Reduce memory passes from 6 to 3
 - **Tiled algorithms**: L1/L2/L3 cache-aware processing
-- Created `sparkle_cache_aware.f90` and `sparkle_fused_kernels.f90`
+- Created `sporkle_cache_aware.f90` and `sporkle_fused_kernels.f90`
 
 ### 3. ✅ Thread Safety Configuration
 - Implemented configurable thread limits to prevent desktop crashes
 - Environment variables: `SPARKLE_MAX_CPU_THREADS=14`
 - Safe defaults: reserves 2 threads for system
-- Created `sparkle_config.f90` module
+- Created `sporkle_config.f90` module
 - Your 16-core system now safely uses 14 threads
 
 ### 4. ✅ OpenMP Parallelization
@@ -46,10 +46,10 @@
 ## 🗂️ Files Created/Modified
 
 ### New Modules
-- `src/sparkle_config.f90` - Thread safety configuration
-- `src/sparkle_cache_aware.f90` - Cache-aware algorithms
-- `src/sparkle_fused_kernels.f90` - Fused operations
-- `src/sparkle_parallel_kernels.f90` - Parallel implementations
+- `src/sporkle_config.f90` - Thread safety configuration
+- `src/sporkle_cache_aware.f90` - Cache-aware algorithms
+- `src/sporkle_fused_kernels.f90` - Fused operations
+- `src/sporkle_parallel_kernels.f90` - Parallel implementations
 
 ### New Examples
 - `examples/test_benchmarks.f90` - Hot/cold benchmarking
@@ -59,7 +59,7 @@
 - `examples/test_parallel_speedup.f90` - Performance analysis
 
 ### Documentation
-- `docs/the_sparkle_way.md` - Philosophy document
+- `docs/the_sporkle_way.md` - Philosophy document
 - `docs/PERFORMANCE.md` - Performance guide
 - `BENCHMARKS.md` - Performance tracking
 - `CHANGELOG.md` - Change history
@@ -80,7 +80,7 @@
 3. **Optimize Tiled GEMM** - Current implementation needs work
 4. **Windows/macOS Support** - Cross-platform compatibility
 
-## 🌟 The Sparkle Way
+## 🌟 The Sporkle Way
 
 We stayed true to our principles:
 - ✅ No external dependencies

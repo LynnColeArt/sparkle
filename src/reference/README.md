@@ -23,7 +23,7 @@ This directory contains the optimized, tested, and verified reference implementa
 - [ ] `matmul_glsl_reference.glsl` - Tiled matrix multiplication
 
 ### Memory Management
-- [x] `memory_pool_reference.f90` - From sparkle_memory.f90
+- [x] `memory_pool_reference.f90` - From sporkle_memory.f90
 
 ## How to Add a Reference Implementation
 

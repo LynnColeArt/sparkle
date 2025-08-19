@@ -15,7 +15,7 @@
 !   All public interfaces are thread-safe
 
 module gpu_program_cache_threadsafe
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use iso_c_binding
   use gpu_binary_cache
   use omp_lib
@@ -33,11 +33,11 @@ module gpu_program_cache_threadsafe
     integer :: program_id = 0
     character(len=256) :: key = ""
     integer :: ref_count = 0           ! Will use atomic operations
-    integer(int64) :: last_used = 0
-    integer(int64) :: compile_time = 0
-    real(real32) :: performance = 0.0
+    integer(i64) :: last_used = 0
+    integer(i64) :: compile_time = 0
+    real(sp) :: performance = 0.0
     logical :: is_binary_cached = .false.
-    integer(int64) :: memory_size = 0
+    integer(i64) :: memory_size = 0
     integer :: binary_format = 0
     integer :: binary_size = 0
   end type program_cache_entry_ts
@@ -54,13 +54,13 @@ module gpu_program_cache_threadsafe
     logical :: thread_safe = .true.    ! Flag to enable thread safety
     
     ! Statistics (will use atomic operations)
-    integer(int64) :: total_compilations = 0
-    integer(int64) :: cache_hits = 0
-    integer(int64) :: cache_misses = 0
-    integer(int64) :: binary_loads = 0
-    integer(int64) :: binary_saves = 0
-    integer(int64) :: total_compile_time = 0
-    integer(int64) :: memory_saved = 0
+    integer(i64) :: total_compilations = 0
+    integer(i64) :: cache_hits = 0
+    integer(i64) :: cache_misses = 0
+    integer(i64) :: binary_loads = 0
+    integer(i64) :: binary_saves = 0
+    integer(i64) :: total_compile_time = 0
+    integer(i64) :: memory_saved = 0
   end type program_cache_ts
   
   ! OpenGL interfaces (reuse from v2)
@@ -153,8 +153,8 @@ contains
     integer :: program_id
     
     integer :: idx
-    integer(int64) :: start_time, end_time, compile_time
-    real(real64) :: clock_rate
+    integer(i64) :: start_time, end_time, compile_time
+    real(dp) :: clock_rate
     logical :: need_compile, loaded_from_disk
     integer :: thread_id
     
@@ -404,9 +404,9 @@ contains
       integer :: num_programs
       integer :: max_programs
       integer :: active_refs
-      real(real64) :: hit_rate
-      integer(int64) :: total_memory
-      real(real64) :: avg_compile_time_ms
+      real(dp) :: hit_rate
+      integer(i64) :: total_memory
+      real(dp) :: avg_compile_time_ms
     end type cache_stats_t
     type(cache_stats_t) :: stats
     
@@ -487,7 +487,7 @@ contains
     type(program_cache_ts), intent(inout) :: cache
     integer, intent(in) :: program_id
     character(len=*), intent(in) :: cache_key
-    integer(int64), intent(in) :: compile_time
+    integer(i64), intent(in) :: compile_time
     
     integer :: idx
     
@@ -522,7 +522,7 @@ contains
     type(program_cache_ts), intent(inout) :: cache
     
     integer :: i, lru_idx
-    integer(int64) :: oldest_time
+    integer(i64) :: oldest_time
     
     lru_idx = 0
     oldest_time = huge(oldest_time)
@@ -566,8 +566,8 @@ contains
   subroutine print_cache_stats_internal(cache)
     type(program_cache_ts), intent(in) :: cache
     
-    real(real64) :: hit_rate, avg_compile_time
-    integer(int64) :: total_memory
+    real(dp) :: hit_rate, avg_compile_time
+    integer(i64) :: total_memory
     integer :: i, active_refs
     
     if (cache%cache_hits + cache%cache_misses > 0) then

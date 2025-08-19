@@ -1,5 +1,5 @@
 subroutine test_conv_gpu_real() bind(C, name="test_conv_gpu_real")
-  use iso_fortran_env
+  use kinds
   use iso_c_binding
   use gl_constants
   implicit none
@@ -29,17 +29,17 @@ subroutine test_conv_gpu_real() bind(C, name="test_conv_gpu_real")
   integer, target :: params(10)
   
   ! Timing
-  real(real64) :: gpu_time_ms
+  real(dp) :: gpu_time_ms
   integer :: i
   
   character(len=512, kind=c_char), target :: info_log
   integer(c_int) :: info_len
   
   ! Performance metrics
-  integer(int64) :: total_flops
-  real(real64) :: gflops
-  integer(int64) :: bytes_read, bytes_written
-  real(real64) :: bandwidth_gb
+  integer(i64) :: total_flops
+  real(dp) :: gflops
+  integer(i64) :: bytes_read, bytes_written
+  real(dp) :: bandwidth_gb
   
   print *, "=== Real GPU Convolution Test ==="
   print *, "Input shape: ", N, "x", C, "x", H, "x", W

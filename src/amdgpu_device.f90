@@ -1,12 +1,12 @@
 module amdgpu_device_mod
-  ! Connects AMDGPU direct implementation to Sparkle device interface
+  ! Connects AMDGPU direct implementation to Sporkle device interface
   use iso_c_binding
-  use iso_fortran_env, only: int32, int64, real32, real64
-  use sparkle_types
-  use sparkle_amdgpu_direct
-  use sparkle_amdgpu_memory
-  use sparkle_amdgpu_shaders
-  use sparkle_amdgpu_shader_binary
+  use kinds
+  use sporkle_types
+  use sporkle_amdgpu_direct
+  use sporkle_amdgpu_memory
+  use sporkle_amdgpu_shaders
+  use sporkle_amdgpu_shader_binary
   implicit none
   private
   
@@ -14,7 +14,7 @@ module amdgpu_device_mod
   
   ! Extended compute device for AMDGPU direct access
   type, extends(compute_device) :: amdgpu_compute_device
-    type(amdgpu_device) :: gpu_handle  ! From sparkle_amdgpu_direct
+    type(amdgpu_device) :: gpu_handle  ! From sporkle_amdgpu_direct
     integer :: context_handle = -1
     integer :: card_number = 1  ! Default to card1 (discrete GPU)
     logical :: is_initialized = .false.
@@ -109,9 +109,9 @@ contains
   
   function amdgpu_dev_allocate(self, size_bytes, pinned) result(buffer)
     class(amdgpu_compute_device), intent(inout) :: self
-    integer(int64), intent(in) :: size_bytes
+    integer(i64), intent(in) :: size_bytes
     logical, intent(in), optional :: pinned
-    type(sparkle_buffer) :: buffer
+    type(sporkle_buffer) :: buffer
     type(amdgpu_buffer) :: gpu_buffer
     integer :: status
     
@@ -154,7 +154,7 @@ contains
   
   subroutine amdgpu_dev_deallocate(self, buffer)
     class(amdgpu_compute_device), intent(inout) :: self
-    type(sparkle_buffer), intent(inout) :: buffer
+    type(sporkle_buffer), intent(inout) :: buffer
     
     ! TODO: Find and free the corresponding GPU buffer
     ! For now, just clear the pointer
@@ -165,10 +165,10 @@ contains
   
   function amdgpu_dev_memcpy(self, dst, src, size_bytes) result(status)
     class(amdgpu_compute_device), intent(inout) :: self
-    type(sparkle_buffer), intent(inout) :: dst
-    type(sparkle_buffer), intent(in) :: src
-    integer(int64), intent(in) :: size_bytes
-    integer(int32) :: status
+    type(sporkle_buffer), intent(inout) :: dst
+    type(sporkle_buffer), intent(in) :: src
+    integer(i64), intent(in) :: size_bytes
+    integer(i32) :: status
     
     ! For now, do CPU memcpy since buffers are mapped
     block
@@ -194,9 +194,9 @@ contains
     class(amdgpu_compute_device), intent(inout) :: self
     character(len=*), intent(in) :: kernel_name
     type(c_ptr), intent(in) :: args(:)
-    integer(int32), intent(in) :: grid_size(3)
-    integer(int32), intent(in) :: block_size(3)
-    integer(int32) :: status
+    integer(i32), intent(in) :: grid_size(3)
+    integer(i32), intent(in) :: block_size(3)
+    integer(i32) :: status
     
     if (.not. self%is_initialized) then
       print *, "❌ AMDGPU device not initialized"
@@ -219,7 +219,7 @@ contains
   
   function amdgpu_dev_sync(self) result(status)
     class(amdgpu_compute_device), intent(inout) :: self
-    integer(int32) :: status
+    integer(i32) :: status
     
     if (.not. self%is_initialized) then
       status = -1

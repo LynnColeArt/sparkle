@@ -1,10 +1,10 @@
 program test_gpu_simple
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_gpu_opengl
-  use sparkle_gpu_kernels
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_gpu_opengl
+  use sporkle_gpu_kernels
   implicit none
   
   type(gl_context) :: ctx
@@ -12,10 +12,10 @@ program test_gpu_simple
   type(gl_buffer) :: x_buffer, y_buffer, z_buffer
   
   integer :: n
-  real(real32), allocatable :: x_data(:), y_data(:), z_data(:)
+  real(sp), allocatable :: x_data(:), y_data(:), z_data(:)
   integer :: i
   
-  print *, "🚀 Sparkle GPU Test (OpenGL Compute)"
+  print *, "🚀 Sporkle GPU Test (OpenGL Compute)"
   print *, "===================================="
   print *, ""
   
@@ -84,7 +84,7 @@ program test_gpu_simple
   print *, "- Implement buffer readback"
   print *, "- Benchmark GPU vs CPU performance"
   print *, ""
-  print *, "🌟 The Sparkle Way: Vendor-neutral GPU compute!"
+  print *, "🌟 The Sporkle Way: Vendor-neutral GPU compute!"
   
   ! Cleanup
   deallocate(x_data, y_data, z_data)

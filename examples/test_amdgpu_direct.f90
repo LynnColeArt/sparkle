@@ -1,17 +1,17 @@
 program test_amdgpu_direct
-  use iso_fortran_env, only: int32, int64, real32
+  use kinds
   use iso_c_binding
-  use sparkle_amdgpu_direct
+  use sporkle_amdgpu_direct
   implicit none
   
   type(amdgpu_device) :: device
   type(amdgpu_buffer) :: buffer
   integer :: status
-  integer(int64) :: buffer_size
-  real(real32), pointer :: data(:)
+  integer(i64) :: buffer_size
+  real(sp), pointer :: data(:)
   integer :: i
   
-  print *, "🚀 Sparkle Direct AMDGPU Test"
+  print *, "🚀 Sporkle Direct AMDGPU Test"
   print *, "============================="
   print *, ""
   print *, "Going straight to the metal!"
@@ -90,6 +90,6 @@ program test_amdgpu_direct
   call amdgpu_close_device(device)
   
   print *, ""
-  print *, "The Sparkle Way: No ROCm needed! 🎉"
+  print *, "The Sporkle Way: No ROCm needed! 🎉"
   
 end program test_amdgpu_direct

@@ -1,18 +1,18 @@
 program test_cache_aware
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_cache_aware
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_cache_aware
   implicit none
   
   integer, parameter :: N = 1024  ! Matrix size
   type(memory_handle) :: a_mem, b_mem, c_mem
-  real(real32), pointer :: a(:,:), b(:,:), c(:,:)
-  real(real64) :: start_time, end_time
-  real(real64) :: naive_time, cache_aware_time
+  real(sp), pointer :: a(:,:), b(:,:), c(:,:)
+  real(dp) :: start_time, end_time
+  real(dp) :: naive_time, cache_aware_time
   integer :: i, j, k
-  real(real32) :: sum
+  real(sp) :: sum
   
   print *, "🧱 Breaking the Memory Wall with Cache-Aware Algorithms"
   print *, "======================================================"
@@ -99,7 +99,7 @@ program test_cache_aware
   
   block
     integer, parameter :: sizes(5) = [64, 128, 256, 512, 1024]
-    real(real64) :: naive_gflops, tiled_gflops
+    real(dp) :: naive_gflops, tiled_gflops
     integer :: n_test, s
     
     print *, "Size    Naive(GFLOPS)  Tiled(GFLOPS)  Speedup"
@@ -134,10 +134,10 @@ program test_cache_aware
   print *, "-----------------------------"
   
   block
-    real(real32) :: result_naive, result_cache
-    real(real64) :: reduce_time
-    integer(int64) :: n_elements
-    real(real32), allocatable :: flat_a(:)
+    real(sp) :: result_naive, result_cache
+    real(dp) :: reduce_time
+    integer(i64) :: n_elements
+    real(sp), allocatable :: flat_a(:)
     
     n_elements = int(N, int64) * int(N, int64)
     allocate(flat_a(n_elements))
@@ -182,6 +182,6 @@ program test_cache_aware
   print *, "Compile with: -O3 -march=native -fopenmp"
   print *, "for best vectorization and parallelization"
   print *, ""
-  print *, "✨ The Sparkle Way: Beat the memory wall with smart algorithms!"
+  print *, "✨ The Sporkle Way: Beat the memory wall with smart algorithms!"
 
 end program test_cache_aware

@@ -7,7 +7,7 @@
 
 module stable_math
   use kinds, only: dp, sp
-  use iso_fortran_env, only: real64, real32
+  use kinds
   implicit none
   
   private

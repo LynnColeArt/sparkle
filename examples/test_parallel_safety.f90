@@ -1,18 +1,18 @@
 program test_parallel_safety
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_int
-  use sparkle_config
+  use sporkle_config
   use omp_lib
   implicit none
   
-  type(sparkle_config_type) :: config
+  type(sporkle_config_type) :: config
   integer :: total_threads, safe_threads
   integer :: i, n
-  real(real64) :: start_time, end_time
-  real(real32), allocatable :: data(:)
-  real(real32) :: sum_result
+  real(dp) :: start_time, end_time
+  real(sp), allocatable :: data(:)
+  real(sp) :: sum_result
   
-  print *, "🛡️  Sparkle Thread Safety Configuration"
+  print *, "🛡️  Sporkle Thread Safety Configuration"
   print *, "======================================"
   print *, ""
   
@@ -24,7 +24,7 @@ program test_parallel_safety
   print *, ""
   print *, "Test 1: Default Configuration"
   print *, "-----------------------------"
-  config = sparkle_get_config()
+  config = sporkle_get_config()
   print '(A,I0)', "Thread reserve: ", config%thread_reserve
   print '(A,I0)', "Max CPU threads: ", config%max_cpu_threads
   
@@ -42,9 +42,9 @@ program test_parallel_safety
   print *, "------------------------------------------"
   config%max_cpu_threads = 14
   config%thread_reserve = 0  ! Already handled by max_cpu_threads
-  call sparkle_set_config(config)
+  call sporkle_set_config(config)
   
-  config = sparkle_get_config()
+  config = sporkle_get_config()
   print '(A,I0)', "Max CPU threads: ", config%max_cpu_threads
   print '(A,I0)', "Safe thread count: ", min(14, total_threads)
   
@@ -52,8 +52,8 @@ program test_parallel_safety
   print *, ""
   print *, "Test 3: Environment Variable Override"
   print *, "------------------------------------"
-  print *, "Set SPARKLE_MAX_CPU_THREADS=12 to test"
-  print *, "Set SPARKLE_THREAD_RESERVE=4 to test"
+  print *, "Set SPORKLE_MAX_CPU_THREADS=12 to test"
+  print *, "Set SPORKLE_THREAD_RESERVE=4 to test"
   
   ! Test 4: Parallel performance test
   print *, ""
@@ -102,13 +102,13 @@ program test_parallel_safety
   print *, "Configuration Guide:"
   print *, "==================="
   print *, "1. In code: config%max_cpu_threads = 14"
-  print *, "2. Environment: export SPARKLE_MAX_CPU_THREADS=14"
-  print *, "3. Reserve threads: export SPARKLE_THREAD_RESERVE=2"
+  print *, "2. Environment: export SPORKLE_MAX_CPU_THREADS=14"
+  print *, "3. Reserve threads: export SPORKLE_THREAD_RESERVE=2"
   print *, ""
   print *, "For your system with 16 threads:"
   print *, "- Use max_cpu_threads=14 to leave 2 for system"
   print *, "- Or use thread_reserve=2 (auto calculates to 14)"
   print *, ""
-  print *, "✨ The Sparkle Way: Be a good neighbor to your OS!"
+  print *, "✨ The Sporkle Way: Be a good neighbor to your OS!"
   
 end program test_parallel_safety

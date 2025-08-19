@@ -1,5 +1,5 @@
 program test_gpu_async_honest
-  use iso_fortran_env, only: real32, real64, int64
+  use kinds
   use iso_c_binding
   use gpu_opengl_interface
   use gpu_async_executor
@@ -23,14 +23,14 @@ program test_gpu_async_honest
   integer, parameter :: W_out = 112
   
   ! Data arrays
-  real(real32), allocatable, target :: inputs(:,:)
-  real(real32), allocatable, target :: weights(:)
-  real(real32), allocatable, target :: outputs(:,:)
+  real(sp), allocatable, target :: inputs(:,:)
+  real(sp), allocatable, target :: weights(:)
+  real(sp), allocatable, target :: outputs(:,:)
   
   ! Timing
-  integer(int64) :: start_time, end_time, gpu_start, gpu_end
-  real(real64) :: clock_rate
-  real(real32) :: kernel_time_ms
+  integer(i64) :: start_time, end_time, gpu_start, gpu_end
+  real(dp) :: clock_rate
+  real(sp) :: kernel_time_ms
   
   ! GPU resources
   integer :: compute_program, weight_buffer
@@ -40,8 +40,8 @@ program test_gpu_async_honest
   integer :: batch, set_id
   
   ! Sizes
-  integer(int64) :: input_size, weight_size, output_size, flop_count
-  real(real64) :: wall_time_ms, expected_time_ms, gflops
+  integer(i64) :: input_size, weight_size, output_size, flop_count
+  real(dp) :: wall_time_ms, expected_time_ms, gflops
   
   print *, "=== GPU Async Honest Performance Test ==="
   print *, ""

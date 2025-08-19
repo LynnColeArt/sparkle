@@ -1,4 +1,4 @@
-# Sparkle Verified Results
+# Sporkle Verified Results
 
 ## Clean, Reproducible Test Results
 

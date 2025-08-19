@@ -1,4 +1,4 @@
-# Sparkle/Sporkle Benchmarking Plan
+# Sporkle/Sporkle Benchmarking Plan
 
 ## Objectives
 1. Validate performance of Fortran GPU DSL
@@ -98,7 +98,7 @@ end subroutine
 ## Benchmark Harness Design
 
 ```fortran
-module sparkle_benchmark
+module sporkle_benchmark
   type :: benchmark_result
     character(len=64) :: name
     character(len=32) :: backend

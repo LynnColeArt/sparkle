@@ -1,18 +1,18 @@
-! hello_sparkle.f90 - Your first Sparkle program!
+! hello_sparkle.f90 - Your first Sporkle program!
 program hello_sparkle
-  use iso_fortran_env, only: int64
-  use sparkle_mesh_types
-  use sparkle_discovery
-  use sparkle_scheduler
-  use sparkle_memory
+  use kinds
+  use sporkle_mesh_types
+  use sporkle_discovery
+  use sporkle_scheduler
+  use sporkle_memory
   implicit none
   
   type(mesh_topology) :: mesh
   type(memory_pool) :: pool
   type(memory_handle) :: data
-  integer(int64) :: total_work = 1000000
+  integer(i64) :: total_work = 1000000
   
-  print *, "✨ Hello from Sparkle! ✨"
+  print *, "✨ Hello from Sporkle! ✨"
   print *, ""
   
   ! Discover all available compute devices

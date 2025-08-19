@@ -2,12 +2,12 @@ program test_metal_memory_pool
   ! Test Metal memory pool with real GPU computation
   ! Shows caching, reuse, and performance benefits
   
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding
-  use sparkle_memory  ! For memory_handle type
-  use sparkle_gpu_metal
-  use sparkle_memory_metal
-  use sparkle_metal_kernels
+  use sporkle_memory  ! For memory_handle type
+  use sporkle_gpu_metal
+  use sporkle_memory_metal
+  use sporkle_metal_kernels
   implicit none
   
   type(metal_context) :: ctx
@@ -16,9 +16,9 @@ program test_metal_memory_pool
   type(metal_kernel) :: kernel
   
   integer :: i, j
-  integer(int64) :: sizes(5) = [1024*1024, 2*1024*1024, 512*1024, 4*1024*1024, 1024*1024]
-  real(real64) :: start_time, end_time
-  real(real64) :: pool_time, direct_time
+  integer(i64) :: sizes(5) = [1024*1024, 2*1024*1024, 512*1024, 4*1024*1024, 1024*1024]
+  real(dp) :: start_time, end_time
+  real(dp) :: pool_time, direct_time
   
   print *, "========================================="
   print *, "   Metal Memory Pool Test"
@@ -130,7 +130,7 @@ program test_metal_memory_pool
   block
     integer, parameter :: N = 1000000
     type(memory_handle) :: x_mem, y_mem, z_mem
-    real(real32), allocatable, target :: x_data(:), y_data(:), z_data(:)
+    real(sp), allocatable, target :: x_data(:), y_data(:), z_data(:)
     type(metal_buffer) :: x_buf, y_buf, z_buf
     logical :: correct
   

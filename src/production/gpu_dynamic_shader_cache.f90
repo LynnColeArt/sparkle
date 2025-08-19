@@ -11,12 +11,12 @@
 ! and caches them for maximum performance.
 
 module gpu_dynamic_shader_cache
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use iso_c_binding
   use gpu_program_cache_threadsafe
-  use sparkle_dynamic_shader_system
-  use sparkle_rdna_shader_generator
-  use sparkle_glsl_generator, only: convolution_config
+  use sporkle_dynamic_shader_system
+  use sporkle_rdna_shader_generator
+  use sporkle_glsl_generator, only: convolution_config
   use gpu_opengl_interface
   use gpu_binary_cache
   use omp_lib
@@ -37,9 +37,9 @@ module gpu_dynamic_shader_cache
     logical :: enable_learning = .true.
     
     ! Performance tracking
-    integer(int64) :: dynamic_compilations = 0
-    integer(int64) :: variant_switches = 0
-    real(real64) :: total_optimization_time = 0.0
+    integer(i64) :: dynamic_compilations = 0
+    integer(i64) :: variant_switches = 0
+    real(dp) :: total_optimization_time = 0.0
   end type dynamic_shader_cache
   
   ! OpenGL shader compilation interface
@@ -157,7 +157,7 @@ contains
     character(len=:), allocatable :: shader_source
     character(len=128) :: cache_key, variant_suffix
     type(convolution_config) :: conv_config
-    real(real64) :: start_time, end_time
+    real(dp) :: start_time, end_time
     integer :: thread_id
     
     if (.not. cache%initialized) then
@@ -349,7 +349,7 @@ contains
     character(len=256) :: cache_key
     integer :: cached_program
     logical :: cache_hit
-    real(real64) :: start_time, compile_time
+    real(dp) :: start_time, compile_time
     
     ! Generate cache key from shader source hash
     call generate_cache_key(source, cache_key)

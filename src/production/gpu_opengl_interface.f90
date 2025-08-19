@@ -2,7 +2,7 @@
 ! This provides a clean Fortran API to the working C implementation
 
 module gpu_opengl_interface
-  use iso_fortran_env, only: real32
+  use kinds
   use iso_c_binding
   implicit none
   
@@ -108,10 +108,10 @@ contains
   end function gpu_compile_shaders
   
   ! Execute conv2d with Fortran-friendly interface
-  real(real32) function gpu_execute_conv2d_ref(input, weights, output, &
+  real(sp) function gpu_execute_conv2d_ref(input, weights, output, &
                                                N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in), target :: input(:), weights(:)
-    real(real32), intent(out), target :: output(:)
+    real(sp), intent(in), target :: input(:), weights(:)
+    real(sp), intent(out), target :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     real(c_float) :: time_ms
@@ -149,11 +149,11 @@ contains
   end function gpu_compile_custom_shader_fortran
   
   ! Execute convolution with custom shader
-  real(real32) function gpu_execute_conv2d_custom_fortran(program_id, input, weights, output, &
+  real(sp) function gpu_execute_conv2d_custom_fortran(program_id, input, weights, output, &
                                                           N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     integer, intent(in) :: program_id
-    real(real32), intent(in), target :: input(:), weights(:)
-    real(real32), intent(out), target :: output(:)
+    real(sp), intent(in), target :: input(:), weights(:)
+    real(sp), intent(out), target :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     real(c_float) :: time_ms

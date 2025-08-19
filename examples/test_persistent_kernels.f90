@@ -1,16 +1,16 @@
 program test_persistent_kernels
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use gpu_opengl_cached
   use gpu_program_cache
   implicit none
   
   ! Test data
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
   integer :: i, run
-  real(real32) :: time_ms, total_time, avg_time
-  integer(int64) :: total_flops
-  real(real32) :: gflops
+  real(sp) :: time_ms, total_time, avg_time
+  integer(i64) :: total_flops
+  real(sp) :: gflops
   
   ! Set up test parameters
   N = 1

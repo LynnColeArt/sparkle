@@ -1,6 +1,6 @@
 program test_universal_device_selector
-  use sparkle_universal_device_selector
-  use sparkle_types
+  use sporkle_universal_device_selector
+  use sporkle_types
   implicit none
   
   type(universal_device_selector) :: selector

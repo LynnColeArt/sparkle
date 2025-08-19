@@ -1,4 +1,4 @@
-# Sparkle Performance Guide 🚀
+# Sporkle Performance Guide 🚀
 
 ## Current Performance (CPU)
 
@@ -63,10 +63,10 @@ export SPARKLE_THREAD_RESERVE=2    # Or reserve 2 for system
 
 ### Thread Configuration
 ```fortran
-type(sparkle_config_type) :: config
+type(sporkle_config_type) :: config
 config%max_cpu_threads = 14     ! Hard limit
 config%thread_reserve = 2       ! Or reserve threads
-call sparkle_set_config(config)
+call sporkle_set_config(config)
 ```
 
 ## Benchmark Reproduction
@@ -96,7 +96,7 @@ export SPARKLE_MAX_CPU_THREADS=14
 
 ## Performance Philosophy
 
-"The Sparkle Way" for performance:
+"The Sporkle Way" for performance:
 1. **Measure first** - Hot/cold benchmarking
 2. **Respect the hardware** - Cache-aware algorithms
 3. **Be a good neighbor** - Thread safety limits

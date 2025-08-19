@@ -1,10 +1,10 @@
 program test_gpu_shader_variants
   use iso_c_binding
   use gpu_opengl_interface
-  use sparkle_glsl_generator
-  use sparkle_rdna_shader_generator
-  use sparkle_types
-  use iso_fortran_env, only: real32, real64
+  use sporkle_glsl_generator
+  use sporkle_rdna_shader_generator
+  use sporkle_types
+  use kinds
   implicit none
   
   ! Test parameters (ResNet-50 first layer)
@@ -13,12 +13,12 @@ program test_gpu_shader_variants
   integer, parameter :: H_out = 112, W_out = 112
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:), output(:)
-  real(real32), allocatable :: output_ref(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: output_ref(:)
   
   ! Timing
-  real(real32) :: gpu_time_ms
-  real(real64) :: gflops
+  real(sp) :: gpu_time_ms
+  real(dp) :: gflops
   integer(c_int64_t) :: flop_count
   
   ! Configuration

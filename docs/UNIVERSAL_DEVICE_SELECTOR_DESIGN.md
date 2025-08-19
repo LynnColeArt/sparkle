@@ -82,7 +82,7 @@ Total memory bandwidth: 1010.0 GB/s
 - ✅ Multi-device architecture ready
 
 ### Next Steps
-1. **Production Integration**: Connect to `sparkle_conv2d`
+1. **Production Integration**: Connect to `sporkle_conv2d`
 2. **Async Awareness**: Recognize async executor advantage (6.5x!)
 3. **Multi-Device Scheduling**: Split large workloads
 4. **NVIDIA Support**: Ready for xAI collaboration

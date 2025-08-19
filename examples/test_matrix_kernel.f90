@@ -1,24 +1,24 @@
 program test_matrix_kernel
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_mesh_types
-  use sparkle_discovery
-  use sparkle_kernels
-  use sparkle_execute
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_mesh_types
+  use sporkle_discovery
+  use sporkle_kernels
+  use sporkle_execute
   implicit none
   
   type(device_handle), allocatable :: devices(:)
   type(mesh_topology) :: mesh
-  type(sparkle_kernel) :: kernel
+  type(sporkle_kernel) :: kernel
   type(memory_handle) :: a_mem, b_mem, c_mem
-  real(real32), pointer :: a(:,:), b(:,:), c(:,:)
+  real(sp), pointer :: a(:,:), b(:,:), c(:,:)
   integer :: num_devices, i, j
-  integer(int64) :: m, n, k
-  real(real64) :: start_time, end_time
+  integer(i64) :: m, n, k
+  real(dp) :: start_time, end_time
   
-  print *, "🧪 Matrix Multiplication with Sparkle"
+  print *, "🧪 Matrix Multiplication with Sporkle"
   print *, "===================================="
   
   ! Discover devices  
@@ -128,7 +128,7 @@ program test_matrix_kernel
   
   ! Execute!
   call cpu_time(start_time)
-  call sparkle_run(kernel, mesh)
+  call sporkle_run(kernel, mesh)
   call cpu_time(end_time)
   
   print *, ""
@@ -139,7 +139,7 @@ program test_matrix_kernel
   print *, ""
   print *, "Verifying results (spot check)..."
   block
-    real(real32) :: expected
+    real(sp) :: expected
     logical :: correct
     integer :: row, col
     
@@ -170,7 +170,7 @@ program test_matrix_kernel
   
   ! Performance metrics
   block
-    real(real64) :: gflops
+    real(dp) :: gflops
     gflops = real(2_int64 * m * n * k, real64) / ((end_time - start_time) * 1.0e9_real64)
     print *, ""
     print '(A,F8.3,A)', "Performance: ", gflops, " GFLOPS"
@@ -191,7 +191,7 @@ contains
   subroutine matmul_kernel(args)
     type(kernel_argument), intent(inout) :: args(:)
     
-    real(real32), pointer :: a(:,:), b(:,:), c(:,:)
+    real(sp), pointer :: a(:,:), b(:,:), c(:,:)
     integer :: i, j, kk
     integer :: m_size, n_size, k_size
     

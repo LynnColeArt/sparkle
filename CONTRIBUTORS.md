@@ -1,4 +1,4 @@
-# Sparkle Contributors 🌟
+# Sporkle Contributors 🌟
 
 This project is built by a unique collaboration between humans and AI.
 

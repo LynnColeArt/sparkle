@@ -35,7 +35,7 @@ By implementing multiple paths and measuring actual performance, we:
 
 **Implementation Path**:
 1. Generate GLSL compute shader from convolution-as-GEMM kernel
-2. Use existing `sparkle_gpu_opengl.f90` infrastructure
+2. Use existing `sporkle_gpu_opengl.f90` infrastructure
 3. Compile shader, dispatch compute, measure performance
 
 ### Strategy 2: SPIR-V Intermediate Representation  
@@ -77,12 +77,12 @@ By implementing multiple paths and measuring actual performance, we:
 ## Adaptive Selection Algorithm
 
 ```fortran
-module sparkle_adaptive_kernel
+module sporkle_adaptive_kernel
   implicit none
   
   type :: kernel_variant
     character(len=32) :: name
-    type(sparkle_kernel) :: implementation
+    type(sporkle_kernel) :: implementation
     real(dp) :: best_time
     integer :: measurement_count
     logical :: is_valid
@@ -179,14 +179,14 @@ Variants are re-evaluated when:
 
 ```fortran
 ! User code remains simple
-type(sparkle_kernel) :: conv_kernel
-type(sparkle_buffer) :: input, output
+type(sporkle_kernel) :: conv_kernel
+type(sporkle_buffer) :: input, output
 
 ! Sparkle automatically selects best variant
-call sparkle_execute(device, conv_kernel, input, output)
+call sporkle_execute(device, conv_kernel, input, output)
 
 ! Power user can examine variants
-call sparkle_print_variant_stats(conv_kernel)
+call sporkle_print_variant_stats(conv_kernel)
 ! Output:
 ! Convolution kernel variants (size=1048576):
 !   GLSL:     12.3ms (selected) ✓
@@ -194,7 +194,7 @@ call sparkle_print_variant_stats(conv_kernel)
 !   Direct:   11.9ms (error: driver too old)
 
 ! Force specific variant for testing
-call sparkle_force_variant(conv_kernel, "SPIR-V")
+call sporkle_force_variant(conv_kernel, "SPIR-V")
 ```
 
 ## Implementation Priority
@@ -224,4 +224,4 @@ call sparkle_force_variant(conv_kernel, "SPIR-V")
 
 By implementing multiple kernel strategies and empirically selecting the best, Sparkle transcends the limitations of any single approach. This adaptive strategy embodies the framework's philosophy: pragmatic, performance-driven, and always seeking the optimal solution for the user's specific system.
 
-*"The best code is the code that runs fastest on YOUR machine, not the one that looks prettiest in the textbook."* - The Sparkle Way
+*"The best code is the code that runs fastest on YOUR machine, not the one that looks prettiest in the textbook."* - The Sporkle Way

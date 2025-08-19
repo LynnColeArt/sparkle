@@ -9,7 +9,7 @@
 ! • Autotuned tile sizes for hardware adaptation
 
 module cpu_conv2d_adaptive
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use iso_c_binding, only: c_ptr, c_f_pointer, c_size_t
   use timing_helpers, only: now_s, safe_gflops
   use gemm_simd_optimized_v2, only: gemm_simd_avx512_v2
@@ -23,7 +23,7 @@ module cpu_conv2d_adaptive
   type :: tile_config_t
     integer :: Kt, Nt  ! K and N tile sizes
     integer :: I_pad   ! Padded I dimension for SIMD
-    real(real64) :: working_set_kb  ! Estimated working set in KiB
+    real(dp) :: working_set_kb  ! Estimated working set in KiB
   end type
   
   ! Cache of good tile configurations
@@ -49,8 +49,8 @@ contains
 
   ! Safe integer division to prevent FPE
   pure function idiv_safe(a, b) result(q)
-    integer(int64), intent(in) :: a, b
-    integer(int64) :: q
+    integer(i64), intent(in) :: a, b
+    integer(i64) :: q
     if (b == 0_int64) then
       q = 0_int64  ! Safe fallback
     else
@@ -61,10 +61,10 @@ contains
   ! Working set calculator - target ≤ 512 KiB per thread
   pure function calculate_working_set(Kt, I_pad, Nt) result(ws_kb)
     integer, intent(in) :: Kt, I_pad, Nt
-    real(real64) :: ws_kb
+    real(dp) :: ws_kb
     
     ! Working set: A_block(Kt,I) + Bt(I,Nt) + C_block(Kt,Nt) in bytes
-    real(real64) :: ws_bytes
+    real(dp) :: ws_bytes
     ws_bytes = real(Kt * I_pad + I_pad * Nt + Kt * Nt, real64) * 4.0_real64
     ws_kb = ws_bytes / 1024.0_real64
   end function calculate_working_set
@@ -77,7 +77,7 @@ contains
     integer :: I_pad
     integer :: Kt_candidates(4), Nt_candidates(4)
     integer :: ii, jj, best_ii, best_jj
-    real(real64) :: ws, best_ws, target_ws
+    real(dp) :: ws, best_ws, target_ws
     
     ! Pad I to vector width (16 for AVX-512 fp32)
     I_pad = ((I + 15) / 16) * 16
@@ -134,11 +134,11 @@ contains
 
   ! Thread partitioning for N dimension (columns)
   subroutine partition_columns(N_total, thread_id, num_threads, j0, j1, tile_size)
-    integer(int64), intent(in) :: N_total
+    integer(i64), intent(in) :: N_total
     integer, intent(in) :: thread_id, num_threads, tile_size
-    integer(int64), intent(out) :: j0, j1
+    integer(i64), intent(out) :: j0, j1
     
-    integer(int64) :: cols_per_thread, remainder
+    integer(i64) :: cols_per_thread, remainder
     
     ! Validate inputs to prevent divide-by-zero
     if (num_threads <= 0 .or. N_total <= 0) then
@@ -174,33 +174,33 @@ contains
     end if
   end subroutine partition_columns
 
-  real(real32) function conv2d_adaptive(input, weights, output, &
+  real(sp) function conv2d_adaptive(input, weights, output, &
                                        N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    real(real64) :: start_time, end_time, elapsed_secs
-    real(real64) :: total_flops_r, gflops
+    real(dp) :: start_time, end_time, elapsed_secs
+    real(dp) :: total_flops_r, gflops
     
     ! Problem dimensions
-    integer(int64) :: I, N_total
+    integer(i64) :: I, N_total
     type(tile_config_t) :: tiles
     
     ! Thread variables
     integer :: thread_id, num_threads
-    integer(int64) :: j0, j1, local_cols
+    integer(i64) :: j0, j1, local_cols
     
     ! Thread-local arrays
     type(c_ptr) :: bt_ptr, at_ptr, ct_ptr
-    real(real32), pointer :: Bt(:,:), At(:,:), Ct(:,:)
-    integer(int64) :: bt_size, at_size, ct_size
+    real(sp), pointer :: Bt(:,:), At(:,:), Ct(:,:)
+    integer(i64) :: bt_size, at_size, ct_size
     
     ! Loop variables
-    integer(int64) :: jj, j_col, k0, k1, kt_size
-    integer(int64) :: n_idx, ch_idx, kh_idx, kw_idx, i_idx
-    integer(int64) :: h_out_pos, w_out_pos, h_in_pos, w_in_pos
-    integer(int64) :: in_idx, out_idx, rem
+    integer(i64) :: jj, j_col, k0, k1, kt_size
+    integer(i64) :: n_idx, ch_idx, kh_idx, kw_idx, i_idx
+    integer(i64) :: h_out_pos, w_out_pos, h_in_pos, w_in_pos
+    integer(i64) :: in_idx, out_idx, rem
     
     start_time = now_s()
     
@@ -320,15 +320,15 @@ contains
   ! Pack im2col data into Bt - column major with correct indexing
   subroutine pack_bt_columns(input, Bt, j0, local_cols, tiles, &
                             N, C, H, W, kernel_size, stride, pad, H_out, W_out, I)
-    real(real32), intent(in) :: input(:)
-    real(real32), intent(out) :: Bt(:,:)
-    integer(int64), intent(in) :: j0, local_cols, I
+    real(sp), intent(in) :: input(:)
+    real(sp), intent(out) :: Bt(:,:)
+    integer(i64), intent(in) :: j0, local_cols, I
     type(tile_config_t), intent(in) :: tiles
     integer, intent(in) :: N, C, H, W, kernel_size, stride, pad, H_out, W_out
     
-    integer(int64) :: jj, j_col, i_row, n_idx, ch_idx, kh_idx, kw_idx
-    integer(int64) :: h_out_pos, w_out_pos, h_in_pos, w_in_pos, in_idx
-    integer(int64) :: n_out, rem
+    integer(i64) :: jj, j_col, i_row, n_idx, ch_idx, kh_idx, kw_idx
+    integer(i64) :: h_out_pos, w_out_pos, h_in_pos, w_in_pos, in_idx
+    integer(i64) :: n_out, rem
     
     Bt = 0.0
     
@@ -382,11 +382,11 @@ contains
 
   ! Load weight block At(Kt, I_pad) from weights(K, I)
   subroutine load_a_block(weights, At, k0, kt_size, I, I_pad, K)
-    real(real32), intent(in) :: weights(:)
-    real(real32), intent(out) :: At(:,:)
-    integer(int64), intent(in) :: k0, kt_size, I, I_pad, K
+    real(sp), intent(in) :: weights(:)
+    real(sp), intent(out) :: At(:,:)
+    integer(i64), intent(in) :: k0, kt_size, I, I_pad, K
     
-    integer(int64) :: kt, i_idx, w_idx
+    integer(i64) :: kt, i_idx, w_idx
     
     At = 0.0
     
@@ -410,14 +410,14 @@ contains
 
   ! GEMM microkernel: Ct = At * Bt using AVX-512 optimized kernel
   subroutine adaptive_gemm_microkernel(At, Bt, Ct, kt_size, nt_size, I_pad)
-    real(real32), intent(in) :: At(:,:), Bt(:,:)
-    real(real32), intent(out) :: Ct(:,:)
+    real(sp), intent(in) :: At(:,:), Bt(:,:)
+    real(sp), intent(out) :: Ct(:,:)
     integer, intent(in) :: kt_size, nt_size, I_pad
     
     ! Flatten 2D arrays to 1D for AVX-512 kernel
     ! At is kt_size x I_pad, Bt is I_pad x nt_size, Ct is kt_size x nt_size
     ! We need to transpose At for column-major GEMM
-    real(real32), allocatable :: At_flat(:), Bt_flat(:), Ct_flat(:)
+    real(sp), allocatable :: At_flat(:), Bt_flat(:), Ct_flat(:)
     integer :: i, j, idx
     
     allocate(At_flat(kt_size * I_pad))
@@ -461,14 +461,14 @@ contains
 
   ! Write Ct block to output with correct accumulation
   subroutine write_c_block(Ct, output, k0, kt_size, j0, local_cols, H_out, W_out, K, N_total, N)
-    real(real32), intent(in) :: Ct(:,:)
-    real(real32), intent(inout) :: output(:)
-    integer(int64), intent(in) :: k0, kt_size, j0, local_cols, H_out, W_out, K, N_total
+    real(sp), intent(in) :: Ct(:,:)
+    real(sp), intent(inout) :: output(:)
+    integer(i64), intent(in) :: k0, kt_size, j0, local_cols, H_out, W_out, K, N_total
     integer, intent(in) :: N
     
-    integer(int64) :: kt, jj, j_col, out_idx
-    integer(int64) :: n_out, h_out_pos, w_out_pos, rem
-    integer(int64) :: k_idx
+    integer(i64) :: kt, jj, j_col, out_idx
+    integer(i64) :: n_out, h_out_pos, w_out_pos, rem
+    integer(i64) :: k_idx
     
     ! Output layout: [N, K, H_out, W_out]
     

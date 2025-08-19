@@ -1,15 +1,15 @@
 program test_compute_shader
-  use iso_fortran_env, only: int32, int64, real32, real64
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_kernels
-  use sparkle_compute_shader
+  use kinds
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_kernels
+  use sporkle_compute_shader
   implicit none
   
-  type(sparkle_kernel) :: kernel
+  type(sporkle_kernel) :: kernel
   type(compute_shader) :: shader
   type(memory_handle) :: a_mem, b_mem, c_mem
-  integer(int64) :: n
+  integer(i64) :: n
   
   print *, "🎮 Testing Compute Shader Translation"
   print *, "===================================="
@@ -99,6 +99,6 @@ program test_compute_shader
   print *, "Note: This demonstrates GLSL generation from Fortran kernels."
   print *, "Actual GPU execution would require OpenGL/Vulkan context."
   print *, ""
-  print *, "The Sparkle Way: Write Fortran, run everywhere! 🌟"
+  print *, "The Sporkle Way: Write Fortran, run everywhere! 🌟"
 
 end program test_compute_shader

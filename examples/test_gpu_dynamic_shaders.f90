@@ -2,8 +2,8 @@ program test_gpu_dynamic_shaders
   use iso_c_binding
   use gpu_opengl_interface
   use gpu_dynamic_execution
-  use sparkle_types
-  use iso_fortran_env, only: real32, real64
+  use sporkle_types
+  use kinds
   implicit none
   
   ! Test parameters (ResNet-50 first layer)
@@ -12,7 +12,7 @@ program test_gpu_dynamic_shaders
   integer, parameter :: H_out = 112, W_out = 112
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   
   print *, "=== GPU Dynamic Shader Execution Test ==="
   print *, ""

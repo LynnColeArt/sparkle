@@ -1,4 +1,4 @@
-# Sparkle Makefile - The People's Build System
+# Sporkle Makefile - The People's Build System
 # Simple, explicit, no magic
 
 FC = gfortran
@@ -17,30 +17,30 @@ $(shell mkdir -p $(BUILD_DIR))
 
 # Fortran modules (order matters for dependencies!)
 MODULES = \
-	$(SRC_DIR)/sparkle_types.f90 \
-	$(SRC_DIR)/sparkle_mesh_types.f90 \
-	$(SRC_DIR)/sparkle_error_handling.f90 \
-	$(SRC_DIR)/sparkle_config.f90 \
-	$(SRC_DIR)/sparkle_memory.f90 \
-	$(SRC_DIR)/sparkle_kernels.f90 \
-	$(SRC_DIR)/sparkle_safe_kernels.f90 \
-	$(SRC_DIR)/sparkle_profile.f90 \
-	$(SRC_DIR)/sparkle_scheduler.f90 \
-	$(SRC_DIR)/sparkle_execute.f90 \
-	$(SRC_DIR)/sparkle_collectives.f90 \
+	$(SRC_DIR)/sporkle_types.f90 \
+	$(SRC_DIR)/sporkle_mesh_types.f90 \
+	$(SRC_DIR)/sporkle_error_handling.f90 \
+	$(SRC_DIR)/sporkle_config.f90 \
+	$(SRC_DIR)/sporkle_memory.f90 \
+	$(SRC_DIR)/sporkle_kernels.f90 \
+	$(SRC_DIR)/sporkle_safe_kernels.f90 \
+	$(SRC_DIR)/sporkle_profile.f90 \
+	$(SRC_DIR)/sporkle_scheduler.f90 \
+	$(SRC_DIR)/sporkle_execute.f90 \
+	$(SRC_DIR)/sporkle_collectives.f90 \
 	$(SRC_DIR)/cpu_device.f90 \
-	$(SRC_DIR)/sparkle_discovery.f90 \
-	$(SRC_DIR)/sparkle_gpu_kernels.f90 \
-	$(SRC_DIR)/sparkle_gpu_safe_detect.f90 \
-	$(SRC_DIR)/sparkle_gpu_dispatch.f90 \
-	$(SRC_DIR)/sparkle_gpu_backend_detect.f90 \
-	$(SRC_DIR)/sparkle_gpu_backend.f90 \
-	$(SRC_DIR)/sparkle_metal_kernels.f90 \
-	$(SRC_DIR)/sparkle_gpu_metal.f90 \
-	$(SRC_DIR)/sparkle_memory_metal.f90 \
-	$(SRC_DIR)/sparkle_amx.f90 \
-	$(SRC_DIR)/sparkle_neural_engine.f90 \
-	$(SRC_DIR)/sparkle_apple_orchestrator.f90
+	$(SRC_DIR)/sporkle_discovery.f90 \
+	$(SRC_DIR)/sporkle_gpu_kernels.f90 \
+	$(SRC_DIR)/sporkle_gpu_safe_detect.f90 \
+	$(SRC_DIR)/sporkle_gpu_dispatch.f90 \
+	$(SRC_DIR)/sporkle_gpu_backend_detect.f90 \
+	$(SRC_DIR)/sporkle_gpu_backend.f90 \
+	$(SRC_DIR)/sporkle_metal_kernels.f90 \
+	$(SRC_DIR)/sporkle_gpu_metal.f90 \
+	$(SRC_DIR)/sporkle_memory_metal.f90 \
+	$(SRC_DIR)/sporkle_amx.f90 \
+	$(SRC_DIR)/sporkle_neural_engine.f90 \
+	$(SRC_DIR)/sporkle_apple_orchestrator.f90
 
 # Object files
 OBJECTS = $(MODULES:$(SRC_DIR)/%.f90=$(BUILD_DIR)/%.o)
@@ -73,7 +73,7 @@ test_metal_baseline_comparison: $(OBJECTS) $(METAL_OBJ) $(EXAMPLES_DIR)/test_met
 	@echo "Run with: ./build/test_metal_baseline_comparison"
 
 info:
-	@echo "🌟 Building Sparkle - The People's AI Infrastructure"
+	@echo "🌟 Building Sporkle - The People's AI Infrastructure"
 	@echo "=================================================="
 	@echo ""
 
@@ -116,7 +116,7 @@ run: test_metal
 examples: $(OBJECTS)
 	@echo "Building examples..."
 	$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
-		$(EXAMPLES_DIR)/hello_sparkle.f90 -o $(BUILD_DIR)/hello_sparkle
+		$(EXAMPLES_DIR)/hello_sporkle.f90 -o $(BUILD_DIR)/hello_sporkle
 	$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) \
 		$(EXAMPLES_DIR)/device_info.f90 -o $(BUILD_DIR)/device_info
 	@echo "✅ Examples built!"

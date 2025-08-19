@@ -1,5 +1,5 @@
 module convolution_kernels
-  use iso_fortran_env
+  use kinds
   implicit none
 
 contains
@@ -7,15 +7,15 @@ contains
   !@kernel local_size=[64, 1, 1]
   subroutine conv2d_direct(idx, input_data, weights, output_data, &
                           N, H, W, C, K, kernel_size, stride, pad, H_out, W_out) 
-    integer(int32), intent(in), value :: idx
-    real(real32), intent(in) :: input_data(:), weights(:)
-    real(real32), intent(out) :: output_data(:)
-    integer(int32), intent(in), value :: N, H, W, C, K
-    integer(int32), intent(in), value :: kernel_size, stride, pad, H_out, W_out
+    integer(i32), intent(in), value :: idx
+    real(sp), intent(in) :: input_data(:), weights(:)
+    real(sp), intent(out) :: output_data(:)
+    integer(i32), intent(in), value :: N, H, W, C, K
+    integer(i32), intent(in), value :: kernel_size, stride, pad, H_out, W_out
     
     integer :: n, k, h_out, w_out, c, kh, kw, h_in, w_in
     integer :: out_idx, in_idx, weight_idx
-    real(real32) :: sum
+    real(sp) :: sum
     
     ! Check bounds
     if (idx >= N * K * H_out * W_out) return

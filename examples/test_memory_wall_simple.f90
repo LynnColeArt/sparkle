@@ -3,16 +3,16 @@
 ! Focused test without dependencies
 
 program test_memory_wall_simple
-  use iso_fortran_env, only: real32, int64
+  use kinds
   use memory_wall_breakthrough, only: fused_conv2d_hot_cache, naive_conv2d_cold_cache
   implicit none
   
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
   integer :: i
-  real(real32) :: time_hot, time_cold, speedup
-  integer(int64) :: total_flops
-  real(real32) :: gflops_hot, gflops_cold
+  real(sp) :: time_hot, time_cold, speedup
+  integer(i64) :: total_flops
+  real(sp) :: gflops_hot, gflops_cold
   
   print *, "🧪 Memory Wall Breakthrough Test (Simple)"
   print *, "========================================"

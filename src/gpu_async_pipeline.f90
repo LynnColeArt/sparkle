@@ -1,8 +1,8 @@
 module gpu_async_pipeline
   use iso_c_binding
-  use sparkle_types
+  use sporkle_types
   use gpu_opengl_interface
-  use iso_fortran_env, only: real32, real64
+  use kinds
   implicit none
   
   private
@@ -47,14 +47,14 @@ contains
   ! Benchmark different pipeline modes
   subroutine benchmark_pipeline_modes(input, weights, output, &
                                      N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), dimension(:), intent(in) :: input
-    real(real32), dimension(:), intent(in) :: weights  
-    real(real32), dimension(:), intent(out) :: output
+    real(sp), dimension(:), intent(in) :: input
+    real(sp), dimension(:), intent(in) :: weights  
+    real(sp), dimension(:), intent(out) :: output
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     type(gpu_pipeline_config) :: config
-    real(real32) :: time_ms, baseline_time
-    real(real64) :: gflops, speedup
+    real(sp) :: time_ms, baseline_time
+    real(dp) :: gflops, speedup
     integer(c_int64_t) :: flop_count
     
     ! Calculate FLOPs
@@ -147,11 +147,11 @@ contains
   function execute_pipelined_conv2d(config, input, weights, output, &
                                    N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
     type(gpu_pipeline_config), intent(in) :: config
-    real(real32), dimension(:), intent(in) :: input
-    real(real32), dimension(:), intent(in) :: weights
-    real(real32), dimension(:), intent(out) :: output
+    real(sp), dimension(:), intent(in) :: input
+    real(sp), dimension(:), intent(in) :: weights
+    real(sp), dimension(:), intent(out) :: output
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
-    real(real32) :: time_ms
+    real(sp) :: time_ms
     
     ! For now, just call the reference implementation
     ! TODO: Implement actual pipelining with OpenGL sync objects

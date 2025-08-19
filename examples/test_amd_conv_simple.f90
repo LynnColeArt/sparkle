@@ -1,8 +1,8 @@
 program test_amd_conv_simple
   use iso_c_binding
-  use sparkle_types
-  use sparkle_glsl_compute
-  use sparkle_glsl_generator
+  use sporkle_types
+  use sporkle_glsl_compute
+  use sporkle_glsl_generator
   implicit none
   
   type(glsl_kernel) :: kernel

@@ -117,7 +117,7 @@ end type
 
 ### Phase 4: Integration (Week 2-3)
 1. Update async executor
-2. Modify sparkle_conv2d to use cache
+2. Modify sporkle_conv2d to use cache
 3. Add performance metrics
 4. Create tests
 
@@ -226,4 +226,4 @@ shader_cache/
 - OpenGL 4.6 Spec: `glGetProgramBinary`, `glProgramBinary`
 - ARB_get_program_binary extension
 - Our async executor: `gpu_async_executor.f90`
-- Dynamic shader system: `sparkle_dynamic_shader_system.f90`
+- Dynamic shader system: `sporkle_dynamic_shader_system.f90`

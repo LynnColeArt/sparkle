@@ -1,6 +1,6 @@
 program benchmark_v3_fixed
-  use iso_fortran_env, only: real32, real64, int32, int64
-  use sparkle_conv2d_v3
+  use kinds
+  use sporkle_conv2d_v3
   use omp_lib
   implicit none
   
@@ -10,15 +10,15 @@ program benchmark_v3_fixed
   integer, parameter :: NUM_THREADS_TEST = 4
   
   ! Arrays
-  real(real32), allocatable :: input(:,:,:,:)
-  real(real32), allocatable :: weights(:,:,:,:)
-  real(real32), allocatable :: bias(:)
-  real(real32), allocatable :: output(:,:,:,:)
+  real(sp), allocatable :: input(:,:,:,:)
+  real(sp), allocatable :: weights(:,:,:,:)
+  real(sp), allocatable :: bias(:)
+  real(sp), allocatable :: output(:,:,:,:)
   
   ! Timing variables
-  real(real64) :: start_time, end_time
-  real(real64) :: v3_time, cache_benefit
-  real(real64) :: total_flops
+  real(dp) :: start_time, end_time
+  real(dp) :: v3_time, cache_benefit
+  real(dp) :: total_flops
   integer :: i, test
   
   ! Test configurations
@@ -37,7 +37,7 @@ program benchmark_v3_fixed
   tests(2) = test_config(8, 56, 56, 256, 256, 3, 3, 1, 1, 56, 56, 3, "ResNet middle layer")
   tests(3) = test_config(32, 14, 14, 512, 512, 3, 3, 1, 1, 14, 14, 3, "ResNet deep layer")
   
-  print *, "🚀 Sparkle Conv2D V3 Performance Benchmark (Fixed)"
+  print *, "🚀 Sporkle Conv2D V3 Performance Benchmark (Fixed)"
   print *, "=================================================="
   print *, ""
   print *, "Hardware threads available:", omp_get_max_threads()
@@ -45,7 +45,7 @@ program benchmark_v3_fixed
   
   ! Initialize V3
   print *, "📦 Initializing Conv2D V3..."
-  call sparkle_conv2d_v3_init(use_dynamic=.true., use_async=.false., use_auto=.false.)
+  call sporkle_conv2d_v3_init(use_dynamic=.true., use_async=.false., use_auto=.false.)
   
   ! Test each configuration
   do test = 1, 3
@@ -60,15 +60,15 @@ program benchmark_v3_fixed
     call allocate_test_arrays(tests(test))
     
     ! Calculate FLOPs
-    total_flops = real(tests(test)%N, real64) * real(tests(test)%K, real64) * &
-                  real(tests(test)%H_out, real64) * real(tests(test)%W_out, real64) * &
-                  real(tests(test)%C, real64) * real(tests(test)%kernel_size, real64) * &
-                  real(tests(test)%kernel_size, real64) * 2.0_real64
+    total_flops = real(tests(test)%N, dp) * real(tests(test)%K, dp) * &
+                  real(tests(test)%H_out, dp) * real(tests(test)%W_out, dp) * &
+                  real(tests(test)%C, dp) * real(tests(test)%kernel_size, dp) * &
+                  real(tests(test)%kernel_size, dp) * 2.0_dp
     
     ! Warmup
     print *, "   Warming up..."
     do i = 1, NUM_WARMUP
-      call sparkle_conv2d_v3_execute(input, weights, bias, output, &
+      call sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                      tests(test)%stride, tests(test)%stride, &
                                      tests(test)%pad, tests(test)%pad)
     end do
@@ -78,7 +78,7 @@ program benchmark_v3_fixed
     print *, "🔸 Single GPU execution test:"
     call cpu_time(start_time)
     do i = 1, NUM_ITERATIONS
-      call sparkle_conv2d_v3_execute(input, weights, bias, output, &
+      call sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                      tests(test)%stride, tests(test)%stride, &
                                      tests(test)%pad, tests(test)%pad)
     end do
@@ -102,7 +102,7 @@ program benchmark_v3_fixed
       ! Each thread executes sequentially, but all threads run in parallel
       ! This tests cache contention and efficiency
       !$omp critical(gpu_exec)
-      call sparkle_conv2d_v3_execute(input, weights, bias, output, &
+      call sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                      tests(test)%stride, tests(test)%stride, &
                                      tests(test)%pad, tests(test)%pad)
       !$omp end critical(gpu_exec)
@@ -121,10 +121,10 @@ program benchmark_v3_fixed
   
   ! Show final statistics
   print *, ""
-  call sparkle_conv2d_v3_stats()
+  call sporkle_conv2d_v3_stats()
   
   ! Cleanup
-  call sparkle_conv2d_v3_cleanup()
+  call sporkle_conv2d_v3_cleanup()
   
   print *, ""
   print *, "✅ Benchmark complete!"

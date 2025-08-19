@@ -1,15 +1,15 @@
 ! Simple test of automatic device selection
 program test_auto_selection_simple
-  use iso_fortran_env, only: real32, int64
-  use sparkle_conv2d_auto_selector
+  use kinds
+  use sporkle_conv2d_auto_selector
   implicit none
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: i
-  real(real32) :: time_ms
-  integer(int64) :: total_flops
-  real(real32) :: gflops
+  real(sp) :: time_ms
+  integer(i64) :: total_flops
+  real(sp) :: gflops
   
   ! Test 1: Tiny workload (should use CPU)
   integer, parameter :: N1 = 1, C1 = 3, H1 = 32, W1 = 32, K1 = 64

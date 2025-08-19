@@ -11,7 +11,7 @@
 ! - Seamless integration with existing code
 
 module gpu_opengl_cached
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use iso_c_binding
   use gpu_opengl_interface
   use gpu_program_cache
@@ -107,10 +107,10 @@ contains
   end subroutine gpu_cleanup_cached
   
   ! Execute conv2d with cached shaders
-  real(real32) function gpu_execute_conv2d_cached(input, weights, output, &
+  real(sp) function gpu_execute_conv2d_cached(input, weights, output, &
                                                   N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in), target :: input(:), weights(:)
-    real(real32), intent(out), target :: output(:)
+    real(sp), intent(in), target :: input(:), weights(:)
+    real(sp), intent(out), target :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     ! For now, use the reference implementation directly

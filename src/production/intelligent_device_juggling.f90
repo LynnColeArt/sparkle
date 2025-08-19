@@ -25,8 +25,8 @@
 ! DO NOT MODIFY THIS FILE DIRECTLY
 
 module intelligent_device_juggling
-  use iso_fortran_env, only: real32, real64, int64
-  use sparkle_gpu_dispatch, only: gpu_device, init_gpu_device
+  use kinds
+  use sporkle_gpu_dispatch, only: gpu_device, init_gpu_device
   implicit none
   
   private
@@ -40,21 +40,21 @@ module intelligent_device_juggling
     character(len=32) :: device_type  ! "CPU", "GPU", "APU", etc.
     
     ! Performance characteristics
-    real(real32) :: peak_gflops = 0.0
-    real(real32) :: memory_bandwidth_gb = 0.0  
-    real(real32) :: cache_size_mb = 0.0
+    real(sp) :: peak_gflops = 0.0
+    real(sp) :: memory_bandwidth_gb = 0.0  
+    real(sp) :: cache_size_mb = 0.0
     integer :: cores = 0
     logical :: available = .false.
     
     ! Workload-specific performance (learned)
-    real(real32) :: conv2d_gflops = 0.0
-    real(real32) :: gemm_gflops = 0.0
-    real(real32) :: memory_copy_gb = 0.0
+    real(sp) :: conv2d_gflops = 0.0
+    real(sp) :: gemm_gflops = 0.0
+    real(sp) :: memory_copy_gb = 0.0
     
     ! Optimization parameters
     integer :: optimal_tile_size = 64
     integer :: optimal_batch_size = 1
-    real(real32) :: efficiency_ratio = 0.0  ! actual/theoretical performance
+    real(sp) :: efficiency_ratio = 0.0  ! actual/theoretical performance
   end type device_profile
   
   ! Workload partitioning strategy
@@ -70,8 +70,8 @@ module intelligent_device_juggling
     logical :: use_gpu = .false.
     
     ! Performance prediction
-    real(real32) :: predicted_time_ms = 0.0
-    real(real32) :: predicted_gflops = 0.0
+    real(sp) :: predicted_time_ms = 0.0
+    real(sp) :: predicted_gflops = 0.0
   end type workload_partition
   
   ! Overall juggling strategy
@@ -82,9 +82,9 @@ module intelligent_device_juggling
     
     ! Learning parameters
     integer :: total_runs = 0
-    real(real32) :: average_cpu_gflops = 0.0
-    real(real32) :: average_gpu_gflops = 0.0
-    real(real32) :: best_combined_gflops = 0.0
+    real(sp) :: average_cpu_gflops = 0.0
+    real(sp) :: average_gpu_gflops = 0.0
+    real(sp) :: best_combined_gflops = 0.0
     
     ! Adaptive parameters
     logical :: learning_mode = .true.
@@ -177,12 +177,12 @@ contains
   ! Layer 2: Optimize workload distribution across devices
   function optimize_workload_distribution(strategy, total_flops, workload_type) result(partition)
     type(juggling_strategy), intent(inout) :: strategy
-    integer(int64), intent(in) :: total_flops
+    integer(i64), intent(in) :: total_flops
     character(len=*), intent(in) :: workload_type
     type(workload_partition) :: partition
     
-    real(real32) :: cpu_time_ms, gpu_time_ms, combined_time_ms
-    real(real32) :: workload_intensity
+    real(sp) :: cpu_time_ms, gpu_time_ms, combined_time_ms
+    real(sp) :: workload_intensity
     
     print *, "🧠 Layer 2: Intelligent Workload Distribution"
     print *, "===========================================" 
@@ -242,7 +242,7 @@ contains
     type(juggling_strategy), intent(in) :: strategy
     type(workload_partition), intent(inout) :: partition
     
-    real(real32) :: cpu_ratio, gpu_ratio, total_ratio
+    real(sp) :: cpu_ratio, gpu_ratio, total_ratio
     
     ! Work distribution based on relative performance
     cpu_ratio = strategy%cpu_profile%conv2d_gflops
@@ -271,10 +271,10 @@ contains
   subroutine predict_partition_performance(strategy, partition, workload_gflops)
     type(juggling_strategy), intent(in) :: strategy
     type(workload_partition), intent(inout) :: partition
-    real(real32), intent(in) :: workload_gflops
+    real(sp), intent(in) :: workload_gflops
     
-    real(real32) :: cpu_work_gflops, gpu_work_gflops
-    real(real32) :: cpu_time_ms, gpu_time_ms
+    real(sp) :: cpu_work_gflops, gpu_work_gflops
+    real(sp) :: cpu_time_ms, gpu_time_ms
     
     if (partition%use_cpu .and. partition%use_gpu) then
       ! Hybrid execution
@@ -309,16 +309,16 @@ contains
   end subroutine predict_partition_performance
   
   ! Execute convolution with intelligent device juggling
-  real(real32) function execute_intelligent_conv2d(input, weights, output, &
+  real(sp) function execute_intelligent_conv2d(input, weights, output, &
                                                    N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    !use sparkle_conv2d, only: conv2d_cpu, conv2d_gpu
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    !use sporkle_conv2d, only: conv2d_cpu, conv2d_gpu
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    integer(int64) :: total_flops
+    integer(i64) :: total_flops
     type(workload_partition) :: partition
-    real(real64) :: start_time, end_time
+    real(dp) :: start_time, end_time
     
     ! Calculate workload size
     total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
@@ -360,10 +360,10 @@ contains
   subroutine update_performance_model(strategy, partition, actual_time_ms, total_flops)
     type(juggling_strategy), intent(inout) :: strategy
     type(workload_partition), intent(in) :: partition
-    real(real32), intent(in) :: actual_time_ms
-    integer(int64), intent(in) :: total_flops
+    real(sp), intent(in) :: actual_time_ms
+    integer(i64), intent(in) :: total_flops
     
-    real(real32) :: actual_gflops
+    real(sp) :: actual_gflops
     
     if (actual_time_ms > 0.0) then
       actual_gflops = real(total_flops, real32) / (actual_time_ms * 1.0e6)

@@ -19,7 +19,7 @@ src/
     
   production/     # User-facing interfaces
     README.md     # How to create stable APIs
-    sparkle_conv2d.f90  # Production interface with implementation selection
+    sporkle_conv2d.f90  # Production interface with implementation selection
 ```
 
 ### Key Files Created

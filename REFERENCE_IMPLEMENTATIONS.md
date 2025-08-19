@@ -37,7 +37,7 @@ See DEVELOPMENT_PATTERNS.md for details.
 
 ### 3. Memory Management
 - **Status**: ✅ ESTABLISHED  
-- **Location**: `src/sparkle_memory.f90`
+- **Location**: `src/sporkle_memory.f90`
 - **Key Features**:
   - Automatic alignment
   - Usage tracking
@@ -45,7 +45,7 @@ See DEVELOPMENT_PATTERNS.md for details.
 
 ### 4. Parser V2
 - **Status**: ✅ ESTABLISHED
-- **Location**: `src/sparkle_shader_parser_v2.f90`
+- **Location**: `src/sporkle_shader_parser_v2.f90`
 - **Key Features**:
   - Multi-line signature support
   - Comma-separated variable parsing

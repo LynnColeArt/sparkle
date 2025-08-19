@@ -1,18 +1,18 @@
 program benchmark_saxpy
-  use iso_fortran_env
+  use kinds
   use iso_c_binding
-  use sparkle_fortran_shaders
+  use sporkle_fortran_shaders
   use gl_constants
   implicit none
   
   integer, parameter :: N = 1000000  ! 1M elements
   type(glsl_context) :: ctx
   integer :: status, i
-  real(real32), allocatable, target :: x(:), y(:), y_ref(:)
-  real(real32) :: a
+  real(sp), allocatable, target :: x(:), y(:), y_ref(:)
+  real(sp) :: a
   integer :: x_buffer, y_buffer
   type(c_ptr) :: buffers(2)
-  real(real64) :: start_time, end_time, gpu_time, cpu_time_ms
+  real(dp) :: start_time, end_time, gpu_time, cpu_time_ms
   
   print *, "=== SAXPY Benchmark ==="
   print *, "N =", N
@@ -111,7 +111,7 @@ program benchmark_saxpy
       
       integer, parameter :: GL_MAP_READ_BIT = int(z'0001', c_int)
       type(c_ptr) :: ptr
-      real(real32), pointer :: mapped(:)
+      real(sp), pointer :: mapped(:)
       real :: max_error
       
       ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0_c_intptr_t, &

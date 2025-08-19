@@ -131,7 +131,7 @@ end function
 function compile_glsl_kernel(device, shader_source) result(kernel)
     type(amdgpu_device), intent(in) :: device
     character(len=*), intent(in) :: shader_source
-    type(sparkle_kernel) :: kernel
+    type(sporkle_kernel) :: kernel
     
     ! Use OpenGL compute shader API
     kernel%shader_id = glCreateShader(GL_COMPUTE_SHADER)
@@ -152,7 +152,7 @@ end function
 
 ```fortran
 subroutine dispatch_conv_glsl(kernel, input, weights, output)
-    type(sparkle_kernel), intent(in) :: kernel
+    type(sporkle_kernel), intent(in) :: kernel
     type(amdgpu_buffer), intent(in) :: input, weights
     type(amdgpu_buffer), intent(inout) :: output
     

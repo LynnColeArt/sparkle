@@ -1,7 +1,7 @@
 ! Benchmark to demonstrate the 6.5x speedup of async pipeline
 program test_async_pipeline_benchmark
-  use iso_fortran_env, only: real32, int64, real64
-  use sparkle_conv2d_juggling
+  use kinds
+  use sporkle_conv2d_juggling
   implicit none
   
   ! Test parameters - ResNet-50 layer 3 size
@@ -11,14 +11,14 @@ program test_async_pipeline_benchmark
   integer :: H_out, W_out
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: input_size, weight_size, output_size
-  real(real32) :: time_ms
-  real(real64) :: total_time_sync, total_time_async
-  real(real64) :: start_time, end_time
+  real(sp) :: time_ms
+  real(dp) :: total_time_sync, total_time_async
+  real(dp) :: start_time, end_time
   integer :: i, iter
-  integer(int64) :: total_flops
-  real(real32) :: gflops_sync, gflops_async
+  integer(i64) :: total_flops
+  real(sp) :: gflops_sync, gflops_async
   
   ! Calculate output dimensions
   H_out = (H + 2*pad - kernel_size) / stride + 1

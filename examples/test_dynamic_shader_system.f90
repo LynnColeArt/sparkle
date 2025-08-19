@@ -1,7 +1,7 @@
 program test_dynamic_shader_system
   use iso_c_binding
-  use sparkle_dynamic_shader_system
-  use sparkle_glsl_generator
+  use sporkle_dynamic_shader_system
+  use sporkle_glsl_generator
   implicit none
   
   type(shader_system) :: shader_sys

@@ -1,13 +1,13 @@
 program test_pm4_compute
-  use iso_fortran_env, only: real32, int32, int64
-  use sparkle_pm4_compute
-  use sparkle_pm4_packets
+  use kinds
+  use sporkle_pm4_compute
+  use sporkle_pm4_packets
   implicit none
   
   logical :: success
   integer :: i
-  real(real32) :: input(256), output(256), expected(256)
-  real(real32) :: time_ms
+  real(sp) :: input(256), output(256), expected(256)
+  real(sp) :: time_ms
   integer :: N, H, W, C, K, kernel_size, stride, pad
   integer :: H_out, W_out
   
@@ -29,7 +29,7 @@ program test_pm4_compute
   ! Test 2: Compile a shader
   print *, "🔨 Test 2: Shader Compilation"
   block
-    integer(int64) :: shader_addr
+    integer(i64) :: shader_addr
     
     shader_addr = pm4_compile_shader("test_shader", "s_endpgm")
     if (shader_addr == 0) then

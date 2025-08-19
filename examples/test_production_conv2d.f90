@@ -2,8 +2,8 @@
 ! This verifies that the reference implementation has been properly integrated
 
 program test_production_conv2d
-  use iso_fortran_env, only: real32
-  use sparkle_conv2d, only: conv2d_cpu, conv2d_gpu, conv2d_auto
+  use kinds
+  use sporkle_conv2d, only: conv2d_cpu, conv2d_gpu, conv2d_auto
   implicit none
   
   ! ResNet-50 first layer parameters
@@ -12,12 +12,12 @@ program test_production_conv2d
   integer, parameter :: H_out = 112, W_out = 112
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:), output_cpu(:), output_gpu(:)
+  real(sp), allocatable :: input(:), weights(:), output_cpu(:), output_gpu(:)
   
   ! Dimensions
   integer :: input_size, weight_size, output_size
   integer :: i
-  real(real32) :: max_diff
+  real(sp) :: max_diff
   
   print *, "🧪 Testing Production Conv2D Interface"
   print *, "====================================="

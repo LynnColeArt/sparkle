@@ -7,7 +7,7 @@ Implemented adaptive parameter passing for the Fortran GPU DSL, allowing automat
 
 ## What We Built
 
-### 1. Core Infrastructure (`sparkle_fortran_params.f90`)
+### 1. Core Infrastructure (`sporkle_fortran_params.f90`)
 - Three parameter passing methods:
   - **PARAMS_UNIFORM**: OpenGL uniform variables
   - **PARAMS_BUFFER**: Dedicated parameter buffer (binding 15)
@@ -15,13 +15,13 @@ Implemented adaptive parameter passing for the Fortran GPU DSL, allowing automat
 - Benchmarking framework that tests all methods and selects the fastest
 - Strategy pattern for runtime method selection
 
-### 2. Enhanced Parser (`sparkle_shader_parser_v2.f90`)
+### 2. Enhanced Parser (`sporkle_shader_parser_v2.f90`)
 - Parses Fortran kernels with scalar (value) parameters
 - Separates array arguments from scalar parameters
 - Generates different GLSL based on selected method
 - Handles complex kernel signatures like im2col
 
-### 3. Integration Module (`sparkle_fortran_shaders_v2.f90`)
+### 3. Integration Module (`sporkle_fortran_shaders_v2.f90`)
 - Enhanced API: `sporkle_compile_and_dispatch_v2`
 - Shader caching system
 - Automatic parameter method selection

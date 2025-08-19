@@ -1,9 +1,9 @@
-# Sparkle Style Quick Reference
+# Sporkle Style Quick Reference
 
 ## 🎯 The Essentials
 
 ```fortran
-module sparkle_example
+module sporkle_example
   use iso_fortran_env, only: int32, int64, real32, real64
   implicit none              ! ALWAYS
   private                   ! Default private
@@ -14,7 +14,7 @@ module sparkle_example
 
 | Type | Convention | Example |
 |------|------------|---------|
-| Modules | snake_case | `sparkle_memory` |
+| Modules | snake_case | `sporkle_memory` |
 | Types | PascalCase | `DeviceHandle` |
 | Functions | snake_case | `allocate_buffer` |
 | Variables | snake_case | `device_count` |

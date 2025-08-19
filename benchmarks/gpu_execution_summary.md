@@ -85,7 +85,7 @@ void main() {
    - Use the DSL parser just for metadata extraction and validation
    - Generate only the parameter bindings dynamically
 
-2. **Integration with Sparkle Execute**: Connect the GPU execution path to the main sparkle_execute module
+2. **Integration with Sparkle Execute**: Connect the GPU execution path to the main sporkle_execute module
 
 3. **Adaptive Selection**: Use the measured CPU vs GPU performance to automatically choose the best execution path
 

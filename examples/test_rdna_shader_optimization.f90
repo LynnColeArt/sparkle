@@ -1,7 +1,7 @@
 program test_rdna_shader_optimization
   use iso_c_binding
-  use sparkle_rdna_shader_generator
-  use sparkle_glsl_generator
+  use sporkle_rdna_shader_generator
+  use sporkle_glsl_generator
   implicit none
   
   type(rdna_config) :: rdna_cfg

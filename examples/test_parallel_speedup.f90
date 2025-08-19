@@ -1,28 +1,28 @@
 program test_parallel_speedup
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_ptr, c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_config
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_config
   use omp_lib
   implicit none
   
   integer :: n
-  type(sparkle_config_type) :: config
+  type(sporkle_config_type) :: config
   type(memory_handle) :: x_mem, y_mem, z_mem
-  real(real32), pointer :: x(:), y(:), z(:)
-  real(real64) :: start_time, end_time
-  real(real64) :: serial_time, parallel_time
-  real(real32) :: alpha
+  real(sp), pointer :: x(:), y(:), z(:)
+  real(dp) :: start_time, end_time
+  real(dp) :: serial_time, parallel_time
+  real(sp) :: alpha
   integer :: i, run
   
-  print *, "🚀 Sparkle Parallel Performance Analysis"
+  print *, "🚀 Sporkle Parallel Performance Analysis"
   print *, "======================================="
   print *, ""
   
   ! Configure for safety
   config%max_cpu_threads = 14
-  call sparkle_set_config(config)
+  call sporkle_set_config(config)
   
   ! Show thread configuration
   print '(A,I0)', "System threads: ", omp_get_max_threads()
@@ -130,7 +130,7 @@ program test_parallel_speedup
   
   ! Test 4: Reduction
   block
-    real(real32) :: sum_result
+    real(sp) :: sum_result
     
     call omp_set_num_threads(1)
     sum_result = 0.0

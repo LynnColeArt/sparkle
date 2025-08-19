@@ -1,13 +1,13 @@
 program test_metal_baseline_comparison
-  ! Compare Sparkle's Metal memory pool vs direct Metal API usage
+  ! Compare Sporkle's Metal memory pool vs direct Metal API usage
   ! Tests: allocation speed, memory usage, cache efficiency
   
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding
-  use sparkle_memory
-  use sparkle_gpu_metal
-  use sparkle_memory_metal
-  use sparkle_metal_kernels
+  use sporkle_memory
+  use sporkle_gpu_metal
+  use sporkle_memory_metal
+  use sporkle_metal_kernels
   implicit none
   
   type(metal_context) :: ctx
@@ -16,18 +16,18 @@ program test_metal_baseline_comparison
   integer :: i, j, k
   integer, parameter :: N_ITERATIONS = 100
   integer, parameter :: N_SIZES = 4
-  integer(int64) :: test_sizes(N_SIZES) = [1024*1024, 4*1024*1024, 16*1024*1024, &
+  integer(i64) :: test_sizes(N_SIZES) = [1024*1024, 4*1024*1024, 16*1024*1024, &
                                             64*1024*1024]
   character(len=10) :: size_labels(N_SIZES) = ["1 MB      ", "4 MB      ", &
                                                  "16 MB     ", "64 MB     "]
   
-  real(real64) :: start_time, end_time
-  real(real64) :: baseline_times(N_SIZES), pool_times(N_SIZES)
-  real(real64) :: baseline_total, pool_total
-  integer(int64) :: peak_memory_baseline, peak_memory_pool
+  real(dp) :: start_time, end_time
+  real(dp) :: baseline_times(N_SIZES), pool_times(N_SIZES)
+  real(dp) :: baseline_total, pool_total
+  integer(i64) :: peak_memory_baseline, peak_memory_pool
   
   print *, "========================================="
-  print *, "  Sparkle vs Baseline Metal Comparison"
+  print *, "  Sporkle vs Baseline Metal Comparison"
   print *, "========================================="
   print *, ""
   
@@ -105,9 +105,9 @@ program test_metal_baseline_comparison
   print *, ""
   
   ! ============================================
-  ! Test 2: Sparkle Metal Pool
+  ! Test 2: Sporkle Metal Pool
   ! ============================================
-  print *, "🌟 Testing SPARKLE Metal Pool"
+  print *, "🌟 Testing SPORKLE Metal Pool"
   print *, "-----------------------------"
   print *, "(Pooled allocation with caching)"
   print *, ""
@@ -158,7 +158,7 @@ program test_metal_baseline_comparison
   end do
   
   print *, ""
-  print '(A,F0.2,A)', "Sparkle total time: ", pool_total, " ms"
+  print '(A,F0.2,A)', "Sporkle total time: ", pool_total, " ms"
   print '(A,F0.2,A)', "Peak memory usage: ", real(peak_memory_pool) / real(1024**3), " GB"
   
   ! Show pool statistics
@@ -177,15 +177,15 @@ program test_metal_baseline_comparison
   
   do i = 1, N_SIZES
     block
-      real(real32) :: speedup
+      real(sp) :: speedup
       speedup = baseline_times(i) / pool_times(i)
     
     print '(A,A)', trim(size_labels(i)), ":"
     print '(A,F0.2,A)', "  Baseline: ", baseline_times(i), " ms"
-    print '(A,F0.2,A)', "  Sparkle:  ", pool_times(i), " ms"
+    print '(A,F0.2,A)', "  Sporkle:  ", pool_times(i), " ms"
     
     if (speedup > 1.0) then
-      print '(A,F0.1,A)', "  🏆 Sparkle is ", speedup, "x faster"
+      print '(A,F0.1,A)', "  🏆 Sporkle is ", speedup, "x faster"
     else
       print '(A,F0.1,A)', "  Baseline is ", 1.0/speedup, "x faster"
     end if
@@ -196,22 +196,22 @@ program test_metal_baseline_comparison
   print *, "Overall Performance:"
   print *, "-------------------"
   print '(A,F0.2,A)', "Baseline total: ", baseline_total, " ms"
-  print '(A,F0.2,A)', "Sparkle total:  ", pool_total, " ms"
-  print '(A,F0.1,A)', "🎯 Sparkle is ", baseline_total / pool_total, "x faster overall"
+  print '(A,F0.2,A)', "Sporkle total:  ", pool_total, " ms"
+  print '(A,F0.1,A)', "🎯 Sporkle is ", baseline_total / pool_total, "x faster overall"
   print *, ""
   
   print *, "Memory Efficiency:"
   print *, "-----------------"
   print '(A,F0.2,A)', "Baseline peak: ", real(peak_memory_baseline) / real(1024**3), " GB"
-  print '(A,F0.2,A)', "Sparkle peak:  ", real(peak_memory_pool) / real(1024**3), " GB"
+  print '(A,F0.2,A)', "Sporkle peak:  ", real(peak_memory_pool) / real(1024**3), " GB"
   
   if (peak_memory_pool < peak_memory_baseline) then
-    print '(A,F0.1,A)', "🎯 Sparkle uses ", &
+    print '(A,F0.1,A)', "🎯 Sporkle uses ", &
            real(peak_memory_baseline) / real(peak_memory_pool), "x less memory"
   end if
   
   print *, ""
-  print *, "Key Advantages of Sparkle Pool:"
+  print *, "Key Advantages of Sporkle Pool:"
   print *, "-------------------------------"
   print *, "✅ Buffer reuse eliminates allocation overhead"
   print *, "✅ Reduced memory fragmentation"
@@ -232,6 +232,6 @@ program test_metal_baseline_comparison
   call destroy_metal_context(ctx)
   
   print *, "========================================="
-  print *, "Sparkle: Smarter memory for the people!"
+  print *, "Sporkle: Smarter memory for the people!"
   
 end program test_metal_baseline_comparison

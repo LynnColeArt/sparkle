@@ -1,5 +1,5 @@
 program test_program_cache
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use gpu_program_cache
   use gpu_opengl_interface
   implicit none
@@ -105,8 +105,8 @@ program test_program_cache
   
   ! Time compilation of 10 shaders
   block
-    integer(int64) :: start_time, end_time, compile_time, lookup_time
-    real(real64) :: clock_rate
+    integer(i64) :: start_time, end_time, compile_time, lookup_time
+    real(dp) :: clock_rate
     
     call system_clock(start_time, count_rate=clock_rate)
     do i = 1, 10
@@ -182,7 +182,7 @@ contains
     ! For testing, we'll use a simplified version
     block
       integer :: shader_id
-      integer(int32) :: status
+      integer(i32) :: status
       
       ! In real implementation, this would call:
       ! prog_id = gpu_compile_compute_shader(source)
@@ -212,8 +212,8 @@ contains
   ! Sleep for milliseconds
   subroutine sleep_ms(ms)
     integer, intent(in) :: ms
-    integer(int64) :: start_time, current_time
-    real(real64) :: clock_rate
+    integer(i64) :: start_time, current_time
+    real(dp) :: clock_rate
     
     call system_clock(start_time, count_rate=clock_rate)
     do

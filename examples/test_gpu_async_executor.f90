@@ -1,5 +1,5 @@
 program test_gpu_async_executor
-  use iso_fortran_env, only: real32, real64, int64
+  use kinds
   use iso_c_binding
   use gpu_opengl_interface
   use gpu_async_executor
@@ -24,15 +24,15 @@ program test_gpu_async_executor
   integer, parameter :: W_out = 112
   
   ! Data arrays
-  real(real32), allocatable, target :: inputs(:,:)   ! Multiple input batches
-  real(real32), allocatable, target :: weights(:)
-  real(real32), allocatable, target :: outputs(:,:)  ! Multiple output batches
+  real(sp), allocatable, target :: inputs(:,:)   ! Multiple input batches
+  real(sp), allocatable, target :: weights(:)
+  real(sp), allocatable, target :: outputs(:,:)  ! Multiple output batches
   
   ! Timing
-  integer(int64) :: start_time, end_time, batch_start
-  integer(int64) :: sync_total_time, async_total_time
-  real(real64) :: clock_rate
-  real(real32) :: batch_time
+  integer(i64) :: start_time, end_time, batch_start
+  integer(i64) :: sync_total_time, async_total_time
+  real(dp) :: clock_rate
+  real(sp) :: batch_time
   
   ! GPU resources
   integer :: compute_program, weight_buffer
@@ -43,8 +43,8 @@ program test_gpu_async_executor
   integer :: set_id, completed_count
   
   ! Sizes
-  integer(int64) :: input_size, weight_size, output_size, flop_count
-  real(real64) :: sync_gflops, async_gflops, speedup
+  integer(i64) :: input_size, weight_size, output_size, flop_count
+  real(dp) :: sync_gflops, async_gflops, speedup
   
   print *, "=== GPU Async Executor Test ==="
   print *, ""
@@ -250,8 +250,8 @@ contains
 
   subroutine simulate_gpu_work(time_ms)
     real, intent(in) :: time_ms
-    integer(int64) :: start, current
-    real(real64) :: elapsed_ms
+    integer(i64) :: start, current
+    real(dp) :: elapsed_ms
     
     call system_clock(start)
     do
@@ -263,8 +263,8 @@ contains
   
   subroutine simulate_cpu_work(time_ms)
     real, intent(in) :: time_ms
-    integer(int64) :: start, current
-    real(real64) :: elapsed_ms
+    integer(i64) :: start, current
+    real(dp) :: elapsed_ms
     
     call system_clock(start)
     do

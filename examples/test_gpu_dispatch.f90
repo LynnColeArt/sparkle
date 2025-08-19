@@ -1,9 +1,9 @@
 program test_gpu_dispatch
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_gpu_dispatch
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_gpu_dispatch
   use omp_lib
   implicit none
   
@@ -12,15 +12,15 @@ program test_gpu_dispatch
   type(gpu_memory) :: d_x, d_y, d_z
   type(gpu_memory) :: d_a, d_b, d_c
   
-  real(real32), allocatable, target :: h_x(:), h_y(:), h_z(:)
-  real(real32), allocatable, target :: h_a(:,:), h_b(:,:), h_c(:,:)
-  real(real64) :: cpu_time_start, cpu_time_end
-  real(real64) :: gpu_time_start, gpu_time_end
-  real(real64) :: cpu_gflops, gpu_gflops, speedup
+  real(sp), allocatable, target :: h_x(:), h_y(:), h_z(:)
+  real(sp), allocatable, target :: h_a(:,:), h_b(:,:), h_c(:,:)
+  real(dp) :: cpu_time_start, cpu_time_end
+  real(dp) :: gpu_time_start, gpu_time_end
+  real(dp) :: cpu_gflops, gpu_gflops, speedup
   integer :: n, m
   integer :: i
   
-  print *, "🚀 Sparkle GPU Dispatch Test"
+  print *, "🚀 Sporkle GPU Dispatch Test"
   print *, "============================"
   print *, ""
   
@@ -145,8 +145,8 @@ program test_gpu_dispatch
   print *, "======================================="
   
   block
-    real(real64) :: theoretical_tflops, expected_tflops
-    real(real64) :: bandwidth_gbps
+    real(dp) :: theoretical_tflops, expected_tflops
+    real(dp) :: bandwidth_gbps
     
     theoretical_tflops = 61.0  ! RX 7900 XT theoretical
     bandwidth_gbps = 960.0     ! Memory bandwidth
@@ -193,6 +193,6 @@ program test_gpu_dispatch
   print *, "- Memory bandwidth: 24x (960 vs 32 GB/s)"
   print *, "- Compute: 100x (24 vs 0.25 TFLOPS)"
   print *, ""
-  print *, "🌟 The Sparkle Way: Democratizing GPU compute!"
+  print *, "🌟 The Sporkle Way: Democratizing GPU compute!"
   
 end program test_gpu_dispatch

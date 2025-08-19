@@ -11,7 +11,7 @@
 ! - Transparent fallback to compilation
 
 module gpu_program_cache_v2
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use iso_c_binding
   use gpu_binary_cache
   implicit none
@@ -29,11 +29,11 @@ module gpu_program_cache_v2
     integer :: program_id = 0          ! OpenGL program object
     character(len=256) :: key = ""     ! Unique identifier
     integer :: ref_count = 0           ! Active references
-    integer(int64) :: last_used = 0    ! Timestamp for LRU
-    integer(int64) :: compile_time = 0 ! Microseconds to compile
-    real(real32) :: performance = 0.0  ! Measured GFLOPS
+    integer(i64) :: last_used = 0    ! Timestamp for LRU
+    integer(i64) :: compile_time = 0 ! Microseconds to compile
+    real(sp) :: performance = 0.0  ! Measured GFLOPS
     logical :: is_binary_cached = .false. ! Saved to disk?
-    integer(int64) :: memory_size = 0  ! Estimated GPU memory usage
+    integer(i64) :: memory_size = 0  ! Estimated GPU memory usage
     integer :: binary_format = 0       ! Binary format if saved
     integer :: binary_size = 0         ! Size of binary on disk
   end type program_cache_entry
@@ -49,13 +49,13 @@ module gpu_program_cache_v2
     logical :: initialized = .false.
     
     ! Statistics
-    integer(int64) :: total_compilations = 0
-    integer(int64) :: cache_hits = 0
-    integer(int64) :: cache_misses = 0
-    integer(int64) :: binary_loads = 0     ! Successful binary loads
-    integer(int64) :: binary_saves = 0     ! Successful binary saves
-    integer(int64) :: total_compile_time = 0
-    integer(int64) :: memory_saved = 0
+    integer(i64) :: total_compilations = 0
+    integer(i64) :: cache_hits = 0
+    integer(i64) :: cache_misses = 0
+    integer(i64) :: binary_loads = 0     ! Successful binary loads
+    integer(i64) :: binary_saves = 0     ! Successful binary saves
+    integer(i64) :: total_compile_time = 0
+    integer(i64) :: memory_saved = 0
   end type program_cache
   
   ! OpenGL function interfaces
@@ -140,8 +140,8 @@ contains
     integer :: program_id
     
     integer :: idx
-    integer(int64) :: start_time, end_time, compile_time
-    real(real64) :: clock_rate
+    integer(i64) :: start_time, end_time, compile_time
+    real(dp) :: clock_rate
     logical :: loaded_from_disk
     
     if (.not. cache%initialized) then
@@ -308,8 +308,8 @@ contains
   subroutine print_cache_stats_v2(cache)
     type(program_cache), intent(in) :: cache
     
-    real(real64) :: hit_rate, avg_compile_time
-    integer(int64) :: total_memory
+    real(dp) :: hit_rate, avg_compile_time
+    integer(i64) :: total_memory
     integer :: i, active_refs
     
     if (cache%cache_hits + cache%cache_misses > 0) then
@@ -356,7 +356,7 @@ contains
     type(program_cache), intent(inout) :: cache
     integer, intent(in) :: program_id
     character(len=*), intent(in) :: cache_key
-    integer(int64), intent(in) :: compile_time
+    integer(i64), intent(in) :: compile_time
     
     integer :: idx
     
@@ -432,7 +432,7 @@ contains
     type(program_cache), intent(inout) :: cache
     
     integer :: i, lru_idx
-    integer(int64) :: oldest_time
+    integer(i64) :: oldest_time
     
     lru_idx = 0
     oldest_time = huge(oldest_time)
@@ -485,9 +485,9 @@ contains
       integer :: num_programs
       integer :: max_programs
       integer :: active_refs
-      real(real64) :: hit_rate
-      integer(int64) :: total_memory
-      real(real64) :: avg_compile_time_ms
+      real(dp) :: hit_rate
+      integer(i64) :: total_memory
+      real(dp) :: avg_compile_time_ms
     end type cache_stats_t
     type(cache_stats_t) :: stats
     

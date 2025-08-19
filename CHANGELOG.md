@@ -1,4 +1,4 @@
-# Sparkle Changelog
+# Sporkle Changelog
 
 All notable changes to Sparkle will be documented in this file.
 
@@ -30,7 +30,7 @@ All notable changes to Sparkle will be documented in this file.
 - **Memory bandwidth**: 64% of theoretical DDR4 maximum
 
 ### Documentation
-- Created "The Sparkle Way" philosophy document
+- Created "The Sporkle Way" philosophy document
 - Updated style guide with personality and humor
 - Added comprehensive benchmarking documentation
 - Thread safety configuration guide

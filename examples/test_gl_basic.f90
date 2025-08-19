@@ -1,7 +1,7 @@
 program test_gl_basic
   use iso_c_binding
   use gl_constants
-  use sparkle_fortran_shaders
+  use sporkle_fortran_shaders
   implicit none
   
   type(glsl_context) :: ctx

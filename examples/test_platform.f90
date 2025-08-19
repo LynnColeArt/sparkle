@@ -1,10 +1,10 @@
 program test_platform
-  use sparkle_platform
+  use sporkle_platform
   implicit none
   
   type(platform_info) :: info
   
-  print *, "🔍 Sparkle Platform Detection Test"
+  print *, "🔍 Sporkle Platform Detection Test"
   print *, "=================================="
   print *, ""
   
@@ -65,6 +65,6 @@ program test_platform
   end select
   
   print *, ""
-  print *, "The Sparkle Way: Direct to metal, no dependencies! 🚀"
+  print *, "The Sporkle Way: Direct to metal, no dependencies! 🚀"
   
 end program test_platform

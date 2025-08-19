@@ -424,7 +424,7 @@ make -f Makefile.smart VERBOSE=1
 - **OpenGL Compute**: Full production implementation with EGL headless context ✅
 - **Async Executor**: 6.5x speedup via intelligent pipeline architecture ✅
 - **Memory Management**: Unified memory model with proper synchronization ✅
-- **Production API**: Clean Fortran interface via `sparkle_conv2d_juggling` module ✅
+- **Production API**: Clean Fortran interface via `sporkle_conv2d_juggling` module ✅
 
 ### Tested Configurations
 - **Primary Development**: AMD Ryzen 7 7700X + RX 7900 XT (Linux 6.14)

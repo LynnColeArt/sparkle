@@ -1,6 +1,6 @@
 module gpu_async_executor
   use iso_c_binding
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   implicit none
   
   private
@@ -34,8 +34,8 @@ module gpu_async_executor
     integer :: output_buffer = 0
     type(c_ptr) :: fence
     logical :: in_use = .false.
-    integer(int64) :: submit_time = 0
-    integer(int64) :: complete_time = 0
+    integer(i64) :: submit_time = 0
+    integer(i64) :: complete_time = 0
   end type buffer_set
   
   ! Async executor state
@@ -49,8 +49,8 @@ module gpu_async_executor
     integer :: compute_program = 0
     
     ! Statistics
-    integer(int64) :: total_gpu_time = 0
-    integer(int64) :: total_idle_time = 0
+    integer(i64) :: total_gpu_time = 0
+    integer(i64) :: total_idle_time = 0
     integer :: completed_operations = 0
     integer :: clock_rate = 0  ! system_clock ticks per second
     
@@ -107,7 +107,7 @@ module gpu_async_executor
     end function glFenceSync
     
     function glClientWaitSync(sync, flags, timeout) bind(C, name="glClientWaitSync") result(status)
-      import :: c_ptr, c_int, c_int64_t
+      import :: c_ptr, c_int, c_, i64_t
       type(c_ptr), value :: sync
       integer(c_int), value :: flags
       integer(c_int64_t), value :: timeout
@@ -171,8 +171,8 @@ contains
   subroutine gpu_async_executor_cleanup(state)
     type(gpu_async_state), intent(inout) :: state
     integer :: i
-    real(real64) :: avg_gpu_time, utilization
-    real(real64) :: avg_ms, total_gpu_s, total_idle_s
+    real(dp) :: avg_gpu_time, utilization
+    real(dp) :: avg_ms, total_gpu_s, total_idle_s
     
     if (.not. state%initialized) return
     
@@ -258,12 +258,12 @@ contains
                                   input_size, output_size, grid_x, grid_y, grid_z)
     type(gpu_async_state), intent(inout) :: state
     integer, intent(in) :: set_id
-    real(real32), intent(in), target :: input_data(*)
-    real(real32), intent(out), target :: output_data(*)
-    integer(int64), intent(in) :: input_size, output_size
+    real(sp), intent(in), target :: input_data(*)
+    real(sp), intent(out), target :: output_data(*)
+    integer(i64), intent(in) :: input_size, output_size
     integer, intent(in) :: grid_x, grid_y, grid_z
     
-    integer(int64) :: start_time
+    integer(i64) :: start_time
     
     ! Upload input data
     call glBindBuffer(GL_SHADER_STORAGE_BUFFER, state%buffer_sets(set_id)%input_buffer)
@@ -350,7 +350,7 @@ contains
     type(gpu_async_state), intent(inout) :: state
     integer, intent(in) :: set_id
     
-    integer(int64) :: complete_time, gpu_time
+    integer(i64) :: complete_time, gpu_time
     
     if (.not. state%buffer_sets(set_id)%in_use) return
     
@@ -377,14 +377,14 @@ contains
   subroutine gpu_async_conv2d(state, input, weights, output, &
                               N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     type(gpu_async_state), intent(inout) :: state
-    real(real32), intent(in), target :: input(*)
-    real(real32), intent(in), target :: weights(*)
-    real(real32), intent(out), target :: output(*)
+    real(sp), intent(in), target :: input(*)
+    real(sp), intent(in), target :: weights(*)
+    real(sp), intent(out), target :: output(*)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     integer :: set_id
     integer :: grid_x, grid_y, grid_z
-    integer(int64) :: input_size, output_size
+    integer(i64) :: input_size, output_size
     
     ! Calculate sizes
     input_size = int(N * C * H * W, int64) * 4  ! sizeof(float)

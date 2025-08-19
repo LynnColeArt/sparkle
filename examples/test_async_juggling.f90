@@ -1,7 +1,7 @@
 ! Test async GPU executor integration with device juggling
 program test_async_juggling
-  use iso_fortran_env, only: real32, int64
-  use sparkle_conv2d_juggling
+  use kinds
+  use sporkle_conv2d_juggling
   implicit none
   
   ! Test parameters - large enough to trigger GPU
@@ -10,9 +10,9 @@ program test_async_juggling
   integer :: H_out, W_out
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: input_size, weight_size, output_size
-  real(real32) :: time_ms
+  real(sp) :: time_ms
   integer :: i
   
   ! Calculate output dimensions
@@ -57,8 +57,8 @@ program test_async_juggling
   
   ! Calculate GFLOPS
   block
-    integer(int64) :: total_flops
-    real(real32) :: gflops
+    integer(i64) :: total_flops
+    real(sp) :: gflops
     
     total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
                   int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64

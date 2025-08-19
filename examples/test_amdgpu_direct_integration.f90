@@ -1,15 +1,15 @@
 program test_amdgpu_direct_integration
-  use iso_fortran_env, only: real32, int64
+  use kinds
   use iso_c_binding
   use amdgpu_device_mod
-  use sparkle_types
+  use sporkle_types
   implicit none
   
   type(amdgpu_compute_device), allocatable :: device
-  type(sparkle_buffer) :: input_buffer, output_buffer
-  integer(int64) :: buffer_size
+  type(sporkle_buffer) :: input_buffer, output_buffer
+  integer(i64) :: buffer_size
   integer :: i
-  real(real32), pointer :: input_data(:), output_data(:)
+  real(sp), pointer :: input_data(:), output_data(:)
   
   print *, "=== Testing AMDGPU Direct Integration ==="
   print *, ""
@@ -82,7 +82,7 @@ program test_amdgpu_direct_integration
     type(c_ptr) :: args(3)
     integer :: grid(3) = [256, 1, 1]
     integer :: block(3) = [64, 1, 1]
-    integer(int64), target :: buffer_size_arg
+    integer(i64), target :: buffer_size_arg
     
     buffer_size_arg = buffer_size
     args(1) = input_buffer%data

@@ -1,6 +1,6 @@
 module gpu_async_executor_fixed
   use iso_c_binding,  only: c_int, c_uint, c_ptr, c_null_ptr, c_intptr_t, c_size_t, c_int64_t, c_loc
-  use iso_fortran_env, only: int64, real32
+  use kinds
   implicit none
   
   private
@@ -28,8 +28,8 @@ module gpu_async_executor_fixed
     integer(c_uint) :: output_buffer = 0_c_uint
     type(c_ptr)     :: fence         = c_null_ptr
     logical         :: in_use        = .false.
-    integer(int64)  :: submit_ticks  = 0_int64
-    integer(int64)  :: complete_ticks= 0_int64
+    integer(i64)  :: submit_ticks  = 0_int64
+    integer(i64)  :: complete_ticks= 0_int64
   end type
 
   type :: gpu_async_policy
@@ -42,10 +42,10 @@ module gpu_async_executor_fixed
     integer(c_uint)               :: compute_program = 0_c_uint
     integer(c_uint)               :: weight_buffer = 0_c_uint
     type(gpu_async_policy)        :: policy
-    integer(int64)                :: clock_rate = 0_int64  ! system_clock ticks per second
+    integer(i64)                :: clock_rate = 0_int64  ! system_clock ticks per second
     ! optional running totals…
-    integer(int64)                :: total_gpu_ticks = 0_int64
-    integer(int64)                :: total_wait_ticks = 0_int64
+    integer(i64)                :: total_gpu_ticks = 0_int64
+    integer(i64)                :: total_wait_ticks = 0_int64
     integer                       :: completed_operations = 0
     logical                       :: initialized = .false.
     ! Buffer capacities (allocated once)
@@ -111,7 +111,7 @@ module gpu_async_executor_fixed
     end function
     
     function glClientWaitSync(sync, flags, timeout) bind(C, name="glClientWaitSync") result(status)
-      import :: c_ptr, c_int, c_int64_t
+      import :: c_ptr, c_int, c_, i64_t
       type(c_ptr), value :: sync
       integer(c_int), value :: flags
       integer(c_int64_t), value :: timeout
@@ -141,13 +141,13 @@ contains
 
   ! === Timing helpers ===
   pure function ticks_now() result(t)
-    integer(int64) :: t
+    integer(i64) :: t
     call system_clock(count=t)
   end function
 
   pure function ticks_to_ns(ticks, rate) result(ns)
-    integer(int64), intent(in) :: ticks, rate
-    integer(int64) :: ns
+    integer(i64), intent(in) :: ticks, rate
+    integer(i64) :: ns
     if (rate <= 0_int64) then
        ns = 0_int64
     else
@@ -204,7 +204,7 @@ contains
     integer :: i
     integer :: oldest_i
     logical :: any_in_use
-    integer(int64) :: oldest_ticks
+    integer(i64) :: oldest_ticks
 
     idx = 0
     any_in_use   = .false.
@@ -281,12 +281,12 @@ contains
                                            input_bytes, output_bytes, &
                                            grid_x, grid_y, grid_z) result(set_id)
     type(gpu_async_state), intent(inout) :: state
-    real(real32), intent(in), target :: input_data(*)
-    real(real32), intent(out), target :: output_data(*)  ! For address only
+    real(sp), intent(in), target :: input_data(*)
+    real(sp), intent(out), target :: output_data(*)  ! For address only
     integer(c_size_t), intent(in) :: input_bytes, output_bytes
     integer(c_int), intent(in) :: grid_x, grid_y, grid_z
     integer :: i
-    integer(int64) :: now
+    integer(i64) :: now
 
     i = select_reusable_set(state)
     if (i <= 0) then
@@ -351,10 +351,10 @@ contains
   subroutine gpu_gather_output(state, set_id, output_data, output_bytes)
     type(gpu_async_state), intent(inout) :: state
     integer(c_int),        intent(in)    :: set_id
-    real(real32), intent(out), target    :: output_data(*)
+    real(sp), intent(out), target    :: output_data(*)
     integer(c_size_t),     intent(in)    :: output_bytes
     integer :: i
-    integer(int64) :: dt
+    integer(i64) :: dt
 
     i = set_id
     if (i < 1 .or. i > size(state%sets)) return
@@ -391,8 +391,8 @@ contains
                             input_bytes, output_bytes, &
                             grid_x, grid_y, grid_z)
     type(gpu_async_state), intent(inout) :: state
-    real(real32), intent(in), target :: input_data(*)
-    real(real32), intent(out), target :: output_data(*)
+    real(sp), intent(in), target :: input_data(*)
+    real(sp), intent(out), target :: output_data(*)
     integer(c_size_t), intent(in) :: input_bytes, output_bytes
     integer(c_int), intent(in) :: grid_x, grid_y, grid_z
     integer(c_int) :: id

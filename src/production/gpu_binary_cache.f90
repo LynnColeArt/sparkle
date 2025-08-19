@@ -12,7 +12,7 @@
 ! - Robust error handling and fallback
 
 module gpu_binary_cache
-  use iso_fortran_env, only: real32, real64, int32, int64, error_unit, int8
+  use kinds
   use iso_c_binding
   implicit none
   

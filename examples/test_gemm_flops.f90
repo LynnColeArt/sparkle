@@ -1,20 +1,20 @@
 program test_gemm_flops
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_config
-  use sparkle_cache_aware
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_config
+  use sporkle_cache_aware
   use omp_lib
   implicit none
   
   integer :: n
   type(memory_handle) :: a_mem, b_mem, c_mem
-  real(real32), pointer :: a(:,:), b(:,:), c(:,:)
-  real(real64) :: start_time, end_time
-  real(real64) :: ops_performed, theoretical_ops
-  real(real64) :: time_taken
-  type(sparkle_config_type) :: config
+  real(sp), pointer :: a(:,:), b(:,:), c(:,:)
+  real(dp) :: start_time, end_time
+  real(dp) :: ops_performed, theoretical_ops
+  real(dp) :: time_taken
+  type(sporkle_config_type) :: config
   integer :: i, j, k
   
   print *, "🔬 GEMM FLOP Count Verification"
@@ -23,7 +23,7 @@ program test_gemm_flops
   
   ! Configure for safety
   config%max_cpu_threads = 14
-  call sparkle_set_config(config)
+  call sporkle_set_config(config)
   
   n = 1024
   
@@ -94,7 +94,7 @@ program test_gemm_flops
   
   ! Recompute a few elements manually
   block
-    real(real32) :: manual_result
+    real(sp) :: manual_result
     integer :: test_i, test_j
     
     ! Test element (1,1)
@@ -130,8 +130,8 @@ program test_gemm_flops
   ! Tiled: Much less due to cache reuse
   
   block
-    real(real64) :: bytes_naive, bytes_tiled
-    real(real64) :: bandwidth
+    real(dp) :: bytes_naive, bytes_tiled
+    real(dp) :: bandwidth
     
     ! Naive bandwidth (each element of A,B read n times)
     bytes_naive = real(n*n*n*4*2 + n*n*4, real64)  ! reads + writes
