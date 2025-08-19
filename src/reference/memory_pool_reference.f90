@@ -262,7 +262,7 @@ contains
   
   subroutine memory_set(handle, value, size)
     type(memory_handle), intent(inout) :: handle
-    integer(int8), intent(in) :: value
+    integer(i8), intent(in) :: value
     integer(i64), intent(in), optional :: size
     
     integer(c_size_t) :: set_size

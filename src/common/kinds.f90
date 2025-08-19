@@ -11,13 +11,13 @@
 ! - Prevents accidental mixed-precision arithmetic
 
 module kinds
-  use, intrinsic :: iso_fortran_env, only: int32, int64, real32, real64
+  use, intrinsic :: iso_fortran_env, only: int8, int16, int32, int64, real32, real64
   implicit none
   
   ! Standardized kind parameters
-  integer, parameter :: i32 = int32, i64 = int64, sp = real32, dp = real64
+  integer, parameter :: i8 = int8, i16 = int16, i32 = int32, i64 = int64, sp = real32, dp = real64
   
-  public :: i32, i64, sp, dp
+  public :: i8, i16, i32, i64, sp, dp
   public :: r32, r64
   
 contains

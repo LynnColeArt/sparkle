@@ -3,6 +3,7 @@ module sporkle_error_handling
   ! The Sporkle Way: Fail gracefully, inform clearly
   
   use kinds
+  use, intrinsic :: iso_fortran_env, only: error_unit
   implicit none
   private
   
