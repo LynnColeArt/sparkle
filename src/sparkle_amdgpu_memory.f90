@@ -31,11 +31,14 @@ contains
     
     ! Copy data to mapped buffer
     if (c_associated(buffer%cpu_ptr) .and. c_associated(data)) then
-      call c_f_pointer(buffer%cpu_ptr, dst, [size])
-      call c_f_pointer(data, src, [size])
+      integer :: n
+      n = int(size)  ! default kind
+
+      call c_f_pointer(buffer%cpu_ptr, dst, [n])
+      call c_f_pointer(data,          src, [n])
       
       ! Simple byte copy
-      dst(1:size) = src(1:size)
+      dst(1:n) = src(1:n)
       
       status = 0
       print *, "Wrote", size, "bytes to GPU buffer"
@@ -64,11 +67,14 @@ contains
     
     ! Copy data from mapped buffer
     if (c_associated(buffer%cpu_ptr) .and. c_associated(data)) then
-      call c_f_pointer(buffer%cpu_ptr, src, [size])
-      call c_f_pointer(data, dst, [size])
+      integer :: n
+      n = int(size)  ! default kind
+
+      call c_f_pointer(buffer%cpu_ptr, src, [n])
+      call c_f_pointer(data,          dst, [n])
       
       ! Simple byte copy
-      dst(1:size) = src(1:size)
+      dst(1:n) = src(1:n)
       
       status = 0
       print *, "Read", size, "bytes from GPU buffer"

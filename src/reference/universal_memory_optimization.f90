@@ -301,12 +301,14 @@ contains
     ! Performance analysis
     fused_conv2d_cpu = real((end_time - start_time) * 1000.0, real32)
     
-    total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
-                  int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64
+    ! Use Mini's safe FLOP counting
+    total_flops = conv2d_flops(int(N, int64), int(H_out, int64), int(W_out, int64), &
+                              int(K, int64), int(C, int64), &
+                              int(kernel_size, int64), int(kernel_size, int64))
     
     bytes_accessed = (size(input) + size(weights) + size(output) + size(input_matrix)) * 4_int64
     
-    gflops = real(total_flops, real64) / (real(fused_conv2d_cpu, real64) * 1.0e6_real64)
+    gflops = real(total_flops, real64) / (real(fused_conv2d_cpu, real64) * 1.0d6)
     intensity = arithmetic_intensity(total_flops, bytes_accessed)
     
     print '(A,F6.2,A,F6.1,A)', "   Performance: ", fused_conv2d_cpu, " ms, ", gflops, " GFLOPS"
