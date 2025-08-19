@@ -1,0 +1,58 @@
+#!/bin/bash
+# Optional: Compilation check for staged files
+# ============================================
+# This is a more thorough but slower check
+
+# Only run if SPORKLE_COMPILE_CHECK is set
+if [ -z "$SPORKLE_COMPILE_CHECK" ]; then
+  exit 0
+fi
+
+echo "🔨 Running compilation check on staged files..."
+
+# Create temp directory
+TEMP_DIR=$(mktemp -d)
+trap "rm -rf $TEMP_DIR" EXIT
+
+# Get staged Fortran files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.f90$' || true)
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+# Copy required modules
+mkdir -p "$TEMP_DIR/modules"
+if [ -f "src/common/kinds.f90" ]; then
+  cp src/common/kinds.f90 "$TEMP_DIR/"
+  gfortran -c "$TEMP_DIR/kinds.f90" -J "$TEMP_DIR/modules" 2>/dev/null || true
+fi
+
+# Try to compile each staged file
+FAILED=0
+for file in $STAGED_FILES; do
+  echo -n "  Checking $file... "
+  
+  # Extract file content from staging area
+  git show ":$file" > "$TEMP_DIR/test.f90"
+  
+  # Try compilation (syntax check only)
+  if gfortran -fsyntax-only -I "$TEMP_DIR/modules" "$TEMP_DIR/test.f90" 2>"$TEMP_DIR/errors.txt"; then
+    echo "✅"
+  else
+    echo "❌"
+    echo "Compilation errors:"
+    cat "$TEMP_DIR/errors.txt" | sed 's/^/    /'
+    FAILED=$((FAILED + 1))
+  fi
+done
+
+if [ $FAILED -gt 0 ]; then
+  echo ""
+  echo "❌ $FAILED files have compilation errors"
+  exit 1
+fi
+
+echo ""
+echo "✅ All files compile successfully!"
+exit 0
