@@ -17,11 +17,11 @@
 ! 
 ! TODO: Reconstruct the optimized implementation using techniques from:
 !   - MEMORY_WALL_BREAKTHROUGH.md
-!   - sparkle_cache_aware.f90 (from reference)
+!   - sporkle_cache_aware.f90 (from reference)
 !   - Achieved GEMM performance as baseline
 
-module sparkle_conv2d_cpu_reference
-  use iso_fortran_env
+module sporkle_conv2d_cpu_reference
+  use kinds
   use omp_lib
   implicit none
   
@@ -33,16 +33,16 @@ contains
   ! PLACEHOLDER - This is what we need to rebuild
   subroutine conv2d_cpu_reference(input, weights, output, &
                                  N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(N*C*H*W)
-    real(real32), intent(in) :: weights(K*C*kernel_size*kernel_size) 
-    real(real32), intent(out) :: output(N*K*H_out*W_out)
+    real(sp), intent(in) :: input(N*C*H*W)
+    real(sp), intent(in) :: weights(K*C*kernel_size*kernel_size) 
+    real(sp), intent(out) :: output(N*K*H_out*W_out)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     ! THIS IS NOT THE REFERENCE - Just documenting the approach
     ! 
     ! The optimized version should:
     ! 1. Transform input using im2col for cache efficiency
-    ! 2. Use cache-aware GEMM (like sparkle_cache_aware)
+    ! 2. Use cache-aware GEMM (like sporkle_cache_aware)
     ! 3. Apply memory bandwidth optimizations
     ! 4. Achieve 250+ GFLOPS
     
@@ -67,4 +67,4 @@ contains
   !   ! Target: 250 GFLOPS sustained
   ! end subroutine
   
-end module sparkle_conv2d_cpu_reference
+end module sporkle_conv2d_cpu_reference

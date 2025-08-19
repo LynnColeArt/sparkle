@@ -1,4 +1,4 @@
-# Sparkle Mesh Manager — Junk Network Blueprint (v0.1)
+# Sporkle Mesh Manager — Junk Network Blueprint (v0.1)
 
 > Goal: Give Sparkle an auto-discovering, topology-aware, self-healing mesh that runs on whatever junk you plug in (CPU, NVIDIA/AMD GPUs, iGPUs, Jetsons, oddballs) and schedules work opportunistically with Pythonic-Fortran ergonomics.
 
@@ -40,7 +40,7 @@ Sparkle Context
 ## 2) Core Data Types (Fortran 2008 style)
 
 ```fortran
-module sparkle_types
+module sporkle_types
   implicit none
   private
 
@@ -108,8 +108,8 @@ end module
 ### 3.3 Fortran-side API
 
 ```fortran
-module sparkle_discovery
-  use sparkle_types
+module sporkle_discovery
+  use sporkle_types
   implicit none
   private
   public :: scan_devices, profile_links
@@ -136,8 +136,8 @@ end module
 * Update online with EMA smoothing as loads vary (adaptive bw/lat).
 
 ```fortran
-module sparkle_mesh
-  use sparkle_types
+module sporkle_mesh
+  use sporkle_types
   implicit none
   private
   public :: build_mesh, best_route
@@ -178,8 +178,8 @@ end module
 ### 5.3 Scheduler API
 
 ```fortran
-module sparkle_schedule
-  use sparkle_types
+module sporkle_schedule
+  use sporkle_types
   implicit none
   private
   public :: plan_shards, dispatch_kernel
@@ -193,7 +193,7 @@ contains
 
   subroutine dispatch_kernel(mesh, kernel, args, choice)
     type(mesh_topology), intent(in) :: mesh
-    ! kernel: procedure pointer wrapped in sparkle_kernel
+    ! kernel: procedure pointer wrapped in sporkle_kernel
     ! args:   opaque arg bundle
     type(schedule_choice), intent(in) :: choice
     ! Launch on devices, set up transfers per route, handle sync & reduction if requested.
@@ -212,8 +212,8 @@ end module
   * **Large**: ring/mesh (bandwidth-optimized), P2P if possible, fallback via host.
 
 ```fortran
-module sparkle_collectives
-  use sparkle_types
+module sporkle_collectives
+  use sporkle_types
   implicit none
   private
   public :: all_reduce
@@ -233,10 +233,10 @@ end module
 
 ```fortran
 ! Example: let Sparkle decide devices, shard, and transport.
-call sparkle_gemm(ctx, a, b, c, algo="auto", topology="mesh", reduce="none")
+call sporkle_gemm(ctx, a, b, c, algo="auto", topology="mesh", reduce="none")
 
 ! Example: pin to constraints but stay declarative.
-call sparkle_gemm(ctx, a, b, c, devices=["cpu","nvidia:0","amd:1"], max_vram_gb=6, prefer_p2p=.true.)
+call sporkle_gemm(ctx, a, b, c, devices=["cpu","nvidia:0","amd:1"], max_vram_gb=6, prefer_p2p=.true.)
 ```
 
 * Keyword args everywhere; sane defaults.
@@ -286,7 +286,7 @@ end interface
 
 **M0: CPU-only prototype (2–3 days)**
 
-* `sparkle_gemm` with OpenMP, fake mesh of 1 device.
+* `sporkle_gemm` with OpenMP, fake mesh of 1 device.
 * Introspection stubs work (prints plan).
 
 **M1: Multi-GPU same vendor (NVIDIA, 3–5 days)**
@@ -319,17 +319,17 @@ end interface
 program junknet_demo
   use sparkle
   implicit none
-  type(sparkle_context) :: ctx
-  type(sparkle_array)   :: x, w, y
+  type(sporkle_context) :: ctx
+  type(sporkle_array)   :: x, w, y
 
-  ctx = sparkle_init(topology="mesh", profile=.true.)
+  ctx = sporkle_init(topology="mesh", profile=.true.)
   call ctx%explain_devices()
 
   x = ctx%array(shape=[32768, 4096], dtype=real32)
   w = ctx%array(shape=[4096, 4096], dtype=real32)
   y = ctx%array(shape=[32768, 4096], dtype=real32)
 
-  call sparkle_gemm(ctx, x, w, y, algo="auto", reduce="none")
+  call sporkle_gemm(ctx, x, w, y, algo="auto", reduce="none")
   call ctx%explain_last_plan()
 end program
 ```
@@ -356,9 +356,9 @@ end program
 
 ## 15) Next Steps
 
-1. Implement `sparkle_types`, `sparkle_discovery` CPU stub.
-2. Wire `sparkle_mesh.build_mesh()` + simple `best_route` using host-only routes.
-3. Ship `sparkle_gemm` CPU; add introspection.
+1. Implement `sporkle_types`, `sporkle_discovery` CPU stub.
+2. Wire `sporkle_mesh.build_mesh()` + simple `best_route` using host-only routes.
+3. Ship `sporkle_gemm` CPU; add introspection.
 4. Add CUDA discovery/profiling; enable basic two-GPU sharding.
 5. Iterate cost model with real numbers from your lab junk stack.
 

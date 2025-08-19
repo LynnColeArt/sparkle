@@ -1,10 +1,10 @@
 program test_amd_convolution
   use iso_c_binding
-  use iso_fortran_env
-  use sparkle_types
-  use sparkle_gpu_opengl
-  use sparkle_glsl_generator
-  use sparkle_glsl_compute
+  use kinds
+  use sporkle_types
+  use sporkle_gpu_opengl
+  use sporkle_glsl_generator
+  use sporkle_glsl_compute
   implicit none
   
   type(gpu_context) :: ctx

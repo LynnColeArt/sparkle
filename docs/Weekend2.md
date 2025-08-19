@@ -9,7 +9,7 @@ We've achieved a massive breakthrough - successfully extracting the 451 GFLOPS G
 ✅ **Production GPU Integration Complete**
 - 451 GFLOPS convolution extracted from test harnesses
 - Reference implementation in `src/reference/gpu_opengl_reference.c`
-- Production interface in `src/production/sparkle_conv2d.f90`
+- Production interface in `src/production/sporkle_conv2d.f90`
 - Clean Fortran API via `src/reference/gpu_opengl_interface.f90`
 - Build system integration with C/Fortran linking
 - Framework compiles and runs through production interface
@@ -32,7 +32,7 @@ We've achieved a massive breakthrough - successfully extracting the 451 GFLOPS G
 - **Success Metric**: GPU returns positive execution time, not -1
 
 #### 1.2 Validate GPU Performance in Production
-- **Target**: Achieve 451 GFLOPS through `sparkle_conv2d` module
+- **Target**: Achieve 451 GFLOPS through `sporkle_conv2d` module
 - **Test**: ResNet-50 first layer (224×224×3 → 112×112×64, 7×7 kernel)
 - **Verification**: CPU and GPU results match (max diff < 1e-5)
 
@@ -209,7 +209,7 @@ Let's make history! 🚀
 
 ---
 
-*"The best way to predict the future is to invent it. The best way to optimize the future is to understand memory."* - The Sparkle Way
+*"The best way to predict the future is to invent it. The best way to optimize the future is to understand memory."* - The Sporkle Way
 
 ## Breakthrough Update: The 99% Idle GPU Problem
 

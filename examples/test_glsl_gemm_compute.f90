@@ -1,7 +1,7 @@
 program test_glsl_gemm_compute
   use iso_c_binding
-  use sparkle_types
-  use sparkle_glsl_generator
+  use sporkle_types
+  use sporkle_glsl_generator
   implicit none
   
   interface

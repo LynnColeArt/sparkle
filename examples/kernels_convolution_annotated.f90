@@ -3,20 +3,20 @@
 pure subroutine gemm_tiled(idx, idy, A, B, C, &
                            M, N, K, alpha, beta, &
                            tile_m, tile_n, tile_k)
-  use iso_fortran_env
-  integer(int32), value :: idx, idy
-  real(real32), intent(in) :: A      ! Weight matrix (M x K)
-  real(real32), intent(in) :: B      ! Col matrix (K x N)
-  real(real32), intent(inout) :: C   ! Output (M x N)
+  use kinds
+  integer(i32), value :: idx, idy
+  real(sp), intent(in) :: A      ! Weight matrix (M x K)
+  real(sp), intent(in) :: B      ! Col matrix (K x N)
+  real(sp), intent(inout) :: C   ! Output (M x N)
   
   ! Matrix dimensions and parameters
-  integer(int32), value :: M, N, K
-  real(real32), value :: alpha, beta
-  integer(int32), value :: tile_m, tile_n, tile_k
+  integer(i32), value :: M, N, K
+  real(sp), value :: alpha, beta
+  integer(i32), value :: tile_m, tile_n, tile_k
   
   ! Simple GEMM computation
   integer :: row, col, k_idx
-  real(real32) :: sum
+  real(sp) :: sum
   
   row = idx / N
   col = mod(idx, N)

@@ -40,7 +40,7 @@ Large workload (4×128×56×56):
 
 ### Basic Usage
 ```fortran
-use sparkle_conv2d_auto_selector
+use sporkle_conv2d_auto_selector
 
 ! Initialize the selector
 call init_auto_selector()

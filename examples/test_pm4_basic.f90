@@ -1,13 +1,13 @@
 program test_pm4_basic
-  use iso_fortran_env, only: real32, int32, int64
-  use sparkle_pm4_compute_simple
-  use sparkle_pm4_packets
+  use kinds
+  use sporkle_pm4_compute_simple
+  use sporkle_pm4_packets
   implicit none
   
   logical :: success
   integer :: i
   type(pm4_packet_builder) :: builder
-  integer(int32), allocatable :: buffer(:)
+  integer(i32), allocatable :: buffer(:)
   
   print *, "🧪 PM4 Basic Test"
   print *, "================="

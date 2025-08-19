@@ -1,11 +1,11 @@
 module gpu_dynamic_execution
   use iso_c_binding
-  use sparkle_types
-  use sparkle_dynamic_shader_system
-  use sparkle_glsl_generator
+  use sporkle_types
+  use sporkle_dynamic_shader_system
+  use sporkle_glsl_generator
   use gpu_opengl_interface
-  use sparkle_rdna_shader_generator
-  use iso_fortran_env, only: real32, real64
+  use sporkle_rdna_shader_generator
+  use kinds
   implicit none
   
   private
@@ -32,11 +32,11 @@ contains
   function gpu_execute_with_dynamic_shader(shader_sys, input, weights, output, &
                                           N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
     type(shader_system), intent(inout) :: shader_sys
-    real(real32), intent(in), target :: input(*)
-    real(real32), intent(in), target :: weights(*)
-    real(real32), intent(out), target :: output(*)
+    real(sp), intent(in), target :: input(*)
+    real(sp), intent(in), target :: weights(*)
+    real(sp), intent(out), target :: output(*)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
-    real(real32) :: time_ms
+    real(sp) :: time_ms
     
     type(convolution_config) :: conv_cfg
     character(len=:), allocatable :: shader_source
@@ -87,9 +87,9 @@ contains
   ! Benchmark different shader variants
   subroutine gpu_benchmark_shader_variants(input, weights, output, &
                                           N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), dimension(:), intent(in), target :: input
-    real(real32), dimension(:), intent(in), target :: weights
-    real(real32), dimension(:), intent(out), target :: output
+    real(sp), dimension(:), intent(in), target :: input
+    real(sp), dimension(:), intent(in), target :: weights
+    real(sp), dimension(:), intent(out), target :: output
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     type(shader_system) :: shader_sys
@@ -97,8 +97,8 @@ contains
     type(rdna_config) :: rdna_cfg
     character(len=:), allocatable :: shader_source
     character(len=1), allocatable, target :: shader_c(:)
-    real(real32) :: time_ms, best_time
-    real(real64) :: gflops
+    real(sp) :: time_ms, best_time
+    real(dp) :: gflops
     integer(c_int64_t) :: flop_count
     integer :: i
     character(len=64) :: variant_name

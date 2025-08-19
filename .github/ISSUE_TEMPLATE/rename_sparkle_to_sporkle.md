@@ -22,14 +22,14 @@ Like a spork (spoon + fork), Sporkle is versatile and handles multiple use cases
 ## Current Status
 
 - External communications use "Sporkle"
-- Internal code still uses "sparkle_*" naming
+- Internal code still uses "sporkle_*" naming
 - Documentation is mixed
 
 ## Scope of Change
 
 This is a comprehensive rename affecting:
 - **106+ files** containing "Sparkle" references
-- All module names (`sparkle_*` → `sporkle_*`)
+- All module names (`sporkle_*` → `sporkle_*`)
 - All type names and constants
 - Environment variables
 - Documentation and comments
@@ -49,7 +49,7 @@ When we do implement this:
 1. **Create dedicated branch** for the rename
 2. **Automated replacement** using sed/awk for bulk changes:
    ```bash
-   find . -type f -name "*.f90" -exec sed -i 's/sparkle_/sporkle_/g' {} +
+   find . -type f -name "*.f90" -exec sed -i 's/sporkle_/sporkle_/g' {} +
    find . -type f -name "*.md" -exec sed -i 's/Sparkle/Sporkle/g' {} +
    ```
 3. **Manual review** for edge cases and context-sensitive replacements
@@ -59,7 +59,7 @@ When we do implement this:
 
 ## Acceptance Criteria
 
-- [ ] All module names updated from `sparkle_*` to `sporkle_*`
+- [ ] All module names updated from `sporkle_*` to `sporkle_*`
 - [ ] All type names updated
 - [ ] All constants updated (SPARKLE_* → SPORKLE_*)
 - [ ] All environment variables updated

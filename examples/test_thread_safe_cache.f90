@@ -1,5 +1,5 @@
 program test_thread_safe_cache
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use gpu_program_cache_threadsafe
   use gpu_opengl_interface
   use omp_lib
@@ -8,7 +8,7 @@ program test_thread_safe_cache
   type(program_cache_ts) :: cache
   integer :: num_threads, thread_id
   integer :: i, j, iteration
-  real(real64) :: start_time, end_time
+  real(dp) :: start_time, end_time
   integer :: total_programs
   character(len=64) :: cache_key
   integer :: program_ids(100)
@@ -266,7 +266,7 @@ contains
   ! Sleep for milliseconds
   subroutine sleep_ms(ms)
     integer, intent(in) :: ms
-    real(real64) :: start_time, current_time
+    real(dp) :: start_time, current_time
     
     call cpu_time(start_time)
     do

@@ -1,9 +1,9 @@
 program test_conv_gemm_gpu
   use iso_c_binding
-  use sparkle_types
-  use sparkle_amdgpu_direct
-  use sparkle_amdgpu_memory
-  use sparkle_kernels
+  use sporkle_types
+  use sporkle_amdgpu_direct
+  use sporkle_amdgpu_memory
+  use sporkle_kernels
   implicit none
   
   type(amdgpu_device) :: device

@@ -11,9 +11,9 @@ program test_adaptive_benchmark
   ! Note: This is still using mock implementations for actual GPU execution
   ! ========================================================================
   
-  use iso_fortran_env
-  use sparkle_fortran_params
-  use sparkle_shader_parser_v2
+  use kinds
+  use sporkle_fortran_params
+  use sporkle_shader_parser_v2
   implicit none
   
   type(param_strategy) :: strategy

@@ -8,7 +8,7 @@
 ! This is consistent across CPU and GPU implementations.
 
 module flopcount
-  use iso_fortran_env, only: int64
+  use kinds
   implicit none
   
   private
@@ -21,8 +21,8 @@ contains
   ! GEMM: C(MxN) = A(MxK) * B(KxN)
   ! Each output element requires K multiply-adds = K FMAs = 2*K FLOPs
   pure function gemm_flops(m, n, k) result(f)
-    integer(int64), intent(in) :: m, n, k
-    integer(int64) :: f
+    integer(i64), intent(in) :: m, n, k
+    integer(i64) :: f
     
     f = 2_int64 * m * n * k
   end function gemm_flops
@@ -32,8 +32,8 @@ contains
   ! Total output elements: N * H * W * K
   ! FLOP count: 2 * N * H * W * K * C * Kh * Kw
   pure function conv2d_flops(n, h, w, k, c, kh, kw) result(f)
-    integer(int64), intent(in) :: n, h, w, k, c, kh, kw
-    integer(int64) :: f
+    integer(i64), intent(in) :: n, h, w, k, c, kh, kw
+    integer(i64) :: f
     
     f = 2_int64 * n * h * w * k * c * kh * kw
   end function conv2d_flops
@@ -41,8 +41,8 @@ contains
   ! Conv1D: Similar to Conv2D but with 1D kernels
   ! FLOP count: 2 * N * L * K * C * Kl
   pure function conv1d_flops(n, l, k, c, kl) result(f)
-    integer(int64), intent(in) :: n, l, k, c, kl
-    integer(int64) :: f
+    integer(i64), intent(in) :: n, l, k, c, kl
+    integer(i64) :: f
     
     f = 2_int64 * n * l * k * c * kl
   end function conv1d_flops
@@ -50,8 +50,8 @@ contains
   ! Dot product: sum(A[i] * B[i]) for i = 1..N
   ! N multiply-adds = N FMAs = 2*N FLOPs
   pure function dot_product_flops(n) result(f)
-    integer(int64), intent(in) :: n
-    integer(int64) :: f
+    integer(i64), intent(in) :: n
+    integer(i64) :: f
     
     f = 2_int64 * n
   end function dot_product_flops
@@ -59,25 +59,25 @@ contains
   ! AXPY: Y = A*X + Y (BLAS Level 1)
   ! N multiply-adds = N FMAs = 2*N FLOPs  
   pure function axpy_flops(n) result(f)
-    integer(int64), intent(in) :: n
-    integer(int64) :: f
+    integer(i64), intent(in) :: n
+    integer(i64) :: f
     
     f = 2_int64 * n
   end function axpy_flops
 
   ! Reduction (sum): N-1 additions
   pure function reduction_flops(n) result(f)
-    integer(int64), intent(in) :: n
-    integer(int64) :: f
+    integer(i64), intent(in) :: n
+    integer(i64) :: f
     
     f = max(0_int64, n - 1_int64)
   end function reduction_flops
 
   ! Validation helper: check for potential overflow in intermediate calculations
   pure function validate_flop_args(dims) result(valid)
-    integer(int64), intent(in) :: dims(:)
+    integer(i64), intent(in) :: dims(:)
     logical :: valid
-    integer(int64) :: product
+    integer(i64) :: product
     integer :: i
     
     valid = .true.

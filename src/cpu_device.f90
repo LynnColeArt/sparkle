@@ -1,7 +1,7 @@
 module cpu_device_module
-  use sparkle_types
+  use sporkle_types
   use iso_c_binding
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   implicit none
   private
   
@@ -53,9 +53,9 @@ contains
   ! Allocate memory on CPU (cache-line aligned)
   function cpu_allocate(self, size_bytes, pinned) result(buffer)
     class(cpu_device), intent(inout) :: self
-    integer(int64), intent(in) :: size_bytes
+    integer(i64), intent(in) :: size_bytes
     logical, intent(in), optional :: pinned
-    type(sparkle_buffer) :: buffer
+    type(sporkle_buffer) :: buffer
     logical :: is_pinned
     
     interface
@@ -92,7 +92,7 @@ contains
   ! Deallocate CPU memory
   subroutine cpu_deallocate(self, buffer)
     class(cpu_device), intent(inout) :: self
-    type(sparkle_buffer), intent(inout) :: buffer
+    type(sporkle_buffer), intent(inout) :: buffer
     
     interface
       subroutine free(ptr) bind(C, name="free")
@@ -113,10 +113,10 @@ contains
   ! Memory copy (optimized for CPU)
   function cpu_memcpy(self, dst, src, size_bytes) result(status)
     class(cpu_device), intent(inout) :: self
-    type(sparkle_buffer), intent(inout) :: dst
-    type(sparkle_buffer), intent(in) :: src
-    integer(int64), intent(in) :: size_bytes
-    integer(int32) :: status
+    type(sporkle_buffer), intent(inout) :: dst
+    type(sporkle_buffer), intent(in) :: src
+    integer(i64), intent(in) :: size_bytes
+    integer(i32) :: status
     
     interface
       subroutine memcpy(dst, src, n) bind(C, name="memcpy")
@@ -126,7 +126,7 @@ contains
       end subroutine memcpy
     end interface
     
-    status = SPARKLE_ERROR
+    status = SPORKLE_ERROR
     
     ! Validate buffers
     if (.not. c_associated(dst%data) .or. .not. c_associated(src%data)) return
@@ -134,7 +134,7 @@ contains
     
     ! Use optimized memcpy
     call memcpy(dst%data, src%data, int(size_bytes, c_size_t))
-    status = SPARKLE_SUCCESS
+    status = SPORKLE_SUCCESS
     
   end function cpu_memcpy
   
@@ -143,23 +143,23 @@ contains
     class(cpu_device), intent(inout) :: self
     character(len=*), intent(in) :: kernel_name
     type(c_ptr), intent(in) :: args(:)
-    integer(int32), intent(in) :: grid_size(3)
-    integer(int32), intent(in) :: block_size(3)
-    integer(int32) :: status
+    integer(i32), intent(in) :: grid_size(3)
+    integer(i32), intent(in) :: block_size(3)
+    integer(i32) :: status
     
     ! TODO: Implement kernel dispatch system
     ! For now, just return success
-    status = SPARKLE_SUCCESS
+    status = SPORKLE_SUCCESS
     
   end function cpu_execute
   
   ! CPU synchronization (no-op for CPU)
   function cpu_synchronize(self) result(status)
     class(cpu_device), intent(inout) :: self
-    integer(int32) :: status
+    integer(i32) :: status
     
     ! CPU operations are synchronous
-    status = SPARKLE_SUCCESS
+    status = SPORKLE_SUCCESS
     
   end function cpu_synchronize
   
@@ -231,7 +231,7 @@ contains
     block
       integer :: unit, iostat
       character(len=256) :: line
-      integer(int64) :: mem_kb
+      integer(i64) :: mem_kb
       
       open(newunit=unit, file="/proc/meminfo", status="old", action="read", iostat=iostat)
       if (iostat == 0) then

@@ -1,4 +1,4 @@
-# Sparkle/Sporkle Feature Roadmap
+# Sporkle/Sporkle Feature Roadmap
 
 ## Vision
 Create a global mesh network where anyone can contribute compute power for AI training, breaking the monopoly of large corporations on AGI development.

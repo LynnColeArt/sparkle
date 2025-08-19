@@ -1,9 +1,9 @@
 subroutine test_conv_dsl_to_gpu() bind(C, name="test_conv_dsl_to_gpu")
-  use iso_fortran_env
+  use kinds
   use iso_c_binding
   use gl_constants
-  use sparkle_shader_parser_v2
-  use sparkle_fortran_params
+  use sporkle_shader_parser_v2
+  use sporkle_fortran_params
   implicit none
   
   interface
@@ -35,7 +35,7 @@ subroutine test_conv_dsl_to_gpu() bind(C, name="test_conv_dsl_to_gpu")
   character(len=512, kind=c_char), target :: info_log
   integer(c_int) :: info_len
   integer :: i
-  real(real64) :: gpu_time_ms
+  real(dp) :: gpu_time_ms
   
   print *, "=== Testing DSL to GPU Shader Generation ==="
   print *, ""
@@ -198,8 +198,8 @@ subroutine test_conv_dsl_to_gpu() bind(C, name="test_conv_dsl_to_gpu")
   
   ! Performance metrics
   block
-    integer(int64) :: total_flops
-    real(real64) :: gflops
+    integer(i64) :: total_flops
+    real(dp) :: gflops
     
     total_flops = int(N, int64) * int(K, int64) * int(H_out, int64) * int(W_out, int64) * &
                   int(C, int64) * int(kernel_size, int64) * int(kernel_size, int64) * 2_int64

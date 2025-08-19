@@ -20,7 +20,7 @@
 ! DO NOT MODIFY THIS FILE DIRECTLY
 
 module universal_memory_optimization
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use flopcount
   use gemm_simd_optimized, only: gemm_simd_avx512
   implicit none
@@ -40,8 +40,8 @@ module universal_memory_optimization
     integer :: cache_line_bytes = 64 ! Cache line size
     
     ! Memory bandwidth characteristics
-    real(real64) :: peak_bandwidth_gb = 100.0  ! Peak memory bandwidth
-    real(real64) :: effective_bandwidth_gb = 80.0  ! Achievable bandwidth
+    real(dp) :: peak_bandwidth_gb = 100.0  ! Peak memory bandwidth
+    real(dp) :: effective_bandwidth_gb = 80.0  ! Achievable bandwidth
     
     ! Parallelism
     integer :: num_cores = 8         ! Physical cores (Ryzen 7 7700X)
@@ -90,7 +90,7 @@ contains
     
     ! Cache-oblivious algorithm: use sqrt of available cache
     ! This works optimally for any cache level in hierarchy
-    real(real64) :: cache_elements
+    real(dp) :: cache_elements
     
     cache_elements = real(cache_kb * 1024, real64) / real(element_bytes, real64)
     cache_optimal_tile_size = int(sqrt(cache_elements / 3.0))  ! Leave room for 3 matrices
@@ -103,17 +103,17 @@ contains
   end function cache_optimal_tile_size
   
   ! Calculate arithmetic intensity (FLOPS per byte accessed)
-  real(real64) function arithmetic_intensity(flops, bytes_accessed)
-    integer(int64), intent(in) :: flops, bytes_accessed
+  real(dp) function arithmetic_intensity(flops, bytes_accessed)
+    integer(i64), intent(in) :: flops, bytes_accessed
     
     arithmetic_intensity = real(flops, real64) / real(bytes_accessed, real64)
   end function arithmetic_intensity
   
   ! Optimize memory layout for cache efficiency
   subroutine optimize_memory_layout(data, m, n, optimized_data, layout)
-    real(real32), intent(in) :: data(:)
+    real(sp), intent(in) :: data(:)
     integer, intent(in) :: m, n
-    real(real32), intent(out) :: optimized_data(:)
+    real(sp), intent(out) :: optimized_data(:)
     character(len=*), intent(in) :: layout
     
     integer :: i, j, idx_in, idx_out
@@ -136,8 +136,8 @@ contains
   ! High-performance im2col with cache optimization
   subroutine im2col_cache_optimal(input, output, N, C, H, W, &
                                  kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, kernel_size, stride, pad, H_out, W_out
     
     integer :: n_idx, c_idx, h_out_idx, w_out_idx, kh_idx, kw_idx
@@ -178,14 +178,14 @@ contains
   
   ! Universal memory-optimized GEMM (improved hand-coded for 50+ GFLOPS)
   subroutine gemm_universal_memory(A, B, C, m, n, k, alpha, beta)
-    real(real32), intent(in) :: A(:), B(:), alpha, beta
-    real(real32), intent(inout) :: C(:)
+    real(sp), intent(in) :: A(:), B(:), alpha, beta
+    real(sp), intent(inout) :: C(:)
     integer, intent(in) :: m, n, k
     
     integer :: tile_size, micro_tile
     integer :: i, j, kk, ii, jj, kk_tile
     integer :: i_end, j_end, kk_end
-    real(real32) :: sum1, sum2, sum3, sum4
+    real(sp) :: sum1, sum2, sum3, sum4
     
     ! Use proven tile sizes that achieved 50+ GFLOPS
     tile_size = 64     ! L2 cache tile
@@ -264,19 +264,19 @@ contains
   end subroutine gemm_universal_memory
   
   ! High-performance CPU convolution using universal memory patterns
-  real(real32) function fused_conv2d_cpu(input, weights, output, &
+  real(sp) function fused_conv2d_cpu(input, weights, output, &
                                          N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in), target :: input(:), weights(:)
-    real(real32), intent(out), target :: output(:)
+    real(sp), intent(in), target :: input(:), weights(:)
+    real(sp), intent(out), target :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     ! Workspace for im2col transformation
-    real(real32), allocatable :: input_matrix(:)
+    real(sp), allocatable :: input_matrix(:)
     integer :: input_matrix_rows, input_matrix_cols
     
-    real(real64) :: start_time, end_time
-    integer(int64) :: total_flops, bytes_accessed
-    real(real64) :: gflops, intensity
+    real(dp) :: start_time, end_time
+    integer(i64) :: total_flops, bytes_accessed
+    real(dp) :: gflops, intensity
     
     ! Calculate workspace size
     input_matrix_rows = C * kernel_size * kernel_size

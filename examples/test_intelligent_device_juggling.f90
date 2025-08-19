@@ -2,7 +2,7 @@
 ! Demonstrates smart frameworks for smart systems
 
 program test_intelligent_device_juggling
-  use iso_fortran_env, only: real32, int64
+  use kinds
   use intelligent_device_juggling, only: juggling_system, discover_and_profile_devices, &
                                         execute_intelligent_conv2d
   implicit none
@@ -17,15 +17,15 @@ program test_intelligent_device_juggling
   ], [num_tests, 2])
   
   ! Arrays for largest test case
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: input_size, weight_size, output_size
   integer :: i, test_idx
   
   ! Test parameters
   integer :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
-  real(real32) :: execution_time
-  integer(int64) :: total_flops
-  real(real32) :: achieved_gflops
+  real(sp) :: execution_time
+  integer(i64) :: total_flops
+  real(sp) :: achieved_gflops
   
   print *, "🧠 Testing Intelligent Device Juggling System"
   print *, "============================================="

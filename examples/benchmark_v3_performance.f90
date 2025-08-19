@@ -1,7 +1,7 @@
 program benchmark_v3_performance
-  use iso_fortran_env, only: real32, real64, int32, int64
-  use sparkle_conv2d_v3
-  use sparkle_conv2d_juggling, only: conv2d_auto_juggling  ! For comparison
+  use kinds
+  use sporkle_conv2d_v3
+  use sporkle_conv2d_juggling, only: conv2d_auto_juggling  ! For comparison
   use omp_lib
   implicit none
   
@@ -11,17 +11,17 @@ program benchmark_v3_performance
   integer, parameter :: NUM_THREADS_TEST = 4
   
   ! Arrays for different test sizes
-  real(real32), allocatable :: input(:,:,:,:)
-  real(real32), allocatable :: weights(:,:,:,:)
-  real(real32), allocatable :: bias(:)
-  real(real32), allocatable :: output(:,:,:,:)
-  real(real32), allocatable :: output_ref(:,:,:,:)
+  real(sp), allocatable :: input(:,:,:,:)
+  real(sp), allocatable :: weights(:,:,:,:)
+  real(sp), allocatable :: bias(:)
+  real(sp), allocatable :: output(:,:,:,:)
+  real(sp), allocatable :: output_ref(:,:,:,:)
   
   ! Timing variables
-  real(real64) :: start_time, end_time
-  real(real64) :: v3_time, v2_time
-  real(real64) :: total_flops
-  real(real32) :: time_ms
+  real(dp) :: start_time, end_time
+  real(dp) :: v3_time, v2_time
+  real(dp) :: total_flops
+  real(sp) :: time_ms
   integer :: i, j, test
   
   ! Test configurations
@@ -40,7 +40,7 @@ program benchmark_v3_performance
     test_config(128, 32, 32, 64, 128, 3, 3, 1, 1, "Large batch") &
   ]
   
-  print *, "🚀 Sparkle Conv2D V3 Performance Benchmark"
+  print *, "🚀 Sporkle Conv2D V3 Performance Benchmark"
   print *, "=========================================="
   print *, ""
   print '(A,I0)', "Hardware threads available: ", omp_get_max_threads()
@@ -49,7 +49,7 @@ program benchmark_v3_performance
   
   ! Initialize both systems
   print *, "📦 Initializing systems..."
-  call sparkle_conv2d_v3_init(cache_dir="benchmark_cache/", &
+  call sporkle_conv2d_v3_init(cache_dir="benchmark_cache/", &
                              use_dynamic=.true., &
                              use_async=.true., &
                              use_auto=.true.)
@@ -77,7 +77,7 @@ program benchmark_v3_performance
     
     ! Warmup
     do i = 1, NUM_WARMUP
-      call sparkle_conv2d_v3_execute(input, weights, bias, output, &
+      call sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                      tests(test)%stride, tests(test)%stride, &
                                      tests(test)%pad, tests(test)%pad)
     end do
@@ -85,7 +85,7 @@ program benchmark_v3_performance
     ! Benchmark V3
     call cpu_time(start_time)
     do i = 1, NUM_ITERATIONS
-      call sparkle_conv2d_v3_execute(input, weights, bias, output, &
+      call sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                      tests(test)%stride, tests(test)%stride, &
                                      tests(test)%pad, tests(test)%pad)
     end do
@@ -115,7 +115,7 @@ program benchmark_v3_performance
     call cpu_time(start_time)
     !$omp parallel do
     do i = 1, NUM_ITERATIONS
-      call sparkle_conv2d_v3_execute(input, weights, bias, output, &
+      call sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                      tests(test)%stride, tests(test)%stride, &
                                      tests(test)%pad, tests(test)%pad)
     end do
@@ -143,7 +143,7 @@ program benchmark_v3_performance
   call cpu_time(start_time)
   !$omp parallel do schedule(dynamic)
   do i = 1, 1000
-    call sparkle_conv2d_v3_execute(input, weights, bias, output, &
+    call sporkle_conv2d_v3_execute(input, weights, bias, output, &
                                    1, 1, 1, 1)
   end do
   !$omp end parallel do
@@ -154,11 +154,11 @@ program benchmark_v3_performance
   
   ! Show final statistics
   print *, ""
-  call sparkle_conv2d_v3_stats()
+  call sporkle_conv2d_v3_stats()
   
   ! Cleanup
   call deallocate_test_arrays()
-  call sparkle_conv2d_v3_cleanup()
+  call sporkle_conv2d_v3_cleanup()
   
   print *, ""
   print *, "✅ Benchmark complete!"
@@ -207,7 +207,7 @@ contains
   
   function calculate_flops(config) result(flops)
     type(test_config), intent(in) :: config
-    real(real64) :: flops
+    real(dp) :: flops
     integer :: OH, OW
     
     OH = (config%H + 2*config%pad - config%KH) / config%stride + 1
@@ -221,9 +221,9 @@ contains
   end function calculate_flops
   
   function verify_results(a, b) result(match)
-    real(real32), intent(in) :: a(:,:,:,:), b(:,:,:,:)
+    real(sp), intent(in) :: a(:,:,:,:), b(:,:,:,:)
     logical :: match
-    real(real32) :: max_diff
+    real(sp) :: max_diff
     
     max_diff = maxval(abs(a - b))
     match = max_diff < 1.0e-3  ! Reasonable tolerance for float32

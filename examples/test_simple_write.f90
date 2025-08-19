@@ -1,8 +1,8 @@
 program test_simple_write
   use iso_c_binding
-  use sparkle_types
-  use sparkle_amdgpu_direct
-  use sparkle_amdgpu_memory
+  use sporkle_types
+  use sporkle_amdgpu_direct
+  use sporkle_amdgpu_memory
   implicit none
   
   type(amdgpu_device) :: device

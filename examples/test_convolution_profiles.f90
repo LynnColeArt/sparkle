@@ -1,8 +1,8 @@
 program test_convolution_profiles
   ! Profile convolution kernels arithmetic intensity and parameter methods
-  use iso_fortran_env
-  use sparkle_shader_parser_v2
-  use sparkle_fortran_params
+  use kinds
+  use sporkle_shader_parser_v2
+  use sporkle_fortran_params
   implicit none
   
   type(shader_kernel_v2) :: kernel_im2col, kernel_gemm, kernel_direct

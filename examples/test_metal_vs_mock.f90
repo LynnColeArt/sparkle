@@ -2,20 +2,20 @@ program test_metal_vs_mock
   ! Compare Metal GPU performance vs mock implementation
   ! The moment of truth: Can real GPU beat a print statement?
   
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding
-  use sparkle_gpu_dispatch  ! Mock implementation
-  use sparkle_gpu_metal     ! Real Metal implementation
-  use sparkle_metal_kernels
+  use sporkle_gpu_dispatch  ! Mock implementation
+  use sporkle_gpu_metal     ! Real Metal implementation
+  use sporkle_metal_kernels
   implicit none
   
   ! Test parameters
   integer, parameter :: N = 10000000  ! 10 million elements
-  real(real32), allocatable, target :: x(:), y(:), z_mock(:), z_metal(:)
+  real(sp), allocatable, target :: x(:), y(:), z_mock(:), z_metal(:)
   
   ! Timing variables
-  real(real64) :: start_time, end_time
-  real(real64) :: mock_time, metal_time
+  real(dp) :: start_time, end_time
+  real(dp) :: mock_time, metal_time
   
   ! Metal objects
   type(metal_context) :: metal_ctx
@@ -31,7 +31,7 @@ program test_metal_vs_mock
   logical :: metal_available
   
   print *, "========================================="
-  print *, "   SPARKLE: Metal vs Mock Showdown!"
+  print *, "   SPORKLE: Metal vs Mock Showdown!"
   print *, "========================================="
   print *, ""
   print '(A,I0,A,F0.1,A)', "Testing with ", N, " elements (", &

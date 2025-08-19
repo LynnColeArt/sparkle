@@ -1,7 +1,7 @@
 program benchmark_convolution
-  use iso_fortran_env
+  use kinds
   use iso_c_binding
-  use sparkle_fortran_shaders
+  use sporkle_fortran_shaders
   use gl_constants
   implicit none
   
@@ -21,20 +21,20 @@ program benchmark_convolution
   integer :: num_patches
   
   ! Arrays
-  real(real32), allocatable, target :: input(:)
-  real(real32), allocatable, target :: kernel(:)
-  real(real32), allocatable, target :: output(:)
-  real(real32), allocatable, target :: col_buffer(:)
-  real(real32), allocatable, target :: bias(:)
+  real(sp), allocatable, target :: input(:)
+  real(sp), allocatable, target :: kernel(:)
+  real(sp), allocatable, target :: output(:)
+  real(sp), allocatable, target :: col_buffer(:)
+  real(sp), allocatable, target :: bias(:)
   
   ! GL buffers
   integer :: input_buffer, kernel_buffer, output_buffer, col_buffer_gl, bias_buffer
   type(c_ptr) :: buffers(3)
   
   ! Timing
-  real(real64) :: start_time, end_time
-  real(real64) :: cpu_time_ms, gpu_time_ms
-  real(real64) :: gflops
+  real(dp) :: start_time, end_time
+  real(dp) :: cpu_time_ms, gpu_time_ms
+  real(dp) :: gflops
   
   ! Other
   type(glsl_context) :: ctx
@@ -169,7 +169,7 @@ program benchmark_convolution
       
       integer, parameter :: GL_MAP_READ_BIT = int(z'0001', c_int)
       type(c_ptr) :: ptr
-      real(real32), pointer :: mapped(:)
+      real(sp), pointer :: mapped(:)
       
       ptr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0_c_intptr_t, &
                              int(size(output) * 4, c_size_t), GL_MAP_READ_BIT)

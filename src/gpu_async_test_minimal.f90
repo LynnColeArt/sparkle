@@ -1,6 +1,6 @@
 module gpu_async_test_minimal
   use iso_c_binding
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   implicit none
   
   ! Test with just the fence type

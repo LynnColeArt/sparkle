@@ -1,14 +1,14 @@
 ! device_info.f90 - Display information about available compute devices
 program device_info
-  use sparkle_mesh_types
-  use sparkle_discovery
+  use sporkle_mesh_types
+  use sporkle_discovery
   implicit none
   
   type(mesh_topology) :: mesh
   integer :: i
   
   print *, "========================================="
-  print *, "      Sparkle Device Information         "
+  print *, "      Sporkle Device Information         "
   print *, "========================================="
   print *, ""
   

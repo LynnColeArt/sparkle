@@ -1,12 +1,12 @@
 program test_heterogeneous_orchestra
   ! The ultimate test: Use EVERY compute unit on Apple Silicon AT THE SAME TIME
-  ! This is what Sparkle is really about - not just GPU, but EVERYTHING
+  ! This is what Sporkle is really about - not just GPU, but EVERYTHING
   
-  use iso_fortran_env
-  use sparkle_apple_orchestrator
-  use sparkle_gpu_metal
-  use sparkle_neural_engine
-  use sparkle_amx
+  use kinds
+  use sporkle_apple_orchestrator
+  use sporkle_gpu_metal
+  use sporkle_neural_engine
+  use sporkle_amx
   implicit none
   
   type(apple_orchestrator) :: orchestra
@@ -16,12 +16,12 @@ program test_heterogeneous_orchestra
   
   ! Test workload: Large GEMM split across all devices
   integer, parameter :: M = 2048, N = 2048, K = 2048
-  real(real32), allocatable :: a(:,:), b(:,:), c(:,:)
-  real(real32), allocatable :: c_gpu(:,:), c_ane(:,:), c_amx(:,:), c_cpu(:,:)
+  real(sp), allocatable :: a(:,:), b(:,:), c(:,:)
+  real(sp), allocatable :: c_gpu(:,:), c_ane(:,:), c_amx(:,:), c_cpu(:,:)
   
   integer :: chunk_size
-  real(real64) :: start_time, end_time
-  real(real64) :: total_gflops
+  real(dp) :: start_time, end_time
+  real(dp) :: total_gflops
   
   print *, "========================================="
   print *, "   🎭 HETEROGENEOUS ORCHESTRA TEST"
@@ -149,8 +149,8 @@ program test_heterogeneous_orchestra
   
   ! Verify correctness (spot check)
   block
-    real(real32), allocatable :: c_reference(:,:)
-    real(real32) :: max_error
+    real(sp), allocatable :: c_reference(:,:)
+    real(sp) :: max_error
     
     allocate(c_reference(M, N))
     c_reference = matmul(a, b)
@@ -184,7 +184,7 @@ program test_heterogeneous_orchestra
   print *, ""
   print *, "Total: ~45 TFLOPS when EVERYTHING works together!"
   print *, ""
-  print *, "🎯 This is the Sparkle vision:"
+  print *, "🎯 This is the Sporkle vision:"
   print *, "   Every transistor working for the people!"
   
   ! Cleanup

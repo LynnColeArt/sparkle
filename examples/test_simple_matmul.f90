@@ -1,15 +1,15 @@
 program test_simple_matmul
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
+  use sporkle_types
+  use sporkle_memory
   implicit none
   
   type(memory_handle) :: a_mem, b_mem, c_mem
-  real(real32), pointer :: a(:,:), b(:,:), c(:,:)
+  real(sp), pointer :: a(:,:), b(:,:), c(:,:)
   integer :: i, j, k
   integer :: n = 4
-  real(real64) :: start_time, end_time
+  real(dp) :: start_time, end_time
   
   print *, "🧪 Simple Matrix Multiplication Test"
   print *, "==================================="

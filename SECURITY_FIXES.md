@@ -1,4 +1,4 @@
-# Sparkle Security Fixes Summary 🛡️
+# Sporkle Security Fixes Summary 🛡️
 
 *Date: 2025-08-10*  
 *Fixed by: Claude (with green QA beanie)*
@@ -9,16 +9,16 @@ Following the QA security audit, we've implemented critical fixes to harden the 
 
 ### 1. ✅ Command Injection Vulnerability (FIXED)
 **Issue**: Direct shell command execution in GPU detection  
-**Fix**: Created `sparkle_gpu_safe_detect.f90` that reads from `/sys` filesystem directly  
+**Fix**: Created `sporkle_gpu_safe_detect.f90` that reads from `/sys` filesystem directly  
 **Files Modified**:
-- Created `src/sparkle_gpu_safe_detect.f90` - Safe GPU detection without shell commands
-- Updated `src/sparkle_gpu_dispatch.f90` - Now uses safe detection module
+- Created `src/sporkle_gpu_safe_detect.f90` - Safe GPU detection without shell commands
+- Updated `src/sporkle_gpu_dispatch.f90` - Now uses safe detection module
 
 ### 2. ✅ Memory Safety & Error Handling (FIXED)
 **Issue**: Missing allocation error checks and bounds validation  
 **Fix**: Comprehensive error handling system  
 **Files Created**:
-- `src/sparkle_error_handling.f90` - Centralized error handling with:
+- `src/sporkle_error_handling.f90` - Centralized error handling with:
   - Safe allocation wrappers with size validation
   - Bounds checking functions
   - Overflow protection (8GB max allocation)
@@ -28,7 +28,7 @@ Following the QA security audit, we've implemented critical fixes to harden the 
 **Issue**: No validation before array operations  
 **Fix**: Safe kernel wrapper system  
 **Files Created**:
-- `src/sparkle_safe_kernels.f90` - Provides:
+- `src/sporkle_safe_kernels.f90` - Provides:
   - Kernel argument validation
   - Runtime bounds checking (optional via env var)
   - Memory size verification
@@ -44,8 +44,8 @@ Following the QA security audit, we've implemented critical fixes to harden the 
 **Issue**: GPU implementation appears real but is mocked  
 **Fix**: Added clear warnings  
 **Files Modified**:
-- `src/sparkle_gpu_opengl.f90` - Added WARNING header about mock status
-- `src/sparkle_gpu_dispatch.f90` - Added NOTE header and runtime warnings
+- `src/sporkle_gpu_opengl.f90` - Added WARNING header about mock status
+- `src/sporkle_gpu_dispatch.f90` - Added NOTE header and runtime warnings
 - `BENCHMARKS.md` - Already had transparency note at line 104
 
 ### 6. ✅ Resource Limits (FIXED)
@@ -58,7 +58,7 @@ Following the QA security audit, we've implemented critical fixes to harden the 
 ## Remaining Work
 
 ### High Priority
-- [ ] Update all existing modules to use `sparkle_error_handling`
+- [ ] Update all existing modules to use `sporkle_error_handling`
 - [ ] Replace all raw allocations with safe wrappers
 - [ ] Add error propagation throughout the codebase
 
@@ -95,18 +95,18 @@ Following the QA security audit, we've implemented critical fixes to harden the 
 
 2. **Run with memory checking**:
    ```bash
-   valgrind --leak-check=full ./sparkle_app
+   valgrind --leak-check=full ./sporkle_app
    ```
 
 3. **Enable all runtime checks**:
    ```bash
    export SPARKLE_DEBUG=1
    export SPARKLE_CHECK_BOUNDS=1
-   ./sparkle_app
+   ./sporkle_app
    ```
 
 ## Conclusion
 
 The Sparkle codebase is now significantly more secure with proper input validation, memory safety, and transparent documentation. While the GPU implementation remains mocked, it's clearly marked as such to avoid confusion.
 
-The Sparkle Way: **Secure by default, fast by design!** 🚀✨
+The Sporkle Way: **Secure by default, fast by design!** 🚀✨

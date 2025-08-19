@@ -20,7 +20,7 @@
 ! DO NOT MODIFY THIS FILE DIRECTLY
 
 module cpu_conv2d_reference
-  use iso_fortran_env, only: real32, real64, int64
+  use kinds
   use flopcount
   use universal_memory_optimization, only: memory_params, detect_memory_params, &
                                           fused_conv2d_cpu, arithmetic_intensity
@@ -33,10 +33,10 @@ module cpu_conv2d_reference
 contains
 
   ! High-performance CPU convolution using universal memory patterns
-  real(real32) function conv2d_cpu_reference(input, weights, output, &
+  real(sp) function conv2d_cpu_reference(input, weights, output, &
                                              N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     ! Use universal memory optimization patterns
@@ -45,18 +45,18 @@ contains
   end function conv2d_cpu_reference
   
   ! Benchmarking version with multiple iterations (like GPU test)
-  real(real32) function conv2d_cpu_benchmark(input, weights, output, &
+  real(sp) function conv2d_cpu_benchmark(input, weights, output, &
                                              N, C, H, W, K, kernel_size, stride, pad, H_out, W_out, &
                                              iterations)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     integer, intent(in), optional :: iterations
     
     integer :: bench_iters, i
-    real(real64) :: start_time, end_time, total_time
-    integer(int64) :: total_flops
-    real(real64) :: gflops
+    real(dp) :: start_time, end_time, total_time
+    integer(i64) :: total_flops
+    real(dp) :: gflops
     
     bench_iters = 10
     if (present(iterations)) bench_iters = iterations
@@ -113,10 +113,10 @@ contains
   end function conv2d_cpu_benchmark
   
   ! Convenient wrapper with warmup
-  real(real32) function conv2d_cpu_with_warmup(input, weights, output, &
+  real(sp) function conv2d_cpu_with_warmup(input, weights, output, &
                                                N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
     conv2d_cpu_with_warmup = conv2d_cpu_benchmark(input, weights, output, &

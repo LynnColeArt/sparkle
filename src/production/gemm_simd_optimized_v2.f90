@@ -3,7 +3,7 @@
 ! Following Mini's recommendations for surgical, robust changes
 
 module gemm_simd_optimized_v2
-  use iso_fortran_env, only: real32, int32
+  use kinds
   use omp_lib
   implicit none
   
@@ -14,8 +14,8 @@ contains
 
   ! SIMD-optimized GEMM with optional leading dimensions
   subroutine gemm_simd_avx512_v2(A, B, C, m, n, k, alpha, beta, lda, ldb, ldc)
-    real(real32), intent(in) :: A(:), B(:), alpha, beta
-    real(real32), intent(inout) :: C(:)
+    real(sp), intent(in) :: A(:), B(:), alpha, beta
+    real(sp), intent(inout) :: C(:)
     integer, intent(in) :: m, n, k
     integer, intent(in), optional :: lda, ldb, ldc
     
@@ -23,7 +23,7 @@ contains
     integer :: lda_use, ldb_use, ldc_use
     integer :: i, j, kk, ii, jj, kkk
     integer :: tile_m, tile_n, tile_k
-    real(real32) :: sum
+    real(sp) :: sum
     
     ! Following Mini's advice - proper optional handling
     if (present(lda)) then
@@ -68,13 +68,13 @@ contains
   
   ! Fast packed implementation (original code)
   subroutine gemm_simd_avx512_packed(A, B, C, m, n, k, alpha, beta)
-    real(real32), intent(in) :: A(:), B(:), alpha, beta
-    real(real32), intent(inout) :: C(:)
+    real(sp), intent(in) :: A(:), B(:), alpha, beta
+    real(sp), intent(inout) :: C(:)
     integer, intent(in) :: m, n, k
     
     integer :: i, j, kk, ii, jj, kkk
     integer :: tile_m, tile_n, tile_k
-    real(real32) :: sum
+    real(sp) :: sum
     
     ! Tile sizes optimized for AVX-512 and cache
     tile_m = 64    ! Multiple of 16 for AVX-512
@@ -125,12 +125,12 @@ contains
   
   ! Flexible strided implementation
   subroutine gemm_simd_avx512_strided(A, B, C, m, n, k, alpha, beta, lda, ldb, ldc)
-    real(real32), intent(in) :: A(:), B(:), alpha, beta
-    real(real32), intent(inout) :: C(:)
+    real(sp), intent(in) :: A(:), B(:), alpha, beta
+    real(sp), intent(inout) :: C(:)
     integer, intent(in) :: m, n, k, lda, ldb, ldc
     
     integer :: i, j, kk
-    real(real32) :: sum
+    real(sp) :: sum
     
     ! Initialize C with beta scaling
     if (beta == 0.0) then

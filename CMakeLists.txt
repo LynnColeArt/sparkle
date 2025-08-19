@@ -23,12 +23,12 @@ find_package(HIP QUIET)
 
 # Core library sources
 set(SPARKLE_SOURCES
-  src/sparkle_types.f90
-  src/sparkle_mesh_types.f90
+  src/sporkle_types.f90
+  src/sporkle_mesh_types.f90
   src/cpu_device.f90
-  src/sparkle_discovery.f90
-  src/sparkle_scheduler.f90
-  src/sparkle_collectives.f90
+  src/sporkle_discovery.f90
+  src/sporkle_scheduler.f90
+  src/sporkle_collectives.f90
 )
 
 # Optional GPU sources

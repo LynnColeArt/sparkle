@@ -1,15 +1,15 @@
 program test_adaptive_kernel
   use iso_c_binding
-  use sparkle_types
-  use sparkle_adaptive_kernel
-  use sparkle_kernel_variants
+  use sporkle_types
+  use sporkle_adaptive_kernel
+  use sporkle_kernel_variants
   implicit none
   
   integer, parameter :: int64 = c_int64_t
   
   type(adaptive_kernel) :: conv_kernel
   integer :: selected_variant
-  integer(int64) :: workload_sizes(5)
+  integer(i64) :: workload_sizes(5)
   integer :: i, j
   real :: start_time, end_time
   

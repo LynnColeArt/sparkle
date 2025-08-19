@@ -67,12 +67,12 @@ What strikes me most is how cleanly this integrates with Sparkle's philosophy:
 
 ```fortran
 ! The same elegant pattern everywhere
-type(sparkle_buffer) :: data
-type(sparkle_kernel) :: conv_gemm
-type(sparkle_device) :: gpu
+type(sporkle_buffer) :: data
+type(sporkle_kernel) :: conv_gemm
+type(sporkle_device) :: gpu
 
 ! Whether CPU, Metal, or AMDGPU:
-call sparkle_execute(gpu, conv_gemm, data)
+call sporkle_execute(gpu, conv_gemm, data)
 ```
 
 The implementation details (ioctl, PM4 packets, VA mapping) are hidden behind a consistent interface. This is Pythonic Fortran at its finest!

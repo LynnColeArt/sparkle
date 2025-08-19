@@ -1,13 +1,13 @@
 program test_convolution_autotune
   ! Autotune convolution kernels with real GPU execution
-  use iso_fortran_env
+  use kinds
   use iso_c_binding  
   use gl_constants
-  use sparkle_shader_parser_v2
-  use sparkle_gpu_executor
-  use sparkle_gpu_benchmark, only: benchmark_kernel, gpu_benchmark_param_methods, &
+  use sporkle_shader_parser_v2
+  use sporkle_gpu_executor
+  use sporkle_gpu_benchmark, only: benchmark_kernel, gpu_benchmark_param_methods, &
                                   measure_arithmetic_intensity, profile_kernel, kernel_profile
-  use sparkle_fortran_params
+  use sporkle_fortran_params
   implicit none
   
   type(shader_kernel_v2) :: kernel_im2col, kernel_gemm, kernel_direct
@@ -26,7 +26,7 @@ program test_convolution_autotune
   integer, parameter :: output_h = 224
   integer, parameter :: output_w = 224
   
-  real(real32), allocatable :: params_im2col(:), params_gemm(:), params_direct(:)
+  real(sp), allocatable :: params_im2col(:), params_gemm(:), params_direct(:)
   integer :: work_size_im2col, work_size_gemm, work_size_direct
   type(c_ptr) :: window
   integer :: ctx
@@ -154,7 +154,7 @@ contains
     call glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)  ! Hidden window
     
     ! Create window
-    window = glfwCreateWindow(1, 1, "Sparkle GPU Context" // c_null_char, c_null_ptr, c_null_ptr)
+    window = glfwCreateWindow(1, 1, "Sporkle GPU Context" // c_null_char, c_null_ptr, c_null_ptr)
     if (.not. c_associated(window)) then
       print *, "Failed to create GLFW window"
       call glfwTerminate()

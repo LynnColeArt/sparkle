@@ -1,11 +1,11 @@
 program test_single_gpu_conv
   ! Minimal test: Parse -> Generate -> Run -> Measure
-  use iso_fortran_env
+  use kinds
   use iso_c_binding
   use gl_constants
-  use sparkle_shader_parser_v2
-  use sparkle_gpu_executor
-  use sparkle_fortran_params
+  use sporkle_shader_parser_v2
+  use sporkle_gpu_executor
+  use sporkle_fortran_params
   implicit none
   
   type(shader_kernel_v2) :: kernel
@@ -20,12 +20,12 @@ program test_single_gpu_conv
   integer, parameter :: W_out = (W + 2*pad - kernel_w)/stride + 1
   
   ! Buffers
-  real(real32), allocatable, target :: input(:), weights(:), output(:)
+  real(sp), allocatable, target :: input(:), weights(:), output(:)
   integer(c_int) :: in_buf, weight_buf, out_buf
   integer :: input_size, weight_size, output_size
   
   ! Timing
-  real(real64) :: start_time, end_time, gpu_time_ms
+  real(dp) :: start_time, end_time, gpu_time_ms
   
   ! GL context
   type(c_ptr) :: window
@@ -104,7 +104,7 @@ program test_single_gpu_conv
   print *, ""
   print *, "5. Setting kernel parameters..."
   block
-    real(real32), allocatable :: params(:)
+    real(sp), allocatable :: params(:)
     allocate(params(12))  ! conv2d_direct has 12 scalar params
     params = [real(N,real32), real(H,real32), real(W,real32), real(C,real32), &
               real(K,real32), real(kernel_h,real32), real(kernel_w,real32), &

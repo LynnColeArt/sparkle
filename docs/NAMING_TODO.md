@@ -4,31 +4,31 @@
 We discovered a naming conflict with SparkleAI in the community, so we've decided to rename the project to "Sporkle". This document tracks what needs to be updated.
 
 ## Transition Strategy
-For now, we're keeping the internal code names as "sparkle_*" to avoid disrupting active development. The rename will be done in a future refactoring phase.
+For now, we're keeping the internal code names as "sporkle_*" to avoid disrupting active development. The rename will be done in a future refactoring phase.
 
 ## What Needs to be Renamed
 
-### 1. Module Names (All `sparkle_*` → `sporkle_*`)
-- sparkle_types
-- sparkle_memory
-- sparkle_kernels
-- sparkle_safe_kernels
-- sparkle_platform
-- sparkle_config
-- sparkle_error_handling
-- sparkle_mesh_types
-- sparkle_gpu_*
-- sparkle_amdgpu_direct
-- sparkle_glsl_*
-- sparkle_adaptive_kernel
+### 1. Module Names (All `sporkle_*` → `sporkle_*`)
+- sporkle_types
+- sporkle_memory
+- sporkle_kernels
+- sporkle_safe_kernels
+- sporkle_platform
+- sporkle_config
+- sporkle_error_handling
+- sporkle_mesh_types
+- sporkle_gpu_*
+- sporkle_amdgpu_direct
+- sporkle_glsl_*
+- sporkle_adaptive_kernel
 - etc. (all 50+ modules)
 
 ### 2. Type Names
-- sparkle_buffer → sporkle_buffer
-- sparkle_context → sporkle_context
-- sparkle_array → sporkle_array
-- sparkle_kernel → sporkle_kernel
-- sparkle_config_type → sporkle_config_type
+- sporkle_buffer → sporkle_buffer
+- sporkle_context → sporkle_context
+- sporkle_array → sporkle_array
+- sporkle_kernel → sporkle_kernel
+- sporkle_config_type → sporkle_config_type
 - etc.
 
 ### 3. Constants and Parameters
@@ -46,7 +46,7 @@ For now, we're keeping the internal code names as "sparkle_*" to avoid disruptin
 
 ### 5. Documentation
 - Update project name in all docs
-- "The Sparkle Way" → "The Sporkle Way"
+- "The Sporkle Way" → "The Sporkle Way"
 - SPARKLE_PROPOSAL.md → SPORKLE_PROPOSAL.md
 - All references in CLAUDE.md
 - README files

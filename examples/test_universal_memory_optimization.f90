@@ -2,8 +2,8 @@
 ! This validates that same optimization principles work on both CPU and GPU
 
 program test_universal_memory_optimization
-  use iso_fortran_env, only: real32, int64
-  use sparkle_conv2d, only: conv2d_cpu, conv2d_gpu, conv2d_select_implementation
+  use kinds
+  use sporkle_conv2d, only: conv2d_cpu, conv2d_gpu, conv2d_select_implementation
   implicit none
   
   ! ResNet-50 first layer parameters
@@ -12,11 +12,11 @@ program test_universal_memory_optimization
   integer, parameter :: H_out = 112, W_out = 112
   
   ! Arrays
-  real(real32), allocatable :: input(:), weights(:), output_cpu(:), output_gpu(:)
+  real(sp), allocatable :: input(:), weights(:), output_cpu(:), output_gpu(:)
   
   ! Dimensions and timing
   integer :: input_size, weight_size, output_size, i
-  real(real32) :: max_diff
+  real(sp) :: max_diff
   
   print *, "🧪 Testing Universal Memory Optimization Patterns"
   print *, "================================================="

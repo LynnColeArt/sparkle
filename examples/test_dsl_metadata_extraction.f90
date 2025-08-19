@@ -1,7 +1,7 @@
 program test_dsl_metadata_extraction
-  use iso_fortran_env
-  use sparkle_shader_parser_v2
-  use sparkle_fortran_params
+  use kinds
+  use sporkle_shader_parser_v2
+  use sporkle_fortran_params
   implicit none
   
   type(shader_kernel_v2) :: kernel
@@ -52,11 +52,11 @@ program test_dsl_metadata_extraction
   if (allocated(kernel%params)) then
     do i = 1, size(kernel%params)
       select case(trim(kernel%params(i)%type_str))
-      case("integer(int32)")
+      case("integer(i32)")
         print *, "    uint ", trim(kernel%params(i)%name), ";"
-      case("real(real32)")
+      case("real(sp)")
         print *, "    float ", trim(kernel%params(i)%name), ";"
-      case("real(real64)")
+      case("real(dp)")
         print *, "    double ", trim(kernel%params(i)%name), ";"
       end select
     end do

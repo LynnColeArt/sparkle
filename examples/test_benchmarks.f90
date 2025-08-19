@@ -1,27 +1,27 @@
 program test_benchmarks
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_mesh_types
-  use sparkle_discovery
-  use sparkle_kernels
-  use sparkle_execute
-  use sparkle_benchmark
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_mesh_types
+  use sporkle_discovery
+  use sporkle_kernels
+  use sporkle_execute
+  use sporkle_benchmark
   implicit none
   
   type(device_handle), allocatable :: devices(:)
   type(mesh_topology) :: mesh
-  type(sparkle_kernel), allocatable :: kernels(:)
+  type(sporkle_kernel), allocatable :: kernels(:)
   type(benchmark_suite) :: suite
   type(memory_handle) :: a, b, c
-  real(real32), pointer :: a_ptr(:), b_ptr(:), c_ptr(:)
+  real(sp), pointer :: a_ptr(:), b_ptr(:), c_ptr(:)
   integer :: num_devices, i
-  integer(int64), parameter :: sizes(5) = [1024_int64, 10240_int64, 102400_int64, &
+  integer(i64), parameter :: sizes(5) = [1024_int64, 10240_int64, 102400_int64, &
                                            1024000_int64, 10240000_int64]
   character(len=32) :: size_names(5) = ["1K   ", "10K  ", "100K ", "1M   ", "10M  "]
   
-  print *, "🚀 Sparkle Hot/Cold Benchmarking"
+  print *, "🚀 Sporkle Hot/Cold Benchmarking"
   print *, "================================"
   print *, ""
   print *, "Demonstrating cache warming effects and performance measurement"
@@ -128,14 +128,14 @@ program test_benchmarks
   print *, "• Larger data sizes stress memory bandwidth"
   print *, "• Standard deviation shows performance consistency"
   print *, ""
-  print *, "The Sparkle Way: Measure twice, optimize once! ✨"
+  print *, "The Sporkle Way: Measure twice, optimize once! ✨"
 
 contains
 
   function create_vector_add_kernel(n, a_mem, b_mem, c_mem) result(kernel)
-    integer(int64), intent(in) :: n
+    integer(i64), intent(in) :: n
     type(memory_handle), intent(in) :: a_mem, b_mem, c_mem
-    type(sparkle_kernel) :: kernel
+    type(sporkle_kernel) :: kernel
     
     kernel%name = 'vector_add'
     kernel%kernel_type = KERNEL_PURE
@@ -168,9 +168,9 @@ contains
   end function create_vector_add_kernel
   
   function create_vector_scale_kernel(n, a_mem, c_mem) result(kernel)
-    integer(int64), intent(in) :: n
+    integer(i64), intent(in) :: n
     type(memory_handle), intent(in) :: a_mem, c_mem
-    type(sparkle_kernel) :: kernel
+    type(sporkle_kernel) :: kernel
     
     kernel%name = 'vector_scale'
     kernel%kernel_type = KERNEL_PURE
@@ -196,9 +196,9 @@ contains
   end function create_vector_scale_kernel
   
   function create_dot_product_kernel(n, a_mem, b_mem, c_mem) result(kernel)
-    integer(int64), intent(in) :: n
+    integer(i64), intent(in) :: n
     type(memory_handle), intent(in) :: a_mem, b_mem, c_mem
-    type(sparkle_kernel) :: kernel
+    type(sporkle_kernel) :: kernel
     
     kernel%name = 'dot_product'
     kernel%kernel_type = KERNEL_REDUCTION
@@ -233,7 +233,7 @@ contains
   ! Kernel implementations
   subroutine vector_add_impl(args)
     type(kernel_argument), intent(inout) :: args(:)
-    real(real32), pointer :: a(:), b(:), c(:)
+    real(sp), pointer :: a(:), b(:), c(:)
     
     call c_f_pointer(args(1)%data%ptr, a, args(1)%shape)
     call c_f_pointer(args(2)%data%ptr, b, args(2)%shape)
@@ -244,8 +244,8 @@ contains
   
   subroutine vector_scale_impl(args)
     type(kernel_argument), intent(inout) :: args(:)
-    real(real32), pointer :: a(:), c(:)
-    real(real32), parameter :: scale = 3.14159_real32
+    real(sp), pointer :: a(:), c(:)
+    real(sp), parameter :: scale = 3.14159_real32
     
     call c_f_pointer(args(1)%data%ptr, a, args(1)%shape)
     call c_f_pointer(args(2)%data%ptr, c, args(2)%shape)
@@ -255,7 +255,7 @@ contains
   
   subroutine dot_product_impl(args)
     type(kernel_argument), intent(inout) :: args(:)
-    real(real32), pointer :: a(:), b(:), result(:)
+    real(sp), pointer :: a(:), b(:), result(:)
     
     call c_f_pointer(args(1)%data%ptr, a, args(1)%shape)
     call c_f_pointer(args(2)%data%ptr, b, args(2)%shape)

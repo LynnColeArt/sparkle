@@ -1,8 +1,8 @@
-# The Sparkle Way 🌟
+# The Sporkle Way 🌟
 
 ## Philosophy
 
-The Sparkle Way is about democratizing compute through radical simplicity and pure Fortran elegance. It's the antithesis of vendor lock-in and complexity bloat.
+The Sporkle Way is about democratizing compute through radical simplicity and pure Fortran elegance. It's the antithesis of vendor lock-in and complexity bloat.
 
 ## Core Principles
 
@@ -78,7 +78,7 @@ type(device_handle) :: my_gpu
 ### 10. **The People's Infrastructure**
 This isn't about building the fastest framework. It's about building the most accessible one. Speed comes from scale - a million devices at 1 GFLOPS beats one device at 1 TFLOPS.
 
-## What The Sparkle Way Is NOT
+## What The Sporkle Way Is NOT
 
 - ❌ Importing 47 dependencies
 - ❌ Requiring specific vendor tools

@@ -1,5 +1,5 @@
 program test_parser_simple
-  use sparkle_shader_parser_simple
+  use sporkle_shader_parser_simple
   implicit none
   
   type(shader_kernel_simple) :: kernel

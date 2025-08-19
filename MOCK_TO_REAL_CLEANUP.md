@@ -11,18 +11,18 @@ Working implementations live in test files while production modules contain mock
 - Performance: 451 GFLOPS achieved
 - Uses: Direct OpenGL/EGL, proper buffer management, GPU timing
 
-**Mock Location**: `src/sparkle_gpu_dispatch.f90`
+**Mock Location**: `src/sporkle_gpu_dispatch.f90`
 - Contains: "MOCK: Not actually executing on GPU"
 - Returns fake results
 
 **Action Required**:
 - [ ] Extract GPU initialization from test_conv_cpu_vs_gpu.c
 - [ ] Extract shader compilation/execution from test 
-- [ ] Replace mock in sparkle_gpu_dispatch.f90
-- [ ] Update sparkle_gpu_opengl.f90 with real OpenGL calls
+- [ ] Replace mock in sporkle_gpu_dispatch.f90
+- [ ] Update sporkle_gpu_opengl.f90 with real OpenGL calls
 
 ### 2. GPU Backend Detection
-**Working Code Location**: `src/sparkle_gpu_backend.f90`
+**Working Code Location**: `src/sporkle_gpu_backend.f90`
 - OpenGL: Partially implemented
 - Vulkan: "not implemented"
 - ROCm: "not implemented"  
@@ -35,7 +35,7 @@ Working implementations live in test files while production modules contain mock
 
 ### 3. Memory Management
 **Status**: ✅ GOOD - Real implementation exists
-- `src/sparkle_memory.f90` has working code
+- `src/sporkle_memory.f90` has working code
 - Already copied to reference/
 - But device allocation shows "placeholder" message
 
@@ -44,7 +44,7 @@ Working implementations live in test files while production modules contain mock
 - [ ] Connect to GPU buffer creation
 
 ### 4. Production Convolution Interface
-**Location**: `src/production/sparkle_conv2d.f90`
+**Location**: `src/production/sporkle_conv2d.f90`
 - CPU: Uses naive implementation (2 GFLOPS)
 - GPU: Just says "Not implemented" and stops
 
@@ -55,8 +55,8 @@ Working implementations live in test files while production modules contain mock
 ### 5. Shader Compilation
 **Working Code**: Multiple locations
 - `examples/test_conv_cpu_vs_gpu.c` - Has working shader
-- `src/sparkle_glsl_generator.f90` - Can generate shaders
-- `src/sparkle_shader_parser_v2.f90` - Can parse DSL
+- `src/sporkle_glsl_generator.f90` - Can generate shaders
+- `src/sporkle_shader_parser_v2.f90` - Can parse DSL
 
 **Not Connected**: These pieces don't talk to each other!
 
@@ -65,7 +65,7 @@ Working implementations live in test files while production modules contain mock
 - [ ] Connect parser → generator → GPU execution
 
 ### 6. GLSL Compute Module
-**Location**: `src/sparkle_glsl_compute.f90`
+**Location**: `src/sporkle_glsl_compute.f90`
 - Has structure but missing actual OpenGL calls
 - Comment: "Note: In real implementation, we'd need GL buffer objects"
 
@@ -97,8 +97,8 @@ Found working OpenGL code in:
 These contain the patterns we need to extract!
 
 ### 9. Profile and Discovery Modules
-**Profile**: `src/sparkle_profile.f90` - Has some placeholders
-**Discovery**: `src/sparkle_discovery.f90` - Likely has detection mocks
+**Profile**: `src/sporkle_profile.f90` - Has some placeholders
+**Discovery**: `src/sporkle_discovery.f90` - Likely has detection mocks
 
 **Action Required**:
 - [ ] Check if device detection actually works
@@ -148,10 +148,10 @@ For each item:
 
 After cleanup, these should work:
 ```fortran
-use sparkle_conv2d
+use sporkle_conv2d
 call conv2d_gpu(...)  ! Should run at 450+ GFLOPS
 
-use sparkle_gpu_dispatch  
+use sporkle_gpu_dispatch  
 call gpu_execute(...)  ! Should actually run on GPU
 ```
 

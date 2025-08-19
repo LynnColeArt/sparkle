@@ -9,23 +9,23 @@ The Sparkle GPU implementation is designed in layers. This document tracks what'
 ## Architecture Layers
 
 ### Layer 1: GPU Detection ✅ DONE
-- `sparkle_gpu_safe_detect.f90` - Safely detects GPUs via `/sys` filesystem
+- `sporkle_gpu_safe_detect.f90` - Safely detects GPUs via `/sys` filesystem
 - No shell commands, no security vulnerabilities
 - **Status**: Fully implemented and working
 
 ### Layer 2: Backend Abstraction 🟡 PARTIAL
-- `sparkle_gpu_backend.f90` - Backend selection framework
+- `sporkle_gpu_backend.f90` - Backend selection framework
 - Detects available GPU libraries (OpenGL, Vulkan, ROCm, CUDA)
 - **Status**: Framework done, but all backends return "not implemented"
 
 ### Layer 3: Memory Management 🟡 MOCKED
-- `sparkle_gpu_dispatch.f90` - Has `gpu_malloc`, `gpu_free`, `gpu_memcpy`
+- `sporkle_gpu_dispatch.f90` - Has `gpu_malloc`, `gpu_free`, `gpu_memcpy`
 - Currently uses host memory pointers
 - **Status**: API exists but doesn't actually allocate GPU memory
 
 ### Layer 4: Shader/Kernel Compilation 🟡 MOCKED
-- `sparkle_gpu_kernels.f90` - Contains GLSL shader source
-- `sparkle_gpu_opengl.f90` - Has OpenGL bindings
+- `sporkle_gpu_kernels.f90` - Contains GLSL shader source
+- `sporkle_gpu_opengl.f90` - Has OpenGL bindings
 - **Status**: Shaders written but not compiled or loaded
 
 ### Layer 5: Kernel Execution 🔴 NOT IMPLEMENTED
@@ -107,10 +107,10 @@ To get minimal GPU execution working:
 ! In build script:
 ! gfortran -o sparkle *.f90 -lGL -lEGL
 
-! 2. Create real context in sparkle_gpu_opengl.f90
+! 2. Create real context in sporkle_gpu_opengl.f90
 ! Replace mock with actual EGL calls
 
-! 3. Compile shaders in sparkle_gpu_dispatch.f90
+! 3. Compile shaders in sporkle_gpu_dispatch.f90
 ! Use real glCompileShader instead of mock
 
 ! 4. Allocate GPU buffers
@@ -140,4 +140,4 @@ To get minimal GPU execution working:
 2. **Option B**: Skip to ROCm for AMD GPU (most performant) 
 3. **Option C**: Keep as educational example with CPU fallback
 
-The Sparkle Way: **Be transparent about what's real!** 🌟
+The Sporkle Way: **Be transparent about what's real!** 🌟

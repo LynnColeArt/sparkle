@@ -1,6 +1,6 @@
 program test_parser_body
-  use iso_fortran_env
-  use sparkle_shader_parser_v2
+  use kinds
+  use sporkle_shader_parser_v2
   implicit none
   
   type(shader_kernel_v2) :: kernel

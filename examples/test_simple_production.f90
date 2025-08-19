@@ -1,6 +1,6 @@
 ! Simple test of production interface without complex dependencies
 program test_simple_production
-  use iso_fortran_env, only: real32
+  use kinds
   implicit none
   
   ! Simple test data
@@ -8,7 +8,7 @@ program test_simple_production
   integer, parameter :: K = 2, kernel_size = 3, stride = 1, pad = 1
   integer, parameter :: H_out = 4, W_out = 4
   
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: input_size, weight_size, output_size, i
   
   print *, "🧪 Simple Production Interface Test"

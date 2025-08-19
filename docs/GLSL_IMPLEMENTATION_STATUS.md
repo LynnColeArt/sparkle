@@ -3,7 +3,7 @@
 ## Completed Components
 
 ### 1. GLSL Shader Generation ✅
-- **Module**: `sparkle_glsl_generator.f90`
+- **Module**: `sporkle_glsl_generator.f90`
 - **Features**:
   - Generates optimized GLSL compute shaders for convolution-as-GEMM
   - Configurable tile sizes and dimensions
@@ -11,7 +11,7 @@
   - Unrolled loops for known tile sizes
 
 ### 2. OpenGL Compute Integration ✅
-- **Module**: `sparkle_glsl_compute.f90`
+- **Module**: `sporkle_glsl_compute.f90`
 - **Features**:
   - Shader compilation and linking
   - Program management
@@ -20,7 +20,7 @@
   - Error handling for compilation failures
 
 ### 3. Adaptive Kernel Framework ✅
-- **Module**: `sparkle_adaptive_kernel.f90`
+- **Module**: `sporkle_adaptive_kernel.f90`
 - **Features**:
   - Multi-variant kernel management
   - Dynamic performance profiling
@@ -30,7 +30,7 @@
   - Manual variant override capability
 
 ### 4. Kernel Variant Stubs ✅
-- **Module**: `sparkle_kernel_variants.f90`
+- **Module**: `sporkle_kernel_variants.f90`
 - **Features**:
   - GLSL variant stub implementation
   - SPIR-V variant stub implementation

@@ -1,8 +1,8 @@
 program test_gpu_backends
-  use iso_fortran_env, only: int32, int64
-  use sparkle_gpu_backend
-  use sparkle_gpu_backend_detect
-  use sparkle_gpu_safe_detect
+  use kinds
+  use sporkle_gpu_backend
+  use sporkle_gpu_backend_detect
+  use sporkle_gpu_safe_detect
   implicit none
   
   type(gpu_backend_info), allocatable :: backends(:)
@@ -12,7 +12,7 @@ program test_gpu_backends
   integer :: i
   logical :: any_available
   
-  print *, "🔍 Sparkle GPU Backend Detection Test"
+  print *, "🔍 Sporkle GPU Backend Detection Test"
   print *, "====================================="
   print *, ""
   
@@ -91,10 +91,10 @@ program test_gpu_backends
   print *, "--------"
   if (any_available) then
     print *, "🎉 At least one GPU backend is available!"
-    print *, "   Sparkle can potentially use GPU acceleration."
+    print *, "   Sporkle can potentially use GPU acceleration."
   else
     print *, "😕 No GPU backends are currently available."
-    print *, "   Sparkle will fall back to CPU execution."
+    print *, "   Sporkle will fall back to CPU execution."
   end if
   print *, ""
   
@@ -121,7 +121,7 @@ program test_gpu_backends
   end if
   
   print *, ""
-  print *, "The Sparkle Way: Use what you have! ✨"
+  print *, "The Sporkle Way: Use what you have! ✨"
   
   ! Cleanup
   if (allocated(backends)) deallocate(backends)

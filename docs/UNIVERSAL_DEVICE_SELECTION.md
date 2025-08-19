@@ -24,7 +24,7 @@ After achieving 6.5x speedup with the GPU async executor and 196.7 GFLOPS on CPU
 
 3. **Existing Intelligence**
    - `intelligent_device_juggling.f90`: Profiles devices and learns optimal distribution
-   - `sparkle_apple_orchestrator.f90`: Routes to CPU/GPU/ANE/AMX on Apple Silicon
+   - `sporkle_apple_orchestrator.f90`: Routes to CPU/GPU/ANE/AMX on Apple Silicon
    - Performance profiling and adaptive optimization
 
 ### ❌ What's Missing
@@ -111,7 +111,7 @@ After achieving 6.5x speedup with the GPU async executor and 196.7 GFLOPS on CPU
 ## Implementation Plan
 
 ### Phase 1: Unified Device Manager
-1. Create `sparkle_device_manager` module
+1. Create `sporkle_device_manager` module
 2. Register all available compute devices
 3. Implement device discovery for each platform
 4. Add performance profiling infrastructure
@@ -162,7 +162,7 @@ else
 end if
 
 ! With universal device selector
-call sparkle_execute(conv2d_op, input, weights, output)
+call sporkle_execute(conv2d_op, input, weights, output)
 ! Automatically routes to:
 ! - Neural Engine on M1 Mac (38 TOPS)
 ! - GPU with async executor on Linux (3,630 GFLOPS)
@@ -188,6 +188,6 @@ call sparkle_execute(conv2d_op, input, weights, output)
 
 Universal device selection represents the next major performance frontier for Sparkle. By intelligently utilizing all available compute resources and learning optimal configurations, we can achieve another 2-3x performance improvement beyond our already impressive gains.
 
-This isn't just about raw performance - it's about making high-performance computing accessible. Users shouldn't need to know about GPU thread blocks or Neural Engine tiles. They should just call `sparkle_execute()` and get optimal performance automatically.
+This isn't just about raw performance - it's about making high-performance computing accessible. Users shouldn't need to know about GPU thread blocks or Neural Engine tiles. They should just call `sporkle_execute()` and get optimal performance automatically.
 
 The foundation is already in place. Now we build the intelligence layer that makes Sparkle truly universal.

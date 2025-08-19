@@ -22,7 +22,7 @@ We've successfully connected the AMDGPU direct kernel driver interface to the Sp
 └─────────────┬───────────────────────┘
               │
 ┌─────────────┴───────────────────────┐
-│    sparkle_amdgpu_direct            │
+│    sporkle_amdgpu_direct            │
 │  (Direct kernel ioctl interface)    │
 │                                     │
 │  - Opens /dev/dri/cardN             │

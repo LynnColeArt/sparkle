@@ -1,7 +1,7 @@
 module amd_device_mod
   use iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_f_pointer, c_loc
-  use iso_fortran_env, only: int32, int64, real32, real64
-  use sparkle_types
+  use kinds
+  use sporkle_types
   implicit none
   private
   
@@ -21,9 +21,9 @@ contains
 
   function amd_allocate(self, size_bytes, pinned) result(buffer)
     class(amd_device), intent(inout) :: self
-    integer(int64), intent(in) :: size_bytes
+    integer(i64), intent(in) :: size_bytes
     logical, intent(in), optional :: pinned
-    type(sparkle_buffer) :: buffer
+    type(sporkle_buffer) :: buffer
     
     ! For now, just allocate host memory
     ! Real implementation would use HIP or Vulkan
@@ -43,7 +43,7 @@ contains
   
   subroutine amd_deallocate(self, buffer)
     class(amd_device), intent(inout) :: self
-    type(sparkle_buffer), intent(inout) :: buffer
+    type(sporkle_buffer), intent(inout) :: buffer
     
     ! For now, just deallocate host memory
     if (c_associated(buffer%data)) then
@@ -57,10 +57,10 @@ contains
   
   function amd_memcpy(self, dst, src, size_bytes) result(status)
     class(amd_device), intent(inout) :: self
-    type(sparkle_buffer), intent(inout) :: dst
-    type(sparkle_buffer), intent(in) :: src
-    integer(int64), intent(in) :: size_bytes
-    integer(int32) :: status
+    type(sporkle_buffer), intent(inout) :: dst
+    type(sporkle_buffer), intent(in) :: src
+    integer(i64), intent(in) :: size_bytes
+    integer(i32) :: status
     
     ! For now, just copy host memory
     ! Real implementation would use HIP memcpy
@@ -87,9 +87,9 @@ contains
     class(amd_device), intent(inout) :: self
     character(len=*), intent(in) :: kernel_name
     type(c_ptr), intent(in) :: args(:)
-    integer(int32), intent(in) :: grid_size(3)
-    integer(int32), intent(in) :: block_size(3)
-    integer(int32) :: status
+    integer(i32), intent(in) :: grid_size(3)
+    integer(i32), intent(in) :: block_size(3)
+    integer(i32) :: status
     
     ! Placeholder - real implementation would launch HIP/Vulkan kernel
     print *, "AMD device ", self%device_id, " would execute kernel: ", kernel_name
@@ -99,7 +99,7 @@ contains
   
   function amd_synchronize(self) result(status)
     class(amd_device), intent(inout) :: self
-    integer(int32) :: status
+    integer(i32) :: status
     
     ! Placeholder - real implementation would sync device
     status = 0

@@ -1,7 +1,7 @@
 program test_amdgpu_command
   ! Test program for AMDGPU command submission
   
-  use sparkle_amdgpu_direct
+  use sporkle_amdgpu_direct
   use iso_c_binding
   implicit none
   

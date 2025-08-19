@@ -1,5 +1,5 @@
 program benchmark_thread_safe_performance
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use gpu_program_cache_v2          ! Original cache
   use gpu_program_cache_threadsafe  ! Thread-safe cache
   use gpu_opengl_interface
@@ -17,9 +17,9 @@ program benchmark_thread_safe_performance
   type(program_cache_ts) :: cache_ts
   
   ! Timing and results
-  real(real64) :: start_time, end_time
-  real(real64) :: v2_single_time, v2_multi_time
-  real(real64) :: ts_single_time, ts_multi_time
+  real(dp) :: start_time, end_time
+  real(dp) :: v2_single_time, v2_multi_time
+  real(dp) :: ts_single_time, ts_multi_time
   integer :: i, j, program_ids(NUM_PROGRAMS)
   character(len=64) :: cache_keys(NUM_PROGRAMS)
   logical :: success
@@ -242,7 +242,7 @@ contains
   ! Sleep for milliseconds
   subroutine sleep_ms(ms)
     integer, intent(in) :: ms
-    real(real64) :: start_time, current_time
+    real(dp) :: start_time, current_time
     
     call cpu_time(start_time)
     do

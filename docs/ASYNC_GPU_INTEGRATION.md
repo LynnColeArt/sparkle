@@ -14,7 +14,7 @@ The GPU async executor with triple buffering has been integrated into the produc
 
 ### Integration Points
 
-1. **sparkle_conv2d_juggling.f90**
+1. **sporkle_conv2d_juggling.f90**
    - Added async executor support
    - Async enabled by default (`async_gpu_enabled = .true.`)
    - Falls back to synchronous if disabled
@@ -44,7 +44,7 @@ time_ms = conv2d_auto_juggling(input, weights, output, ...)
 
 ### Disable Async
 ```fortran
-use sparkle_conv2d_juggling
+use sporkle_conv2d_juggling
 call disable_async_gpu()  ! Falls back to 400 GFLOPS sync
 ```
 

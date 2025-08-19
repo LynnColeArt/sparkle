@@ -5,14 +5,14 @@ pure subroutine multiline_test(idx, input1, input2, input3, output, &
                                kernel_h, kernel_w, &
                                stride_h, stride_w, &
                                pad_h, pad_w)
-  use iso_fortran_env
-  integer(int32), value :: idx
-  real(real32), intent(in) :: input1, input2, input3
-  real(real32), intent(out) :: output
-  integer(int32), value :: height, width, channels
-  integer(int32), value :: kernel_h, kernel_w
-  integer(int32), value :: stride_h, stride_w  
-  integer(int32), value :: pad_h, pad_w
+  use kinds
+  integer(i32), value :: idx
+  real(sp), intent(in) :: input1, input2, input3
+  real(sp), intent(out) :: output
+  integer(i32), value :: height, width, channels
+  integer(i32), value :: kernel_h, kernel_w
+  integer(i32), value :: stride_h, stride_w  
+  integer(i32), value :: pad_h, pad_w
   
   ! Simple test computation
   output = input1 * real(height * width, real32)

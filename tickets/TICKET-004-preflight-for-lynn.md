@@ -75,7 +75,7 @@ cd /media/lynn/big_drive/workspaces/fortran-experiment
 cat docs/GPU_IMPLEMENTATION_STATUS.md
 
 # Next file to work on:
-src/sparkle_gpu_opengl.f90  # Needs real context creation
+src/sporkle_gpu_opengl.f90  # Needs real context creation
 ```
 
 ### Key Decisions Made
@@ -92,4 +92,4 @@ src/sparkle_gpu_opengl.f90  # Needs real context creation
 - Security fixes are in SECURITY_FIXES.md
 - Performance benchmarks in BENCHMARKS.md
 
-The Sparkle Way continues! When you're ready, we'll tackle GPU Layer 3 and get real GPU execution working. Have a great conference! 🚀✨
+The Sporkle Way continues! When you're ready, we'll tackle GPU Layer 3 and get real GPU execution working. Have a great conference! 🚀✨

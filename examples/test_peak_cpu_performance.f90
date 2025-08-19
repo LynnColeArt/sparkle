@@ -3,17 +3,17 @@
 ! Focus on measuring peak GFLOPS using the proven gemm_universal_memory
 
 program test_peak_cpu_performance
-  use iso_fortran_env, only: real32, int64
+  use kinds
   use omp_lib
   use universal_memory_optimization, only: gemm_universal_memory, im2col_cache_optimal
   implicit none
   
-  real(real32), allocatable :: input(:), weights(:), output(:), col_buffer(:)
+  real(sp), allocatable :: input(:), weights(:), output(:), col_buffer(:)
   integer :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
   integer :: i, run
   integer :: clock_start, clock_end, clock_rate
-  integer(int64) :: total_flops
-  real(real32) :: time_ms, best_time, worst_time, avg_time, gflops
+  integer(i64) :: total_flops
+  real(sp) :: time_ms, best_time, worst_time, avg_time, gflops
   integer, parameter :: num_warmup = 5
   integer, parameter :: num_runs = 10
   

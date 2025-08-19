@@ -3,19 +3,19 @@
 ! Demonstrates the power of hot cache exploitation
 
 program test_memory_wall_breakthrough
-  use iso_fortran_env, only: real32, int64
+  use kinds
   use memory_wall_breakthrough
   implicit none
   
-  real(real32), allocatable :: input(:), weights(:), output(:)
-  real(real32), allocatable :: output_ref(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: output_ref(:)
   integer :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
   integer :: i, num_runs
-  real(real32) :: time_hot, time_cold, speedup
-  real(real32) :: total_time_hot, total_time_cold
-  integer(int64) :: total_flops
-  real(real32) :: gflops_hot, gflops_cold
-  real(real32) :: max_diff
+  real(sp) :: time_hot, time_cold, speedup
+  real(sp) :: total_time_hot, total_time_cold
+  integer(i64) :: total_flops
+  real(sp) :: gflops_hot, gflops_cold
+  real(sp) :: max_diff
   
   print *, "🧪 Memory Wall Breakthrough Test"
   print *, "================================"

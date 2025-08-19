@@ -12,7 +12,7 @@
 ! - Robust error handling and fallback
 
 module gpu_binary_cache
-  use iso_fortran_env, only: real32, real64, int32, int64, error_unit, int8
+  use kinds
   use iso_c_binding
   implicit none
   
@@ -168,7 +168,7 @@ contains
     character(len=*), intent(in) :: cache_dir
     
     integer :: binary_length, binary_format
-    integer(int8), allocatable, target :: binary_data(:)
+    integer(i8), allocatable, target :: binary_data(:)
     type(c_ptr) :: binary_ptr
     character(len=512) :: filepath, gpu_dir
     integer :: unit, iostat
@@ -240,7 +240,7 @@ contains
     character(len=512) :: filepath, gpu_dir
     integer :: unit, iostat
     integer :: binary_format, binary_length, actual_length
-    integer(int8), allocatable, target :: binary_data(:)
+    integer(i8), allocatable, target :: binary_data(:)
     type(c_ptr) :: binary_ptr
     integer :: link_status
     logical :: dir_exists

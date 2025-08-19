@@ -1,23 +1,23 @@
 program test_kernel_execution
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_mesh_types
-  use sparkle_discovery
-  use sparkle_kernels
-  use sparkle_execute
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_mesh_types
+  use sporkle_discovery
+  use sporkle_kernels
+  use sporkle_execute
   implicit none
   
   type(device_handle), allocatable :: devices(:)
   type(mesh_topology) :: mesh
-  type(sparkle_kernel) :: kernel
+  type(sporkle_kernel) :: kernel
   type(memory_handle) :: a, b, c
-  real(real32), pointer :: a_ptr(:), b_ptr(:), c_ptr(:)
+  real(sp), pointer :: a_ptr(:), b_ptr(:), c_ptr(:)
   integer :: num_devices, i
-  integer(int64) :: n
+  integer(i64) :: n
   
-  print *, "🧪 Testing Sparkle Kernel Execution"
+  print *, "🧪 Testing Sporkle Kernel Execution"
   print *, "==================================="
   
   ! Discover devices  
@@ -108,14 +108,14 @@ program test_kernel_execution
   kernel%arguments(3)%data = c
   
   ! Execute!
-  call sparkle_run(kernel, mesh)
+  call sporkle_run(kernel, mesh)
   
   ! Verify results
   print *, ""
   print *, "✅ Verifying results..."
   block
     logical :: correct
-    real(real32) :: expected
+    real(sp) :: expected
     
     correct = .true.
     do i = 1, min(10_int64, n)
@@ -165,11 +165,11 @@ program test_kernel_execution
   kernel%arguments(1)%data = a
   kernel%arguments(2)%data = c
   
-  call sparkle_run(kernel, mesh)
+  call sporkle_run(kernel, mesh)
   
   print '(A,ES12.5)', "Sum of all elements: ", c_ptr(1)
   block
-    real(real64) :: expected_sum
+    real(dp) :: expected_sum
     expected_sum = real(n, real64) * real(n + 1, real64) / 2.0_real64
     print '(A,ES12.5)', "Expected sum:        ", expected_sum
   end block
@@ -188,8 +188,8 @@ contains
   subroutine vector_add_kernel(args)
     type(kernel_argument), intent(inout) :: args(:)
     
-    real(real32), pointer :: a(:), b(:), c(:)
-    integer(int64) :: i, n
+    real(sp), pointer :: a(:), b(:), c(:)
+    integer(i64) :: i, n
     
     ! Get data pointers
     ! In real implementation, these would be sliced based on chunk
@@ -210,9 +210,9 @@ contains
   subroutine sum_reduction_kernel(args)
     type(kernel_argument), intent(inout) :: args(:)
     
-    real(real32), pointer :: input(:), sum_out(:)
-    real(real64) :: sum
-    integer(int64) :: i, n
+    real(sp), pointer :: input(:), sum_out(:)
+    real(dp) :: sum
+    integer(i64) :: i, n
     
     call c_f_pointer(args(1)%data%ptr, input, args(1)%shape)
     call c_f_pointer(args(2)%data%ptr, sum_out, [1_int64])

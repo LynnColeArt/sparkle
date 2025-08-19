@@ -1,5 +1,5 @@
 subroutine test_conv_cpu_vs_gpu() bind(C, name="test_conv_cpu_vs_gpu")
-  use iso_fortran_env
+  use kinds
   use iso_c_binding
   use gl_constants
   implicit none
@@ -22,8 +22,8 @@ subroutine test_conv_cpu_vs_gpu() bind(C, name="test_conv_cpu_vs_gpu")
   integer, target :: params(10)
   
   ! Timing
-  real(real64) :: cpu_time_ms, gpu_time_ms
-  real(real64) :: start_time, end_time
+  real(dp) :: cpu_time_ms, gpu_time_ms
+  real(dp) :: start_time, end_time
   integer :: i, j, warmup_iters, bench_iters
   
   ! OpenGL objects
@@ -36,8 +36,8 @@ subroutine test_conv_cpu_vs_gpu() bind(C, name="test_conv_cpu_vs_gpu")
   integer(c_int) :: info_len
   
   ! Performance metrics
-  integer(int64) :: total_flops, bytes_accessed
-  real(real64) :: cpu_gflops, gpu_gflops, speedup, gpu_bandwidth_gb
+  integer(i64) :: total_flops, bytes_accessed
+  real(dp) :: cpu_gflops, gpu_gflops, speedup, gpu_bandwidth_gb
   real :: max_diff
   
   print *, "Test configuration:"

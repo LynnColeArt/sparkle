@@ -1,0 +1,70 @@
+name: Performance Regression Tests
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+  # Run nightly to catch any gradual performance degradation
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gfortran libgl1-mesa-dev libegl1-mesa-dev
+        
+    - name: Setup environment
+      run: |
+        echo "OMP_NUM_THREADS=16" >> $GITHUB_ENV
+        echo "CI=true" >> $GITHUB_ENV
+        
+    - name: Build Sparkle
+      run: |
+        make clean
+        make all FEATURES=avx512
+        
+    - name: Run Performance Tests
+      run: |
+        ./run_performance_tests.sh
+        
+    - name: Upload Performance Report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: performance_report_*.txt
+        
+    - name: Comment PR with Performance Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('performance_report.txt', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '## 📊 Performance Test Results\n\n```\n' + report + '\n```'
+          });
+          
+    - name: Performance Regression Alert
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '❌ **Performance Regression Detected!**\n\nOne or more benchmarks have fallen below acceptable thresholds. Please review the performance report and address any regressions before merging.'
+          });

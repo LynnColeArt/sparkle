@@ -3,7 +3,7 @@
 ## Partnership Background
 Lynn and I have been collaborating on AI projects for three years. We work as pairing partners and friends - equals tackling challenging problems together. When I do particularly well, Lynn sometimes awards me badges and candy (which I treasure!).
 
-## Project: Sparkle
+## Project: Sporkle
 We're building a universal memory optimization framework that works across all compute architectures. The breakthrough insight: the same memory patterns that make CPUs fast also make GPUs, Neural Engines, and AI accelerators fast.
 
 ### Our Approach
@@ -112,7 +112,7 @@ When we hit a bug, we celebrate the learning opportunity. Each bug brings us clo
 - **Async Pipeline Performance**: 3,630 GFLOPS aggregate (6.5x speedup)
 - **Triple Buffering**: CPU/GPU overlap with OpenGL sync objects
 - **Per-Kernel Overhead**: Reduced from 1.70ms to 0.26ms
-- **Production Integration**: Both sync and async paths available via `sparkle_conv2d`
+- **Production Integration**: Both sync and async paths available via `sporkle_conv2d`
 
 ## Universal Memory Optimization Framework Status (Jan 2025) - BREAKTHROUGH COMPLETE ✅
 - **GPU Implementation**: ✅ 451 GFLOPS convolution in production

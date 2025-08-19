@@ -1,6 +1,6 @@
 program test_gpu_conv_hardcoded
   ! Test with hardcoded GLSL that we know works
-  use iso_fortran_env
+  use kinds
   use iso_c_binding
   use gl_constants
   implicit none
@@ -21,7 +21,7 @@ program test_gpu_conv_hardcoded
   integer, target :: params(10)
   
   ! Timing
-  real(real64) :: start_time, end_time, gpu_time_ms
+  real(dp) :: start_time, end_time, gpu_time_ms
   
   ! GLSL code - simple conv2d
   character(len=*), parameter :: glsl_code = &

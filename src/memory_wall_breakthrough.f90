@@ -11,7 +11,7 @@
 ! Target: 40+ GFLOPS on CPU (proven achievable)
 
 module memory_wall_breakthrough
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use flopcount
   use iso_c_binding
   use omp_lib
@@ -35,13 +35,13 @@ contains
   ! Cache-oblivious recursive matrix multiply
   ! This automatically adapts to ANY cache hierarchy
   recursive subroutine cache_oblivious_gemm(A, B, C, m, n, k, lda, ldb, ldc, alpha)
-    real(real32), intent(in) :: A(lda,*), B(ldb,*)
-    real(real32), intent(inout) :: C(ldc,*)
+    real(sp), intent(in) :: A(lda,*), B(ldb,*)
+    real(sp), intent(inout) :: C(ldc,*)
     integer, intent(in) :: m, n, k, lda, ldb, ldc
-    real(real32), intent(in) :: alpha
+    real(sp), intent(in) :: alpha
     
     integer :: m2, n2, k2
-    real(real32) :: L1_APPROX
+    real(sp) :: L1_APPROX
     
     ! Base case: small enough to fit in L1
     L1_APPROX = real(L1_SIZE) / (3.0 * 4.0)  ! 3 matrices, 4 bytes per float
@@ -70,13 +70,13 @@ contains
 
   ! Hot cache GEMM kernel - keeps data in L1
   subroutine gemm_kernel_hot(A, B, C, m, n, k, lda, ldb, ldc, alpha)
-    real(real32), intent(in) :: A(lda,*), B(ldb,*)
-    real(real32), intent(inout) :: C(ldc,*)
+    real(sp), intent(in) :: A(lda,*), B(ldb,*)
+    real(sp), intent(inout) :: C(ldc,*)
     integer, intent(in) :: m, n, k, lda, ldb, ldc
-    real(real32), intent(in) :: alpha
+    real(sp), intent(in) :: alpha
     
     integer :: i, j, l
-    real(real32) :: sum
+    real(sp) :: sum
     
     ! Optimized with manual unrolling and vectorization hints
     !$OMP SIMD COLLAPSE(2)
@@ -94,22 +94,22 @@ contains
 
   ! Fused convolution with hot cache exploitation
   ! This is the "sleight of hand" - multiple operations without going to memory
-  real(real32) function fused_conv2d_hot_cache(input, weights, output, &
+  real(sp) function fused_conv2d_hot_cache(input, weights, output, &
                                                N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    real(real32), allocatable, target :: col_buffer(:), weights_ready(:)
+    real(sp), allocatable, target :: col_buffer(:), weights_ready(:)
     integer :: clock_start, clock_end, clock_rate
-    integer(int64) :: total_flops
+    integer(i64) :: total_flops
     
     ! Declare missing tile variables
     integer :: num_tiles_h, num_tiles_w, tile_h, tile_w
     integer :: h_start, w_start, h_end, w_end, actual_tile_h, actual_tile_w
     integer :: th, tw  ! Loop variables
-    real(real32), allocatable :: tile_input(:), tile_output(:), workspace(:)
-    real(real32), pointer     :: tile_weights(:) => null()  ! alias
+    real(sp), allocatable :: tile_input(:), tile_output(:), workspace(:)
+    real(sp), pointer     :: tile_weights(:) => null()  ! alias
     
     call system_clock(clock_start, clock_rate)
     
@@ -205,8 +205,8 @@ contains
   ! Extract a tile using im2col transformation
   subroutine im2col_tile(input, col, N, C, H, W, kernel_size, stride, pad, &
                         h_offset, w_offset, tile_h, tile_w)
-    real(real32), intent(in) :: input(*)
-    real(real32), intent(out) :: col(*)
+    real(sp), intent(in) :: input(*)
+    real(sp), intent(out) :: col(*)
     integer, intent(in) :: N, C, H, W, kernel_size, stride, pad
     integer, intent(in) :: h_offset, w_offset, tile_h, tile_w
     
@@ -238,8 +238,8 @@ contains
 
   ! Copy and transpose weights for better cache access
   subroutine copy_weights_transposed(weights, weights_t, K, C, kernel_size)
-    real(real32), intent(in) :: weights(*)
-    real(real32), intent(out) :: weights_t(K, *)
+    real(sp), intent(in) :: weights(*)
+    real(sp), intent(out) :: weights_t(K, *)
     integer, intent(in) :: K, C, kernel_size
     
     integer :: k_idx, idx
@@ -254,7 +254,7 @@ contains
 
   ! Process tile while hot in cache (e.g., bias, ReLU)
   subroutine process_tile_hot(tile, rows, cols)
-    real(real32), intent(inout) :: tile(rows, cols)
+    real(sp), intent(inout) :: tile(rows, cols)
     integer, intent(in) :: rows, cols
     
     integer :: i, j
@@ -271,8 +271,8 @@ contains
   ! Write tile output back to memory
   subroutine write_tile_output(tile, output, K, H_out, W_out, &
                               h_offset, w_offset, tile_h, tile_w)
-    real(real32), intent(in) :: tile(K, *)
-    real(real32), intent(out) :: output(*)
+    real(sp), intent(in) :: tile(K, *)
+    real(sp), intent(out) :: output(*)
     integer, intent(in) :: K, H_out, W_out
     integer, intent(in) :: h_offset, w_offset, tile_h, tile_w
     
@@ -291,9 +291,9 @@ contains
 
   ! Benchmark to demonstrate the breakthrough
   subroutine benchmark_memory_wall_breakthrough()
-    real(real32), allocatable :: input(:), weights(:), output(:)
+    real(sp), allocatable :: input(:), weights(:), output(:)
     integer :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
-    real(real32) :: time_ms
+    real(sp) :: time_ms
     integer :: i
     
     ! ResNet-50 first layer dimensions
@@ -342,15 +342,15 @@ contains
   end subroutine benchmark_memory_wall_breakthrough
 
   ! Naive convolution (cold cache) for comparison
-  real(real32) function naive_conv2d_cold_cache(input, weights, output, &
+  real(sp) function naive_conv2d_cold_cache(input, weights, output, &
                                                 N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
-    real(real32), intent(in) :: input(:), weights(:)
-    real(real32), intent(out) :: output(:)
+    real(sp), intent(in) :: input(:), weights(:)
+    real(sp), intent(out) :: output(:)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
     
-    real(real32), allocatable :: col_buffer(:), weights_transposed(:)
+    real(sp), allocatable :: col_buffer(:), weights_transposed(:)
     integer :: clock_start, clock_end, clock_rate
-    integer(int64) :: total_flops
+    integer(i64) :: total_flops
     
     call system_clock(clock_start, clock_rate)
     

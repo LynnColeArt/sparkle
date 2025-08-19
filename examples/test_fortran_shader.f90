@@ -1,7 +1,7 @@
 program test_fortran_shader
   use iso_c_binding
-  use sparkle_types
-  use sparkle_fortran_shaders
+  use sporkle_types
+  use sporkle_fortran_shaders
   use gl_constants
   implicit none
   

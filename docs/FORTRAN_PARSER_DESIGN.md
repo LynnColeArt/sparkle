@@ -5,11 +5,11 @@ A pure Fortran parser that translates annotated Fortran kernels to GLSL compute 
 
 ## Module Structure
 
-### 1. sparkle_shader_parser.f90
+### 1. sporkle_shader_parser.f90
 ```fortran
-module sparkle_shader_parser
+module sporkle_shader_parser
   use iso_fortran_env
-  use sparkle_types
+  use sporkle_types
   implicit none
 
   type :: shader_kernel
@@ -156,8 +156,8 @@ end function
 
 ```fortran
 program test_parser
-  use sparkle_shader_parser
-  use sparkle_glsl_compute
+  use sporkle_shader_parser
+  use sporkle_glsl_compute
   
   type(shader_kernel) :: kernel
   character(len=:), allocatable :: glsl_source

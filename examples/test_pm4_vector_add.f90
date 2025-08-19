@@ -1,14 +1,14 @@
 program test_pm4_vector_add
-  use iso_fortran_env, only: real32, int32, int64
-  use sparkle_pm4_compute
-  use sparkle_amdgpu_direct
+  use kinds
+  use sporkle_pm4_compute
+  use sporkle_amdgpu_direct
   implicit none
   
   logical :: success
   integer :: i, n
-  real(real32), allocatable :: a(:), b(:), c(:), expected(:)
-  real(real32) :: time_ms
-  real(real32) :: max_error
+  real(sp), allocatable :: a(:), b(:), c(:), expected(:)
+  real(sp) :: time_ms
+  real(sp) :: max_error
   
   print *, "🧪 PM4 Vector Add Test"
   print *, "======================"
@@ -78,13 +78,13 @@ contains
 
   ! Simple vector add using PM4
   function pm4_vector_add(a, b, c, n) result(time_ms)
-    real(real32), intent(in) :: a(:), b(:)
-    real(real32), intent(out) :: c(:)
+    real(sp), intent(in) :: a(:), b(:)
+    real(sp), intent(out) :: c(:)
     integer, intent(in) :: n
-    real(real32) :: time_ms
+    real(sp) :: time_ms
     
     type(amdgpu_buffer) :: buf_a, buf_b, buf_c
-    integer(int64) :: shader_addr
+    integer(i64) :: shader_addr
     integer :: status
     integer :: grid_size
     
@@ -138,7 +138,7 @@ contains
     
     ! Copy input data
     block
-      real(real32), pointer :: ptr(:)
+      real(sp), pointer :: ptr(:)
       
       call c_f_pointer(buf_a%cpu_ptr, ptr, [n])
       ptr = a
@@ -158,7 +158,7 @@ contains
     ! Copy output data
     if (time_ms >= 0.0) then
       block
-        real(real32), pointer :: ptr(:)
+        real(sp), pointer :: ptr(:)
         call c_f_pointer(buf_c%cpu_ptr, ptr, [n])
         c = ptr
       end block

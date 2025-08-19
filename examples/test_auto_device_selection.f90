@@ -8,8 +8,8 @@
 !   - Device capabilities
 
 program test_auto_device_selection
-  use iso_fortran_env, only: real32, real64, int64
-  use sparkle_conv2d_auto_selector
+  use kinds
+  use sporkle_conv2d_auto_selector
   implicit none
   
   ! Test configurations - various workload sizes
@@ -35,14 +35,14 @@ program test_auto_device_selection
   ]
   
   ! Variables
-  real(real32), allocatable :: input(:), weights(:), output(:)
+  real(sp), allocatable :: input(:), weights(:), output(:)
   integer :: test_idx, i
   integer :: H_out, W_out
   integer :: input_size, weight_size, output_size
-  real(real32) :: time_ms
-  integer(int64) :: total_flops
-  real(real32) :: gflops, ai
-  real(real32) :: total_time_cpu, total_time_gpu
+  real(sp) :: time_ms
+  integer(i64) :: total_flops
+  real(sp) :: gflops, ai
+  real(sp) :: total_time_cpu, total_time_gpu
   integer :: cpu_count, gpu_count
   
   print *, "🤖 Automatic Device Selection Test"

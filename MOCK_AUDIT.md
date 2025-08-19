@@ -1,4 +1,4 @@
-# Sparkle Mock Implementation Audit
+# Sporkle Mock Implementation Audit
 *Generated: 2025-01-12*
 
 ## Purpose
@@ -14,13 +14,13 @@ Track all mock implementations that need to be replaced with real code before mi
 
 ## Core GPU Execution
 
-### 1. GPU Kernel Dispatch (`src/sparkle_gpu_dispatch.f90`)
+### 1. GPU Kernel Dispatch (`src/sporkle_gpu_dispatch.f90`)
 - **Status**: 🔴 MOCK
 - **Line 247**: `print '(A)', "   ⚠️  MOCK: Not actually executing on GPU"`
 - **What it does**: Prints execution info but doesn't run on GPU
 - **Needs**: Real GPU kernel execution via Metal/OpenGL/Vulkan
 
-### 2. OpenGL Backend (`src/sparkle_gpu_backend.f90`)
+### 2. OpenGL Backend (`src/sporkle_gpu_backend.f90`)
 - **Status**: 🔴 MOCK
 - **Lines 334-369**: Mock OpenGL functions
   - `opengl_init()` - Just prints "Initializing OpenGL backend (mock)"
@@ -28,7 +28,7 @@ Track all mock implementations that need to be replaced with real code before mi
   - `opengl_execute()` - Prints "Executing kernel (mock)"
 - **Needs**: Real OpenGL context creation and compute shader dispatch
 
-### 3. OpenGL Compute (`src/sparkle_gpu_opengl.f90`)
+### 3. OpenGL Compute (`src/sporkle_gpu_opengl.f90`)
 - **Status**: 🔴 MOCK
 - **Entire module**: Warning states "MOCK IMPLEMENTATION for testing"
 - **Needs**: Complete rewrite with actual OpenGL/EGL calls
@@ -37,7 +37,7 @@ Track all mock implementations that need to be replaced with real code before mi
 
 ## Metal Implementation (macOS)
 
-### 4. Metal Backend (`src/sparkle_gpu_metal.f90`)
+### 4. Metal Backend (`src/sporkle_gpu_metal.f90`)
 - **Status**: 🟡 PARTIAL
 - **What works**: 
   - ✅ Context creation
@@ -62,7 +62,7 @@ Track all mock implementations that need to be replaced with real code before mi
 
 ## Device Discovery & Management
 
-### 6. GPU Discovery (`src/sparkle_discovery.f90`)
+### 6. GPU Discovery (`src/sporkle_discovery.f90`)
 - **Status**: 🔴 MOCK
 - **Line 94**: `! TODO: Actually profile with micro-benchmarks`
 - **What it does**: Creates fake link metrics
@@ -74,7 +74,7 @@ Track all mock implementations that need to be replaced with real code before mi
 - **What works**: Device detection, memory management
 - **Needs**: Actual kernel execution on CPU
 
-### 8. AMD Discovery (`src/sparkle_discovery.f90`)
+### 8. AMD Discovery (`src/sporkle_discovery.f90`)
 - **Status**: 🔴 MOCK
 - **Lines**: Multiple TODOs for reading actual core counts
 - **Needs**: Parse AMD GPU info from sysfs
@@ -83,7 +83,7 @@ Track all mock implementations that need to be replaced with real code before mi
 
 ## Compute Shaders
 
-### 9. Shader Size Parameters (`src/sparkle_compute_shader.f90`)
+### 9. Shader Size Parameters (`src/sporkle_compute_shader.f90`)
 - **Status**: ⚠️ TODO
 - **Line**: `// TODO: get actual size` (hardcoded to 1000000)
 - **Needs**: Dynamic size injection into shaders
@@ -107,7 +107,7 @@ Track all mock implementations that need to be replaced with real code before mi
 
 ## Memory Management
 
-### 12. GPU Memory Operations (`src/sparkle_gpu_dispatch.f90`)
+### 12. GPU Memory Operations (`src/sporkle_gpu_dispatch.f90`)
 - **Status**: 🔴 MOCK
 - **Functions**:
   - `gpu_malloc()` - Uses CPU pointer as fake GPU pointer

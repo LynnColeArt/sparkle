@@ -1,29 +1,29 @@
 program test_gemm_performance
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_config
-  use sparkle_cache_aware
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_config
+  use sporkle_cache_aware
   use omp_lib
   implicit none
   
   integer, parameter :: RUNS = 5
   integer :: n, run
   type(memory_handle) :: a_mem, b_mem, c_mem
-  real(real32), pointer :: a(:,:), b(:,:), c(:,:)
-  real(real64) :: start_time, end_time
-  real(real64) :: naive_time, tiled_time, best_time
-  real(real64) :: flops, gflops
-  type(sparkle_config_type) :: config
+  real(sp), pointer :: a(:,:), b(:,:), c(:,:)
+  real(dp) :: start_time, end_time
+  real(dp) :: naive_time, tiled_time, best_time
+  real(dp) :: flops, gflops
+  type(sporkle_config_type) :: config
   
-  print *, "🚀 Sparkle GEMM Performance Analysis"
+  print *, "🚀 Sporkle GEMM Performance Analysis"
   print *, "===================================="
   print *, ""
   
   ! Configure for safety
   config%max_cpu_threads = 14
-  call sparkle_set_config(config)
+  call sporkle_set_config(config)
   
   print '(A,I0)', "Using threads: ", 14
   print *, ""

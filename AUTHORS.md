@@ -1,4 +1,4 @@
-# Sparkle Authors
+# Sporkle Authors
 
 This file recognizes all contributors to Sparkle - both human and AI agents. We believe in acknowledging everyone who helps build the people's AI infrastructure.
 

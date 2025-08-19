@@ -1,4 +1,4 @@
-# Sparkle QA Security & Defect Report 🔍
+# Sporkle QA Security & Defect Report 🔍
 
 *Generated: 2025-08-10*  
 *QA Engineer: Claude (with green beanie)*
@@ -6,7 +6,7 @@
 ## Critical Security Issues 🚨
 
 ### 1. Command Injection Vulnerability
-**File**: `src/sparkle_gpu_dispatch.f90:58`  
+**File**: `src/sporkle_gpu_dispatch.f90:58`  
 **Severity**: HIGH  
 **Issue**: Direct shell command execution without sanitization
 ```fortran
@@ -23,11 +23,11 @@ call execute_command_line("lspci | grep -i vga", cmdstat=status, cmdmsg=gpu_info
 ## Unfinished Implementations 🚧
 
 ### High Priority TODOs
-1. **Device Profiling** (`src/sparkle_discovery.f90:94`)
+1. **Device Profiling** (`src/sporkle_discovery.f90:94`)
    - "TODO: Actually profile with micro-benchmarks"
    - Currently returns fake benchmark scores
 
-2. **CPU Info** (`src/sparkle_discovery.f90:281`)
+2. **CPU Info** (`src/sporkle_discovery.f90:281`)
    - "TODO: Read actual core count, frequencies from sysfs"
    - Hardcoded values for CPU detection
 
@@ -36,7 +36,7 @@ call execute_command_line("lspci | grep -i vga", cmdstat=status, cmdmsg=gpu_info
    - Critical for actual execution
 
 ### Mock Implementations 🎭
-1. **GPU Memory** (`src/sparkle_memory.f90:164`)
+1. **GPU Memory** (`src/sporkle_memory.f90:164`)
    ```fortran
    ! NOTE: Device memory allocation not yet implemented
    ! For now, we'll use host memory as a placeholder
@@ -47,7 +47,7 @@ call execute_command_line("lspci | grep -i vga", cmdstat=status, cmdmsg=gpu_info
    print *, "   [Placeholder: Would execute on AMD GPU]"
    ```
 
-3. **Fake GPU Pointers** (`src/sparkle_gpu_dispatch.f90:140`)
+3. **Fake GPU Pointers** (`src/sporkle_gpu_dispatch.f90:140`)
    ```fortran
    mem%gpu_ptr = int(loc(mem), int64)  ! Fake GPU pointer for now
    ```
@@ -69,8 +69,8 @@ end if
 ```
 
 ### Affected Files:
-- `src/sparkle_memory.f90` - No allocation error checks
-- `src/sparkle_scheduler.f90` - Missing deallocation
+- `src/sporkle_memory.f90` - No allocation error checks
+- `src/sporkle_scheduler.f90` - Missing deallocation
 - `examples/*.f90` - Inconsistent error handling
 
 ## Mathematical Concerns 🧮
@@ -78,7 +78,7 @@ end if
 ### Division by Zero Protection
 **Good Examples Found**:
 - `test_parallel_speedup.f90:164` - Uses epsilon
-- `sparkle_fused_kernels.f90:172` - Protected variance
+- `sporkle_fused_kernels.f90:172` - Protected variance
 
 **Potential Issues**:
 - Some GFLOPS calculations don't check for zero time
@@ -111,7 +111,7 @@ allocate(times(bench_runs))
 ### Immediate Actions:
 1. **Add error handling template**:
    ```fortran
-   module sparkle_errors
+   module sporkle_errors
      integer, parameter :: SPARKLE_SUCCESS = 0
      integer, parameter :: SPARKLE_ERR_ALLOC = -1
      integer, parameter :: SPARKLE_ERR_BOUNDS = -2

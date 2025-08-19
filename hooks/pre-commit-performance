@@ -1,0 +1,26 @@
+#!/bin/bash
+# Pre-commit hook to run performance regression tests
+# 
+# To enable: cp hooks/pre-commit-performance .git/hooks/pre-commit
+
+echo "🔍 Running performance regression tests before commit..."
+
+# Only run on changes to source files
+if git diff --cached --name-only | grep -qE '\.(f90|F90)$'; then
+    if ./run_performance_tests.sh; then
+        echo "✅ Performance tests passed - proceeding with commit"
+        exit 0
+    else
+        echo ""
+        echo "❌ Commit blocked due to performance regression!"
+        echo ""
+        echo "Options:"
+        echo "1. Fix the performance regression"
+        echo "2. Skip tests with: git commit --no-verify"
+        echo "3. Update thresholds if this is an expected change"
+        exit 1
+    fi
+else
+    echo "ℹ️  No Fortran source changes - skipping performance tests"
+    exit 0
+fi

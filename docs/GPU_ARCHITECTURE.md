@@ -1,4 +1,4 @@
-# Sparkle GPU Architecture 🎮
+# Sporkle GPU Architecture 🎮
 
 ## Overview
 
@@ -17,7 +17,7 @@ Sparkle's GPU support is built on OpenGL Compute Shaders (OpenGL 4.3+), providin
 
 ## Architecture
 
-### 1. GPU Context (`sparkle_gpu_opengl.f90`)
+### 1. GPU Context (`sporkle_gpu_opengl.f90`)
 ```fortran
 type :: gl_context
   type(c_ptr) :: display      ! EGL display
@@ -28,7 +28,7 @@ type :: gl_context
 end type
 ```
 
-### 2. Compute Shaders (`sparkle_gpu_kernels.f90`)
+### 2. Compute Shaders (`sporkle_gpu_kernels.f90`)
 Pre-written GLSL compute shaders for common operations:
 - Vector addition
 - SAXPY
@@ -87,9 +87,9 @@ call read_gl_buffer(z_buffer, c_loc(z_data), size)
 
 ```bash
 # With OpenGL/EGL libraries
-gfortran -O3 -o sparkle_gpu \
-  src/sparkle_gpu_opengl.f90 \
-  src/sparkle_gpu_kernels.f90 \
+gfortran -O3 -o sporkle_gpu \
+  src/sporkle_gpu_opengl.f90 \
+  src/sporkle_gpu_kernels.f90 \
   examples/test_gpu.f90 \
   -lGL -lEGL
 
@@ -114,7 +114,7 @@ export __GLX_VENDOR_LIBRARY_NAME=mesa
 - [ ] Performance benchmarking
 - [ ] Integration with Sparkle scheduler
 
-## The Sparkle Way
+## The Sporkle Way
 
 No CUDA. No ROCm. No vendor lock-in.
 

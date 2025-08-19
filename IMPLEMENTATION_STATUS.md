@@ -1,9 +1,9 @@
-# Sparkle Implementation Status
+# Sporkle Implementation Status
 
 ## ✅ FULLY IMPLEMENTED & WORKING
 
 ### 1. Metal GPU Backend
-- **File**: `src/sparkle_gpu_metal.f90`, `src/metal_wrapper.m`
+- **File**: `src/sporkle_gpu_metal.f90`, `src/metal_wrapper.m`
 - **Status**: WORKING
 - **Evidence**: 
   - Compiled and running
@@ -14,7 +14,7 @@
 ```
 
 ### 2. Metal Memory Pool
-- **File**: `src/sparkle_memory_metal.f90`
+- **File**: `src/sporkle_memory_metal.f90`
 - **Status**: WORKING
 - **Evidence**:
   - 99% cache hit rate
@@ -45,24 +45,24 @@
 ## 🔨 DESIGNED BUT NOT COMPILED
 
 ### 5. AMX Coprocessor Access
-- **File**: `src/sparkle_amx.f90`
+- **File**: `src/sporkle_amx.f90`
 - **Status**: DESIGNED, not integrated
 - **Implementation**: Via Accelerate.framework (cblas_sgemm)
 - **Note**: Works but needs Makefile integration
 
 ### 6. Apple Orchestrator
-- **File**: `src/sparkle_apple_orchestrator.f90`
+- **File**: `src/sporkle_apple_orchestrator.f90`
 - **Status**: DESIGNED, not integrated
 - **Implementation**: Complete routing logic written
 
 ### 7. Full Neural Engine Module
-- **File**: `src/sparkle_neural_engine.f90`
+- **File**: `src/sporkle_neural_engine.f90`
 - **Status**: DESIGNED, partially tested via CoreML bridge
 
 ## 🚧 PARTIALLY IMPLEMENTED
 
 ### 8. Metal Kernels
-- **File**: `src/sparkle_metal_kernels.f90`
+- **File**: `src/sporkle_metal_kernels.f90`
 - **What works**: Vector add
 - **Still needed**: GEMM, reduction, complex kernels in Metal Shading Language
 
@@ -75,15 +75,15 @@
 
 ### 10. Mesh Networking
 - **Status**: Fully mocked
-- **Location**: `src/sparkle_mesh.f90`
+- **Location**: `src/sporkle_mesh.f90`
 
 ### 11. Distributed Collectives
 - **Status**: Partially mocked
-- **Location**: `src/sparkle_collectives.f90`
+- **Location**: `src/sporkle_collectives.f90`
 
 ### 12. Smart Scheduler
 - **Status**: Basic version only
-- **Location**: `src/sparkle_scheduler.f90`
+- **Location**: `src/sporkle_scheduler.f90`
 
 ## 📊 SUMMARY
 

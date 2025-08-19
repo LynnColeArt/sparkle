@@ -1,29 +1,29 @@
 program test_parallel_kernels
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_ptr, c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_config
-  use sparkle_benchmark
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_config
+  use sporkle_benchmark
   use omp_lib
   implicit none
   
   integer :: n, num_threads
-  type(sparkle_config_type) :: config
+  type(sporkle_config_type) :: config
   type(memory_handle) :: x_mem, y_mem, z_mem
-  real(real32), pointer :: x(:), y(:), z(:)
-  real(real64) :: start_time, end_time
-  real(real64) :: serial_time, parallel_time
-  real(real32) :: alpha
+  real(sp), pointer :: x(:), y(:), z(:)
+  real(dp) :: start_time, end_time
+  real(dp) :: serial_time, parallel_time
+  real(sp) :: alpha
   integer :: i, run
   
-  print *, "🚀 Sparkle Parallel Kernel Performance"
+  print *, "🚀 Sporkle Parallel Kernel Performance"
   print *, "======================================"
   print *, ""
   
   ! Configure for safety
   config%max_cpu_threads = 14
-  call sparkle_set_config(config)
+  call sporkle_set_config(config)
   
   ! Show thread configuration
   num_threads = omp_get_max_threads()
@@ -121,7 +121,7 @@ program test_parallel_kernels
     print *, "3. Reduction: sum(x)"
     
     block
-      real(real32) :: sum_result
+      real(sp) :: sum_result
       
       ! Serial version
       call omp_set_num_threads(1)
@@ -206,6 +206,6 @@ program test_parallel_kernels
   print *, "✓ Reductions benefit from parallel tree reduction"
   print *, "✓ SIMD hints help vectorization"
   print *, ""
-  print *, "✨ The Sparkle Way: 14 cores working in harmony!"
+  print *, "✨ The Sporkle Way: 14 cores working in harmony!"
   
 end program test_parallel_kernels

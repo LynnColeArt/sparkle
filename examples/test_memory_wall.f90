@@ -1,20 +1,20 @@
 program test_memory_wall
-  use iso_fortran_env, only: int32, int64, real32, real64
+  use kinds
   use iso_c_binding, only: c_f_pointer
-  use sparkle_types
-  use sparkle_memory
-  use sparkle_benchmark
-  use sparkle_fused_kernels
-  use sparkle_cache_aware
+  use sporkle_types
+  use sporkle_memory
+  use sporkle_benchmark
+  use sporkle_fused_kernels
+  use sporkle_cache_aware
   implicit none
   
   integer, parameter :: N = 1024  ! Matrix size
   type(memory_handle) :: a_mem, b_mem, c_mem, bias_mem
-  real(real32), pointer :: a(:,:), b(:,:), c(:,:), bias(:)
-  real(real64) :: start_time, end_time
-  real(real64) :: naive_time, fused_time, cache_aware_time
+  real(sp), pointer :: a(:,:), b(:,:), c(:,:), bias(:)
+  real(dp) :: start_time, end_time
+  real(dp) :: naive_time, fused_time, cache_aware_time
   integer :: i, j, k
-  real(real32) :: sum
+  real(sp) :: sum
   
   print *, "🧱 Breaking the Memory Wall"
   print *, "==========================="
@@ -104,7 +104,7 @@ program test_memory_wall
   
   ! Calculate GFLOPS
   block
-    real(real64) :: flops, gflops_naive, gflops_fused, gflops_tiled
+    real(dp) :: flops, gflops_naive, gflops_fused, gflops_tiled
     flops = 2.0_real64 * real(N, real64)**3  ! 2N³ for GEMM
     gflops_naive = flops / (naive_time * 1.0e9_real64)
     gflops_fused = flops / (fused_time * 1.0e9_real64)
@@ -143,14 +143,14 @@ program test_memory_wall
   call destroy_memory(bias_mem)
   
   print *, ""
-  print *, "✨ The Sparkle Way: Break the memory wall with pure Fortran!"
+  print *, "✨ The Sporkle Way: Break the memory wall with pure Fortran!"
 
 contains
 
   ! Naive implementation - how NOT to do it
   subroutine naive_gemm_bias_relu(a, b, c, bias, n)
-    real(real32), intent(in) :: a(n,n), b(n,n), bias(n)
-    real(real32), intent(out) :: c(n,n)
+    real(sp), intent(in) :: a(n,n), b(n,n), bias(n)
+    real(sp), intent(out) :: c(n,n)
     integer, intent(in) :: n
     integer :: i, j, k
     
@@ -175,11 +175,11 @@ contains
   
   ! Fused implementation - memory wall breaker
   subroutine fused_gemm_bias_relu(a, b, c, bias, n)
-    real(real32), intent(in) :: a(n,n), b(n,n), bias(n)
-    real(real32), intent(out) :: c(n,n)
+    real(sp), intent(in) :: a(n,n), b(n,n), bias(n)
+    real(sp), intent(out) :: c(n,n)
     integer, intent(in) :: n
     integer :: i, j, k
-    real(real32) :: sum
+    real(sp) :: sum
     
     ! Single pass: GEMM + bias + ReLU
     !$OMP PARALLEL DO PRIVATE(i,j,k,sum)

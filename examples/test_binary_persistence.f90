@@ -1,5 +1,5 @@
 program test_binary_persistence
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use gpu_program_cache_v2
   use gpu_opengl_interface
   implicit none
@@ -8,7 +8,7 @@ program test_binary_persistence
   integer :: prog1, prog2, prog3
   character(len=64) :: cache_keys(3)
   integer :: i, run
-  real(real64) :: start_time, end_time
+  real(dp) :: start_time, end_time
   logical :: first_run
   
   print *, "🚀 Testing GPU Binary Persistence (Phase 2)"
@@ -175,7 +175,7 @@ contains
   ! Sleep for milliseconds
   subroutine sleep_ms(ms)
     integer, intent(in) :: ms
-    real(real64) :: start_time, current_time
+    real(dp) :: start_time, current_time
     
     call cpu_time(start_time)
     do
