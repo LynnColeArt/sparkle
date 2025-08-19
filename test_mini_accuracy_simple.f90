@@ -6,10 +6,10 @@ program test_mini_accuracy_simple
   use time_utils, only: tic, toc_seconds
   use flopcount
   use stable_math
-  use iso_fortran_env, only: int64
+  use kinds
   implicit none
   
-  integer(int64) :: m, n, k, flops
+  integer(i64) :: m, n, k, flops
   real(dp) :: x(100), y(100), y_ref(100)
   real(dp) :: naive_sum, stable_sum_val, rel_error, abs_error
   logical :: passed
@@ -21,11 +21,11 @@ program test_mini_accuracy_simple
   
   ! Test 1: 64-bit FLOP counting
   print *, "=== Test 1: 64-bit FLOP Counting ==="
-  m = 1024_int64; n = 1024_int64; k = 1024_int64
+  m = 1024_i64; n = 1024_i64; k = 1024_i64
   flops = gemm_flops(m, n, k)
   print '(A,I0,A)', "GEMM(1024x1024x1024): ", flops, " FLOPs"
   
-  flops = conv2d_flops(32_int64, 224_int64, 224_int64, 64_int64, 3_int64, 3_int64, 3_int64)
+  flops = conv2d_flops(32_i64, 224_i64, 224_i64, 64_i64, 3_i64, 3_i64, 3_i64)
   print '(A,I0,A)', "Conv2D(32x224x224x3→64, 3x3): ", flops, " FLOPs"
   print *, "✅ FLOP counting working"
   print *, ""

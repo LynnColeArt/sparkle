@@ -2,7 +2,7 @@ program test_basic
   use sparkle_types
   use cpu_device_module
   use iso_c_binding, only: c_associated
-  use iso_fortran_env, only: int64
+  use kinds
   implicit none
   
   type(cpu_device) :: cpu
@@ -26,7 +26,7 @@ program test_basic
   
   ! Test memory allocation
   print *, "Testing memory allocation..."
-  buffer1 = cpu%allocate(1024_int64)
+  buffer1 = cpu%allocate(1024_i64)
   
   if (c_associated(buffer1%data)) then
     print *, "  ✓ Allocated 1KB buffer"
@@ -40,8 +40,8 @@ program test_basic
   ! Test memory copy
   print *, ""
   print *, "Testing memory operations..."
-  buffer2 = cpu%allocate(1024_int64)
-  status = cpu%memcpy(buffer2, buffer1, 512_int64)
+  buffer2 = cpu%allocate(1024_i64)
+  status = cpu%memcpy(buffer2, buffer1, 512_i64)
   
   if (status == SPARKLE_SUCCESS) then
     print *, "  ✓ Memory copy successful"

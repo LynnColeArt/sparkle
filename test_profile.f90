@@ -1,8 +1,9 @@
 program test_profile
-  use iso_fortran_env, only: int64, real64
+  use kinds, real64
   use sparkle_mesh_types, only: mesh_topology, KIND_CPU
   use sparkle_discovery
   use sparkle_profile
+  use kinds
   implicit none
   
   type(mesh_topology) :: mesh
@@ -56,11 +57,11 @@ program test_profile
   print *, "Test 3: Using profile data for scheduling decisions"
   if (allocated(profiles)) then
     block
-      real(real64) :: total_compute_power
-      real(real64), allocatable :: device_weights(:)
+      real(dp) :: total_compute_power
+      real(dp), allocatable :: device_weights(:)
       
       allocate(device_weights(size(profiles)))
-      total_compute_power = 0.0_real64
+      total_compute_power = 0.0_dp
       
       ! Calculate relative compute power
       do i = 1, size(profiles)
@@ -68,17 +69,17 @@ program test_profile
           device_weights(i) = profiles(i)%flops_double
           total_compute_power = total_compute_power + device_weights(i)
         else
-          device_weights(i) = 0.0_real64
+          device_weights(i) = 0.0_dp
         end if
       end do
       
       ! Show work distribution based on actual performance
-      if (total_compute_power > 0.0_real64) then
+      if (total_compute_power > 0.0_dp) then
         print *, "Work distribution based on measured performance:"
         do i = 1, size(profiles)
           if (profiles(i)%is_valid) then
             print '(A,I0,A,F0.1,A)', "  Device ", i-1, " should get ", &
-                  (device_weights(i) / total_compute_power) * 100.0_real64, &
+                  (device_weights(i) / total_compute_power) * 100.0_dp, &
                   "% of work"
           end if
         end do

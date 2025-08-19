@@ -9,7 +9,7 @@ program test_mini_accuracy_suite
   use time_utils, only: tic, toc_seconds, tic_safe, toc_seconds_safe
   use flopcount
   use stable_math
-  use iso_fortran_env, only: int64
+  use kinds
   implicit none
   
   print *, "🔬 Mini's Accuracy Suite - Comprehensive Test"
@@ -38,26 +38,26 @@ program test_mini_accuracy_suite
 contains
 
   subroutine test_flop_counting()
-    integer(int64) :: m, n, k, flops
+    integer(i64) :: m, n, k, flops
     logical :: valid
-    integer(int64) :: batch, h, w, channels, filters, kh, kw
-    integer(int64) :: huge_dims(4)
+    integer(i64) :: batch, h, w, channels, filters, kh, kw
+    integer(i64) :: huge_dims(4)
     
     print *, "=== Test 1: 64-bit FLOP Counting ==="
     
     ! Test normal-sized problems
-    m = 1024_int64; n = 1024_int64; k = 1024_int64
+    m = 1024_i64; n = 1024_i64; k = 1024_i64
     flops = gemm_flops(m, n, k)
     print '(A,I0,A,I0)', "GEMM(1024x1024x1024): ", flops, " FLOPs (", flops/1000000, " MFLOP)"
     
     ! Test conv2d
-    batch = 32_int64; h = 224_int64; w = 224_int64
-    channels = 3_int64; filters = 64_int64; kh = 3_int64; kw = 3_int64
+    batch = 32_i64; h = 224_i64; w = 224_i64
+    channels = 3_i64; filters = 64_i64; kh = 3_i64; kw = 3_i64
     flops = conv2d_flops(batch, h, w, filters, channels, kh, kw)
     print '(A,I0,A)', "Conv2D(32x224x224x3→64, 3x3): ", flops, " FLOPs"
     
     ! Test overflow detection
-    huge_dims = [100000_int64, 100000_int64, 100000_int64, 100000_int64]
+    huge_dims = [100000_i64, 100000_i64, 100000_i64, 100000_i64]
     valid = validate_flop_args(huge_dims)
     if (valid) then
       print *, "✅ Large dimension validation passed"
@@ -99,7 +99,7 @@ contains
   end subroutine test_stable_summation
 
   subroutine test_timing_safety()
-    integer(int64) :: t0
+    integer(i64) :: t0
     real(dp) :: elapsed
     logical :: success
     
@@ -159,8 +159,8 @@ contains
   end subroutine test_reference_validation
 
   subroutine test_large_array_flops()
-    integer(int64) :: batch, height, width, in_ch, out_ch, kh, kw
-    integer(int64) :: total_flops, memory_ops
+    integer(i64) :: batch, height, width, in_ch, out_ch, kh, kw
+    integer(i64) :: total_flops, memory_ops
     real(dp) :: arithmetic_intensity
     
     print *, "=== Test 5: Large Array FLOP Calculations ==="
@@ -168,17 +168,17 @@ contains
     ! Test with realistic large workloads
     
     ! Large ResNet-style convolution
-    batch = 256_int64
-    height = 56_int64; width = 56_int64
-    in_ch = 256_int64; out_ch = 512_int64  
-    kh = 3_int64; kw = 3_int64
+    batch = 256_i64
+    height = 56_i64; width = 56_i64
+    in_ch = 256_i64; out_ch = 512_i64  
+    kh = 3_i64; kw = 3_i64
     
     total_flops = conv2d_flops(batch, height, width, out_ch, in_ch, kh, kw)
     
     ! Estimate memory operations (loads + stores)
-    memory_ops = batch * height * width * in_ch * 4_int64 +  & ! Input
-                 out_ch * in_ch * kh * kw * 4_int64 +        & ! Weights  
-                 batch * height * width * out_ch * 4_int64     ! Output
+    memory_ops = batch * height * width * in_ch * 4_i64 +  & ! Input
+                 out_ch * in_ch * kh * kw * 4_i64 +        & ! Weights  
+                 batch * height * width * out_ch * 4_i64     ! Output
                  
     arithmetic_intensity = real(total_flops, dp) / real(memory_ops, dp)
     

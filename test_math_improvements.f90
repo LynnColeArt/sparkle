@@ -5,12 +5,12 @@
 program test_math_improvements
   use kinds, only: dp, sp
   use time_utils, only: tic, toc_seconds
-  use iso_fortran_env, only: int64
+  use kinds
   implicit none
   
   integer(i64) :: t0
   real(dp) :: elapsed_seconds, gflops_correct, gflops_wrong
-  integer(i64), parameter :: flop_count = 1000000000_int64  ! 1B operations
+  integer(i64), parameter :: flop_count = 1000000000_i64  ! 1B operations
   real(dp) :: total_time, individual_times(5)
   integer :: i
   
