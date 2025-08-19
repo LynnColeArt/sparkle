@@ -3,13 +3,13 @@ program test_collectives
   use sparkle_discovery
   use sparkle_collectives
   use iso_c_binding
-  use iso_fortran_env, only: int64
+  use kinds
   implicit none
   
   type(mesh_topology) :: mesh
   type(device_handle) :: gpu1, gpu2, gpu3
   type(c_ptr) :: dummy_buffer
-  integer(int64) :: small_size, large_size
+  integer(i64) :: small_size, large_size
   
   print *, "=== Testing Sparkle Collective Operations ==="
   print *, "The foundation for distributed AI training"
@@ -69,7 +69,7 @@ program test_collectives
   call profile_links(mesh)
   
   print *, "=== Test 1: Small All-Reduce (Gradients) ==="
-  small_size = 1000_int64  ! 1000 float32s = 4KB
+  small_size = 1000_i64  ! 1000 float32s = 4KB
   call explain_collective_plan(mesh, "all_reduce", small_size * 4)
   
   dummy_buffer = c_null_ptr  ! Would be actual device buffer
@@ -77,7 +77,7 @@ program test_collectives
   print *, ""
   
   print *, "=== Test 2: Large All-Reduce (Model Weights) ==="
-  large_size = 100000000_int64  ! 100M float32s = 400MB
+  large_size = 100000000_i64  ! 100M float32s = 400MB
   call explain_collective_plan(mesh, "all_reduce", large_size * 4)
   call all_reduce(mesh, dummy_buffer, large_size, DTYPE_REAL32, OP_MEAN)
   print *, ""

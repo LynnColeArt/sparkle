@@ -1,16 +1,17 @@
 program test_memory
-  use iso_fortran_env, only: int32, int64, real32, int8
+  use kinds, int64, real32, int8
   use iso_c_binding, only: c_ptr
   use sparkle_memory
   use sparkle_types
   use cpu_device_module
+  use kinds
   implicit none
   
   type(memory_handle) :: h1, h2, h3
   type(memory_pool) :: pool
   logical :: success
   integer :: i
-  real(real32), pointer :: data(:)
+  real(sp), pointer :: data(:)
   type(c_ptr) :: temp_ptr
   
   print *, "=== Sparkle Memory Management Test ==="
@@ -18,7 +19,7 @@ program test_memory
   
   ! Test 1: Basic host memory allocation
   print *, "Test 1: Basic host memory allocation"
-  h1 = create_memory(1024_int64, tag="test_buffer")
+  h1 = create_memory(1024_i64, tag="test_buffer")
   call memory_info(h1)
   
   if (h1%is_allocated) then
@@ -30,10 +31,10 @@ program test_memory
   
   ! Test 2: Memory set and copy
   print *, "Test 2: Memory operations"
-  h2 = create_memory(1024_int64, tag="copy_buffer")
+  h2 = create_memory(1024_i64, tag="copy_buffer")
   
   call memory_set(h1, int(42, int8))
-  success = memory_copy(h2, h1, 1024_int64, MEM_HOST_TO_HOST)
+  success = memory_copy(h2, h1, 1024_i64, MEM_HOST_TO_HOST)
   
   if (success) then
     print *, "✓ Memory copy succeeded"

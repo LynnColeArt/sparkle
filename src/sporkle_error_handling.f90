@@ -8,9 +8,9 @@ module sporkle_error_handling
   private
   
   public :: sporkle_check, sporkle_error, sporkle_warning
-  public :: safe_allocate_1d_real32, safe_allocate_1d_real64
-  public :: safe_allocate_1d_int32, safe_allocate_1d_int64
-  public :: safe_allocate_2d_real32, safe_allocate_2d_real64
+  public :: safe_allocate_1d_sp, safe_allocate_1d_dp
+  public :: safe_allocate_1d_i32, safe_allocate_1d_i64
+  public :: safe_allocate_2d_sp, safe_allocate_2d_dp
   public :: safe_deallocate
   public :: check_bounds_1d, check_bounds_2d
   public :: SPORKLE_SUCCESS, SPORKLE_ERR_ALLOC, SPORKLE_ERR_BOUNDS
@@ -27,30 +27,30 @@ module sporkle_error_handling
   integer, parameter :: SPORKLE_ERR_OVERFLOW = -6
   
   ! Maximum allocation size (8GB default)
-  integer(i64), parameter :: MAX_ALLOC_SIZE = 8_int64 * 1024_int64**3
+  integer(i64), parameter :: MAX_ALLOC_SIZE = 8_i64 * 1024_i64**3
   
-  interface safe_allocate_1d_real32
-    module procedure safe_allocate_1d_real32
+  interface safe_allocate_1d_sp
+    module procedure safe_allocate_1d_sp
   end interface
   
-  interface safe_allocate_1d_real64
-    module procedure safe_allocate_1d_real64
+  interface safe_allocate_1d_dp
+    module procedure safe_allocate_1d_dp
   end interface
   
-  interface safe_allocate_1d_int32
-    module procedure safe_allocate_1d_int32
+  interface safe_allocate_1d_i32
+    module procedure safe_allocate_1d_i32
   end interface
   
-  interface safe_allocate_1d_int64
-    module procedure safe_allocate_1d_int64
+  interface safe_allocate_1d_i64
+    module procedure safe_allocate_1d_i64
   end interface
   
-  interface safe_allocate_2d_real32
-    module procedure safe_allocate_2d_real32
+  interface safe_allocate_2d_sp
+    module procedure safe_allocate_2d_sp
   end interface
   
-  interface safe_allocate_2d_real64
-    module procedure safe_allocate_2d_real64
+  interface safe_allocate_2d_dp
+    module procedure safe_allocate_2d_dp
   end interface
   
 contains
@@ -114,7 +114,7 @@ contains
   end subroutine sporkle_warning
   
   ! Safe allocation for 1D real32 arrays
-  function safe_allocate_1d_real32(n, array_name) result(ierr)
+  function safe_allocate_1d_sp(n, array_name) result(ierr)
     use kinds
     integer(i64), intent(in) :: n
     character(len=*), intent(in), optional :: array_name
@@ -147,11 +147,10 @@ contains
     
     if (allocated(dummy)) deallocate(dummy)
     
-  end function safe_allocate_1d_real32
+  end function safe_allocate_1d_sp
   
   ! Safe allocation for 1D real64 arrays
-  function safe_allocate_1d_real64(n, array_name) result(ierr)
-    use kinds
+  function safe_allocate_1d_dp(n, array_name) result(ierr)
     integer(i64), intent(in) :: n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -183,10 +182,10 @@ contains
     
     if (allocated(dummy)) deallocate(dummy)
     
-  end function safe_allocate_1d_real64
+  end function safe_allocate_1d_dp
   
   ! Safe allocation for 1D int32 arrays
-  function safe_allocate_1d_int32(n, array_name) result(ierr)
+  function safe_allocate_1d_i32(n, array_name) result(ierr)
     integer(i64), intent(in) :: n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -218,10 +217,10 @@ contains
     
     if (allocated(dummy)) deallocate(dummy)
     
-  end function safe_allocate_1d_int32
+  end function safe_allocate_1d_i32
   
   ! Safe allocation for 1D int64 arrays
-  function safe_allocate_1d_int64(n, array_name) result(ierr)
+  function safe_allocate_1d_i64(n, array_name) result(ierr)
     integer(i64), intent(in) :: n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -253,11 +252,10 @@ contains
     
     if (allocated(dummy)) deallocate(dummy)
     
-  end function safe_allocate_1d_int64
+  end function safe_allocate_1d_i64
   
   ! Safe allocation for 2D real32 arrays
-  function safe_allocate_2d_real32(m, n, array_name) result(ierr)
-    use kinds
+  function safe_allocate_2d_sp(m, n, array_name) result(ierr)
     integer(i64), intent(in) :: m, n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -289,11 +287,10 @@ contains
     
     if (allocated(dummy)) deallocate(dummy)
     
-  end function safe_allocate_2d_real32
+  end function safe_allocate_2d_sp
   
   ! Safe allocation for 2D real64 arrays
-  function safe_allocate_2d_real64(m, n, array_name) result(ierr)
-    use kinds
+  function safe_allocate_2d_dp(m, n, array_name) result(ierr)
     integer(i64), intent(in) :: m, n
     character(len=*), intent(in), optional :: array_name
     integer :: ierr
@@ -325,7 +322,7 @@ contains
     
     if (allocated(dummy)) deallocate(dummy)
     
-  end function safe_allocate_2d_real64
+  end function safe_allocate_2d_dp
   
   ! Safe deallocation (generic)
   subroutine safe_deallocate(message)
