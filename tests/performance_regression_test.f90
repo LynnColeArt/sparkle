@@ -5,16 +5,16 @@ program performance_regression_test
   ! Ensures our hard-won optimizations don't regress
   ! Fails loudly if performance drops below thresholds
   
-  use iso_fortran_env, only: real32, real64, int32, int64
+  use kinds
   use time_utils, only: tic, toc_seconds
   use flopcount, only: conv2d_flops
   implicit none
   
   ! Performance thresholds (80% of our achieved performance)
-  real(dp), parameter :: CPU_SIMD_THRESHOLD = 157.0_real64      ! 80% of 196.7 GFLOPS
-  real(dp), parameter :: GPU_SINGLE_THRESHOLD = 356.0_real64    ! 80% of 445.7 GFLOPS  
-  real(dp), parameter :: GPU_ASYNC_THRESHOLD = 2900.0_real64    ! 80% of 3630 GFLOPS
-  real(dp), parameter :: ASYNC_SPEEDUP_THRESHOLD = 5.0_real64   ! Minimum 5x speedup
+  real(dp), parameter :: CPU_SIMD_THRESHOLD = 157.0_dp      ! 80% of 196.7 GFLOPS
+  real(dp), parameter :: GPU_SINGLE_THRESHOLD = 356.0_dp    ! 80% of 445.7 GFLOPS  
+  real(dp), parameter :: GPU_ASYNC_THRESHOLD = 2900.0_dp    ! 80% of 3630 GFLOPS
+  real(dp), parameter :: ASYNC_SPEEDUP_THRESHOLD = 5.0_dp   ! Minimum 5x speedup
   
   ! Test parameters
   integer, parameter :: WARMUP_RUNS = 5
@@ -139,10 +139,10 @@ contains
     ! Test that timing is working correctly
     call tic(t0)
     call sleep_ms(100)  ! Sleep for 100ms
-    elapsed = toc_seconds(t0) * 1000.0_real64
+    elapsed = toc_seconds(t0) * 1000.0_dp
     
     ! Should be between 95ms and 105ms
-    passed = (elapsed > 95.0_real64) .and. (elapsed < 105.0_real64)
+    passed = (elapsed > 95.0_dp) .and. (elapsed < 105.0_dp)
     
     if (passed) then
       print '(A,F6.1,A)', "   ✅ Timing accuracy: ", elapsed, " ms for 100ms sleep"
@@ -161,16 +161,16 @@ contains
     print *, "5. Testing FLOP Counting Safety (Mini's hardening)..."
     
     ! Test large convolution that would overflow int32
-    flops = conv2d_flops(256_int64, 224_int64, 224_int64, &
-                        512_int64, 256_int64, 3_int64, 3_int64)
+    flops = conv2d_flops(256_i64, 224_i64, 224_i64, &
+                        512_i64, 256_i64, 3_i64, 3_i64)
     
-    expected = 2_int64 * 256_int64 * 224_int64 * 224_int64 * &
-               512_int64 * 256_int64 * 3_int64 * 3_int64
+    expected = 2_i64 * 256_i64 * 224_i64 * 224_i64 * &
+               512_i64 * 256_i64 * 3_i64 * 3_i64
     
     passed = (flops == expected) .and. (flops > 0)
     
     if (passed) then
-      print '(A,I0,A)', "   ✅ 64-bit FLOP counting: ", flops/1000000000_int64, " billion FLOPs"
+      print '(A,I0,A)', "   ✅ 64-bit FLOP counting: ", flops/1000000000_i64, " billion FLOPs"
     else
       print '(A,I0)', "   ❌ FLOP counting FAILED! Got: ", flops
       print '(A,I0)', "      Expected: ", expected
@@ -180,27 +180,23 @@ contains
     
   end subroutine test_flop_counting_safety
   
-  ! Stub implementations - in real version these would call actual benchmarks
+  ! Wrappers that call the real implementations
   function run_cpu_simd_benchmark() result(gflops)
+    use performance_regression_impl, only: benchmark_cpu_simd
     real(dp) :: gflops
-    ! TODO: Call actual CPU SIMD benchmark
-    ! For now, return a dummy value
-    gflops = 200.0_real64  ! Simulating good performance
+    gflops = benchmark_cpu_simd()
   end function run_cpu_simd_benchmark
   
   function run_gpu_single_benchmark() result(gflops)
+    use performance_regression_impl, only: benchmark_gpu_single
     real(dp) :: gflops
-    ! TODO: Call actual GPU single kernel benchmark
-    ! For now, return a dummy value
-    gflops = 450.0_real64  ! Simulating good performance
+    gflops = benchmark_gpu_single()
   end function run_gpu_single_benchmark
   
   subroutine run_gpu_async_benchmark(gflops, speedup)
+    use performance_regression_impl, only: benchmark_gpu_async
     real(dp), intent(out) :: gflops, speedup
-    ! TODO: Call actual GPU async benchmark
-    ! For now, return dummy values
-    gflops = 3700.0_real64   ! Simulating good performance
-    speedup = 6.2_real64     ! Simulating good speedup
+    call benchmark_gpu_async(gflops, speedup)
   end subroutine run_gpu_async_benchmark
   
   subroutine sleep_ms(milliseconds)
