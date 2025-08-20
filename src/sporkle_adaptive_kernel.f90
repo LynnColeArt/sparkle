@@ -1,5 +1,6 @@
 module sporkle_adaptive_kernel
   use iso_c_binding
+  use kinds
   use sporkle_types
   implicit none
   
@@ -8,9 +9,7 @@ module sporkle_adaptive_kernel
   public :: probe_all_variants, create_adaptive_kernel, cleanup_adaptive_kernel
   public :: add_kernel_variant, print_variant_stats, force_variant
   
-  ! Define missing type parameters
-  integer, parameter :: dp = kind(1.0d0)
-  integer, parameter :: int64 = c_int64_t
+  ! Using dp and i64 from kinds module
   
   integer, parameter :: MAX_VARIANTS = 10
   integer, parameter :: REPROBE_INTERVAL = 3600  ! seconds

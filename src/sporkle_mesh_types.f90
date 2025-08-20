@@ -4,9 +4,7 @@ module sporkle_mesh_types
   implicit none
   private
   
-  ! Precision parameters (Pythonic naming)
-  integer, parameter, public :: rk32 = selected_real_kind(6)
-  integer, parameter, public :: rk64 = selected_real_kind(15)
+  ! Using rk32 and rk64 from kinds module
   
   ! Device kinds as string constants
   character(len=*), parameter, public :: &
