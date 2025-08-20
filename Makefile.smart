@@ -17,18 +17,48 @@ UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_S),Linux)
     PLATFORM = LINUX
     
-    # Check for AMD GPU
-    GPU_VENDOR := $(shell cat /sys/class/drm/card0/device/vendor 2>/dev/null)
-    ifeq ($(GPU_VENDOR),0x1002)
+    # Detect GPU vendor by checking all DRM cards
+    GPU_VENDORS := $(shell for card in /sys/class/drm/card*/device/vendor; do [ -f "$$card" ] && cat "$$card" 2>/dev/null || true; done | sort -u)
+    
+    # Initialize GPU_TYPE as empty
+    GPU_TYPE :=
+    
+    # Check for AMD GPU (0x1002) - highest priority for compute
+    ifneq ($(filter 0x1002,$(GPU_VENDORS)),)
         GPU_TYPE = AMD
-        # Check available libraries
+        $(info AMD GPU detected: $(filter 0x1002,$(GPU_VENDORS)))
+    endif
+    
+    # Check for NVIDIA GPU (0x10de) - if no AMD found
+    ifeq ($(GPU_TYPE),)
+        ifneq ($(filter 0x10de,$(GPU_VENDORS)),)
+            GPU_TYPE = NVIDIA
+            $(info NVIDIA GPU detected: $(filter 0x10de,$(GPU_VENDORS)))
+        endif
+    endif
+    
+    # Check for Intel GPU (0x8086) - if no AMD or NVIDIA found  
+    ifeq ($(GPU_TYPE),)
+        ifneq ($(filter 0x8086,$(GPU_VENDORS)),)
+            GPU_TYPE = INTEL
+            $(info Intel GPU detected: $(filter 0x8086,$(GPU_VENDORS)))
+        endif
+    endif
+    
+    # Check available libraries for any GPU type
+    ifneq ($(GPU_TYPE),)
         HAS_OPENGL := $(shell test -f /usr/lib/x86_64-linux-gnu/libGL.so.1 && echo yes)
         HAS_VULKAN := $(shell test -f /usr/lib/x86_64-linux-gnu/libvulkan.so.1 && echo yes)
         
+        # Only proceed if we have the required libraries
         ifeq ($(HAS_OPENGL),yes)
             LDFLAGS += -lGL -lEGL -fopenmp
             CFLAGS += -DHAS_OPENGL
             GPU_BACKEND = opengl
+            $(info GPU Backend: OpenGL enabled)
+        else
+            $(info Warning: OpenGL libraries not found, falling back to CPU)
+            GPU_TYPE := CPU
         endif
         
         ifeq ($(HAS_VULKAN),yes)
@@ -36,6 +66,10 @@ ifeq ($(UNAME_S),Linux)
             CFLAGS += -DHAS_VULKAN
             GPU_BACKEND_ALT = vulkan
         endif
+    else
+        # No supported GPU found, use CPU configuration
+        GPU_TYPE = CPU
+        $(info No supported GPU detected, using CPU configuration)
     endif
     
 else ifeq ($(UNAME_S),Darwin)
@@ -96,19 +130,16 @@ ifeq ($(PLATFORM),LINUX)
             $(SRC_DIR)/sporkle_pm4_compute.f90
             
         ifeq ($(HAS_OPENGL),yes)
-            PLATFORM_MODULES += $(SRC_DIR)/reference/gpu_opengl_interface.f90 \
+            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_opengl_interface.f90 \
                                 $(SRC_DIR)/sporkle_gpu_opengl.f90 \
                                 $(SRC_DIR)/sporkle_gpu_dispatch.f90 \
                                 $(SRC_DIR)/reference/universal_memory_optimization.f90 \
                                 $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
-                                $(SRC_DIR)/memory_wall_breakthrough_v2.f90 \
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
-                                $(SRC_DIR)/reference/intelligent_device_juggling.f90 \
                                 $(SRC_DIR)/production/timing_helpers.f90 \
                                 $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
                                 $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
-                                $(SRC_DIR)/gpu_dynamic_execution.f90 \
-                                $(SRC_DIR)/gpu_async_executor.f90 \
+                                $(SRC_DIR)/production/gpu_async_executor.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_juggling.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_auto_selector.f90 \
@@ -123,6 +154,50 @@ ifeq ($(PLATFORM),LINUX)
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c \
                                   $(SRC_DIR)/production/aligned_alloc.c
         endif
+    endif
+    
+    ifeq ($(GPU_TYPE),NVIDIA)
+        PLATFORM_MODULES = \
+            $(SRC_DIR)/sporkle_gpu_safe_detect.f90 \
+            $(SRC_DIR)/sporkle_gpu_backend_detect.f90 \
+            $(SRC_DIR)/sporkle_gpu_backend.f90 \
+            $(SRC_DIR)/sporkle_nvidia_opengl.f90 \
+            $(SRC_DIR)/sporkle_nvidia_persistent.f90 \
+            $(SRC_DIR)/sporkle_nvidia_zerocopy.f90 \
+            $(SRC_DIR)/sporkle_nvidia_summit.f90
+            
+        ifeq ($(HAS_OPENGL),yes)
+            PLATFORM_MODULES += $(SRC_DIR)/production/gpu_opengl_interface.f90 \
+                                $(SRC_DIR)/sporkle_gpu_dispatch.f90 \
+                                $(SRC_DIR)/production/universal_memory_optimization.f90 \
+                                $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+                                $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+                                $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+                                $(SRC_DIR)/production/timing_helpers.f90 \
+                                $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
+                                $(SRC_DIR)/production/gpu_async_executor.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d_v2.f90 \
+                                $(SRC_DIR)/production/gpu_program_cache.f90 \
+                                $(SRC_DIR)/production/gpu_binary_cache.f90 \
+                                $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90
+        endif
+    endif
+    
+    ifeq ($(GPU_TYPE),CPU)
+        # CPU-only configuration - minimal dependencies
+        PLATFORM_MODULES = \
+            $(SRC_DIR)/cpu_device.f90 \
+            $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
+            $(SRC_DIR)/reference/gemm_simd_optimized.f90 \
+            $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
+            $(SRC_DIR)/production/timing_helpers.f90 \
+            $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
+            $(SRC_DIR)/reference/universal_memory_optimization.f90
+        
+        # No GPU libraries needed for CPU-only build
+        LDFLAGS += -fopenmp
+        CFLAGS += -DCPU_ONLY
+        GPU_BACKEND = cpu
     endif
 endif
 

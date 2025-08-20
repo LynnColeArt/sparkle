@@ -1,4 +1,5 @@
 module amd_discovery
+  use kinds
   use sporkle_mesh_types
   use iso_c_binding
   implicit none

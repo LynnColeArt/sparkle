@@ -106,7 +106,7 @@ module gpu_async_executor
     end function glFenceSync
     
     function glClientWaitSync(sync, flags, timeout) bind(C, name="glClientWaitSync") result(status)
-      import :: c_ptr, c_int, c_, i64_t
+      import :: c_ptr, c_int, c_int64_t
       type(c_ptr), value :: sync
       integer(c_int), value :: flags
       integer(c_int64_t), value :: timeout
