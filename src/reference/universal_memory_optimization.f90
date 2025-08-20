@@ -21,6 +21,7 @@
 
 module universal_memory_optimization
   use kinds
+  use flopcount, only: conv2d_flops
   implicit none
   
   private

@@ -1,0 +1,82 @@
+--- a/src/sporkle_hardware_profiler.f90
++++ b/src/sporkle_hardware_profiler.f90
+@@ -234,9 +234,17 @@ contains
+     
+     ! AMD RX 7900 XT specifications (Navi 31, RDNA3)
+     hw%compute_units = 84                    ! 84 CUs (not 96 - some disabled)
+-    hw%threads_per_unit = 64 * 2             ! 2 SIMDs per CU, 64 threads per wave
+-    hw%warp_size = 64                        ! AMD wave size (32 for Wave32 mode)
+-    hw%max_threads = hw%compute_units * 2048 ! Occupancy limit
++    
++    ! RDNA3 prefers Wave32 for better occupancy
++    if (detect_rdna_generation() >= 3) then
++      hw%warp_size = 32                      ! Wave32 mode for RDNA3
++      hw%threads_per_unit = 32 * 4           ! 4 waves per SIMD × 2 SIMDs
++    else
++      hw%warp_size = 64                      ! Wave64 for older GCN
++      hw%threads_per_unit = 64 * 2           ! 2 waves per SIMD × 2 SIMDs
++    end if
++    
++    hw%max_threads = hw%compute_units * hw%threads_per_unit * 2  ! 2 SIMDs per CU
+     
+     ! Memory hierarchy (RDNA3)
+     hw%l1_cache_size = 128 * 1024            ! 128KB L1 per shader array
+@@ -249,15 +257,18 @@ contains
+     hw%registers_per_thread = 256            ! 256 VGPRs
+     hw%register_bank_width = 32              ! VGPR width
+     
+-    ! Memory bandwidth
+-    hw%peak_bandwidth_gbs = 800.0            ! GDDR6 20Gbps × 320-bit
+-    hw%measured_bandwidth_gbs = 640.0        ! ~80% achievable
++    ! Memory bandwidth (RX 7900 XT specific)
++    hw%peak_bandwidth_gbs = 960.0            ! GDDR6 20Gbps × 384-bit
++    hw%measured_bandwidth_gbs = 768.0        ! ~80% achievable
+     hw%memory_latency_cycles = 350           ! Global memory latency
+     
+     ! Pipeline (RDNA3)
+     hw%pipeline_depth = 4                    ! Wave pipeline depth
+     hw%dual_issue = .true.                   ! RDNA3 dual-issue
+-    hw%fma_units = 128                       ! 128 FP32 units per CU (dual-issue)
++    hw%fma_units = 64                        ! 64 FP32 FMA units per CU
++    
++    ! Additional RDNA3 features
++    hw%has_wave64_mode = .true.              ! Can switch between Wave32/64
+     
+     ! Performance
+-    hw%peak_gflops = 51480.0                 ! 51.48 TFLOPS FP32
++    ! Base: 84 CUs × 64 FMA × 2 ops × 2.5 GHz = 26,880 GFLOPS
++    ! Dual-issue can boost to ~40,000 GFLOPS with proper instruction mix
++    hw%peak_gflops = 40000.0                 ! 40 TFLOPS with dual-issue
+     hw%measured_gflops = 3630.0              ! Current achievement
+@@ -287,8 +298,14 @@ contains
+   function derive_optimal_parameters(hw) result(params)
+     type(hardware_characteristics), intent(in) :: hw
+     type(kernel_parameters) :: params
+     real(dp) :: shared_mem_per_block, optimal_tile_fp
++    integer :: target_block_size
+     
+-    ! Parallelism - maximize occupancy
+-    params%block_size = hw%warp_size * 4     ! 4 warps/waves per block
++    ! Parallelism - Mini's recommendation: 256 threads optimal
++    if (hw%vendor == "AMD" .and. hw%warp_size == 32) then
++      target_block_size = 256               ! 8 Wave32s
++    else
++      target_block_size = hw%warp_size * 4  ! 4 waves/warps
++    end if
++    params%block_size = target_block_size
+     params%threads = min(hw%max_threads, 65536)  ! Cap at reasonable limit
+     params%num_blocks = params%threads / params%block_size
+@@ -310,6 +327,13 @@ contains
+       params%outputs_per_thread = 2  ! 2×2 tile per thread
+     else
+       params%outputs_per_thread = 1  ! 1×1 output per thread
++    end if
++    
++    ! AMD-specific optimizations (Mini's recommendations)
++    if (hw%vendor == "AMD") then
++      params%unroll_factor = 12             ! 12-16 for inner MAC
++      params%use_shared_memory = .true.     ! Always use LDS
++      params%tile_k = 64                    ! Ko blocking
++    end if
+     
+   end function derive_optimal_parameters

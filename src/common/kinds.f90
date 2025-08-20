@@ -20,6 +20,10 @@ module kinds
   public :: i8, i16, i32, i64, sp, dp
   public :: r32, r64
   
+  ! Legacy support for existing codebase
+  integer, parameter :: rk32 = real32, rk64 = real64
+  public :: rk32, rk64
+  
 contains
 
   ! Safe real32 literal conversion

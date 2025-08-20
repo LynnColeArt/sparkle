@@ -17,6 +17,7 @@ contains
     integer :: status
     
     integer(c_int8_t), pointer :: src(:), dst(:)
+    integer :: n
     
     status = -1
     
@@ -31,7 +32,6 @@ contains
     
     ! Copy data to mapped buffer
     if (c_associated(buffer%cpu_ptr) .and. c_associated(data)) then
-      integer :: n
       n = int(size)  ! default kind
 
       call c_f_pointer(buffer%cpu_ptr, dst, [n])
@@ -56,6 +56,7 @@ contains
     integer :: status
     
     integer(c_int8_t), pointer :: src(:), dst(:)
+    integer :: n
     
     status = -1
     
@@ -67,7 +68,6 @@ contains
     
     ! Copy data from mapped buffer
     if (c_associated(buffer%cpu_ptr) .and. c_associated(data)) then
-      integer :: n
       n = int(size)  ! default kind
 
       call c_f_pointer(buffer%cpu_ptr, src, [n])
