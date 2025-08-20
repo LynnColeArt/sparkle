@@ -1,5 +1,7 @@
 # Sporkle: A Novel Heterogeneous Computing Framework for Device-Agnostic Parallel Execution
 
+> **⚠️ CURRENT STATE: UNSTABLE - Build system repairs in progress after recent merge. We're working on it!**
+
 ## Abstract
 
 We present Sporkle, a novel heterogeneous computing framework that achieves vendor-independent GPU execution through direct kernel driver interfaces. Unlike existing solutions that require proprietary SDKs (CUDA, ROCm, OneAPI), Sporkle demonstrates that production-quality GPU computing can be achieved through direct ioctl communication with kernel drivers. We validate this approach with a working implementation of AMD GPU support via the AMDGPU kernel interface, achieving successful command buffer submission and execution entirely from Fortran without any vendor runtime dependencies.
