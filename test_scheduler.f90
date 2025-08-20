@@ -2,13 +2,13 @@ program test_scheduler
   use sparkle_mesh_types
   use sparkle_discovery
   use sparkle_scheduler
-  use iso_fortran_env, only: int64
+  use kinds
   implicit none
   
   type(mesh_topology) :: mesh
   type(schedule_choice) :: schedule
   type(device_handle) :: fake_gpu1, fake_gpu2, old_laptop
-  integer(int64) :: work_size
+  integer(i64) :: work_size
   
   print *, "=== Testing Sparkle Intelligent Scheduler ==="
   print *, ""
@@ -63,19 +63,19 @@ program test_scheduler
   
   ! Test scheduling different workloads
   print *, "=== Scheduling Test 1: Large GEMM ==="
-  work_size = 1000000000_int64  ! 1 billion elements
+  work_size = 1000000000_i64  ! 1 billion elements
   schedule = plan_shards(mesh, work_size, "gemm")
   call explain_schedule(mesh, schedule)
   
   print *, "=== Scheduling Test 2: Small workload ==="
-  work_size = 1000000_int64  ! 1 million elements
+  work_size = 1000000_i64  ! 1 million elements
   schedule = plan_shards(mesh, work_size, "gemm")
   call explain_schedule(mesh, schedule)
   
   ! Simulate device failure
   print *, "=== Scheduling Test 3: GPU 1 fails ==="
   mesh%devices(2)%healthy = .false.  ! GPU 1 fails
-  schedule = plan_shards(mesh, 1000000000_int64, "gemm")
+  schedule = plan_shards(mesh, 1000000000_i64, "gemm")
   call explain_schedule(mesh, schedule)
   
   print *, "=== The people's AI infrastructure in action! ==="

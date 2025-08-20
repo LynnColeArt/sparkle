@@ -369,6 +369,9 @@ ls -la /dev/dri/
 git clone https://github.com/LynnColeArt/Sporkle.git
 cd Sporkle
 
+# Set up development environment (recommended)
+./setup_git_hooks.sh  # Enables automated code quality checks
+
 # Build the framework
 make -f Makefile.smart
 
@@ -383,6 +386,23 @@ make test_platform
 make test_production_conv2d
 make test_simd_performance
 ```
+
+#### Development Setup (Optional but Recommended)
+
+After cloning, we recommend setting up the automated code quality checks:
+
+```bash
+./setup_git_hooks.sh
+```
+
+This enables pre-commit hooks that catch common Fortran issues:
+- Mixed-precision arithmetic bugs
+- Timing measurement errors
+- Integer overflow in FLOP calculations
+- Direct `iso_fortran_env` usage (should use `kinds` module)
+- Missing error handling
+
+The hooks provide helpful error messages and can be bypassed with `git commit --no-verify` when needed.
 
 ### 7.3 Troubleshooting
 

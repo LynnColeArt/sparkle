@@ -4,7 +4,7 @@
 
 program test_precision_differences
   use kinds, only: dp, sp
-  use iso_fortran_env, only: real64, real32
+  use kinds, real32
   implicit none
   
   real(dp) :: value_dp, value_sp_as_dp
