@@ -9,11 +9,10 @@ module pm4_submit
   private
   
   ! Public types and interfaces
-  public :: sp_pm4_ctx, sp_bo, sp_fence
-  public :: sp_pm4_init, sp_pm4_cleanup
+  public :: sp_pm4_ctx, sp_bo, sp_fence, sp_device_info
+  public :: sp_pm4_init, sp_pm4_cleanup, sp_pm4_get_device_info
   public :: sp_buffer_alloc, sp_buffer_free
   public :: sp_submit_ib, sp_submit_ib_with_bo, sp_fence_wait, sp_fence_check
-  public :: sp_build_canary_ib
   
   ! Buffer flags
   integer(c_int), parameter, public :: SP_BO_DEVICE_LOCAL = int(z'01', c_int)
@@ -75,6 +74,24 @@ module pm4_submit
     integer(c_int32_t) :: ring
   end type
   
+  ! Device information
+  type, bind(C) :: sp_device_info
+    character(kind=c_char) :: name(64)
+    integer(c_int32_t) :: device_id
+    integer(c_int32_t) :: family
+    integer(c_int32_t) :: num_compute_units
+    integer(c_int32_t) :: num_shader_engines
+    integer(c_int64_t) :: max_engine_clock
+    integer(c_int64_t) :: max_memory_clock
+    integer(c_int32_t) :: gpu_counter_freq
+    integer(c_int32_t) :: vram_type
+    integer(c_int32_t) :: vram_bit_width
+    integer(c_int32_t) :: ce_ram_size
+    integer(c_int32_t) :: num_tcc_blocks
+    integer(c_int64_t) :: vram_size
+    integer(c_int64_t) :: gtt_size
+  end type
+  
   ! C interfaces
   interface
     function sp_pm4_init_c(device_path) bind(C, name="sp_pm4_init")
@@ -87,6 +104,13 @@ module pm4_submit
       import :: c_ptr
       type(c_ptr), value :: ctx
     end subroutine
+    
+    function sp_pm4_get_device_info_c(ctx, info) bind(C, name="sp_pm4_get_device_info")
+      import :: c_ptr, c_int, sp_device_info
+      type(c_ptr), value :: ctx
+      type(sp_device_info), intent(out) :: info
+      integer(c_int) :: sp_pm4_get_device_info_c
+    end function
     
     function sp_buffer_alloc_c(ctx, size, flags) bind(C, name="sp_buffer_alloc")
       import :: c_ptr, c_size_t, c_int32_t
@@ -160,6 +184,15 @@ contains
     call sp_pm4_cleanup_c(ctx_ptr)
   end subroutine
   
+  ! Get device information
+  function sp_pm4_get_device_info(ctx_ptr, info) result(status)
+    type(c_ptr), intent(in) :: ctx_ptr
+    type(sp_device_info), intent(out) :: info
+    integer :: status
+    
+    status = sp_pm4_get_device_info_c(ctx_ptr, info)
+  end function
+  
   ! Allocate buffer
   function sp_buffer_alloc(ctx_ptr, size, flags) result(bo_ptr)
     type(c_ptr), intent(in) :: ctx_ptr
@@ -221,45 +254,5 @@ contains
     status = sp_fence_check_c(ctx_ptr, fence)
   end function
   
-  ! Build canary IB that writes 0xCAFEBABE
-  subroutine sp_build_canary_ib(ib_data, ib_size_dw, shader_va, buffer_va)
-    integer(c_int32_t), intent(out) :: ib_data(:)
-    integer, intent(out) :: ib_size_dw
-    integer(i64), intent(in) :: shader_va
-    integer(i64), intent(in) :: buffer_va
-    
-    integer :: idx
-    
-    idx = 1
-    
-    ! Set compute shader program address
-    ib_data(idx) = ior(ishft(3, 30), ior(ishft(2, 16), PM4_SET_SH_REG))  ! Type 3, count 2
-    idx = idx + 1
-    ib_data(idx) = COMPUTE_NUM_THREAD_X  ! Register offset
-    idx = idx + 1
-    ib_data(idx) = 1  ! 1 thread X
-    idx = idx + 1
-    ib_data(idx) = 1  ! 1 thread Y
-    idx = idx + 1
-    
-    ! Write canary value using WRITE_DATA packet
-    ib_data(idx) = ior(ishft(3, 30), ior(ishft(4, 16), PM4_WRITE_DATA))  ! Type 3, count 4
-    idx = idx + 1
-    ib_data(idx) = ior(ishft(5, 8), 0)  ! DST_SEL=5 (memory), WR_CONFIRM=0
-    idx = idx + 1
-    ib_data(idx) = int(iand(buffer_va, z'FFFFFFFF'), c_int32_t)  ! Address low (proper mask)
-    idx = idx + 1
-    ib_data(idx) = int(iand(shiftr(buffer_va, 32), z'FFFFFFFF'), c_int32_t)  ! Address high
-    idx = idx + 1
-    ib_data(idx) = int(z'CAFEBABE', c_int32_t)  ! Canary value
-    idx = idx + 1
-    
-    ! NOP padding
-    ib_data(idx) = ior(ishft(3, 30), ior(ishft(0, 16), PM4_NOP))
-    idx = idx + 1
-    
-    ib_size_dw = idx - 1
-    
-  end subroutine
 
 end module pm4_submit

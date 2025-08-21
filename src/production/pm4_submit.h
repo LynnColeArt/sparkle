@@ -37,6 +37,24 @@ typedef struct sp_fence {
     uint32_t ring;             // Ring index
 } sp_fence;
 
+// Device information
+typedef struct sp_device_info {
+    char name[64];             // Device name
+    uint32_t device_id;        // PCI device ID
+    uint32_t family;           // GPU family
+    uint32_t num_compute_units;// Number of CUs
+    uint32_t num_shader_engines;
+    uint64_t max_engine_clock; // Max GPU clock in KHz
+    uint64_t max_memory_clock; // Max memory clock in KHz
+    uint32_t gpu_counter_freq; // GPU counter frequency in KHz
+    uint32_t vram_type;        // VRAM type (GDDR6, etc)
+    uint32_t vram_bit_width;   // Memory bus width
+    uint32_t ce_ram_size;      // Constant engine RAM size
+    uint32_t num_tcc_blocks;   // Number of TCC blocks
+    uint64_t vram_size;        // VRAM size in bytes
+    uint64_t gtt_size;         // GTT size in bytes
+} sp_device_info;
+
 // PM4 packet opcodes (minimal set)
 #define PM4_NOP                    0x10
 #define PM4_SET_SH_REG            0x76
@@ -57,6 +75,7 @@ typedef struct sp_fence {
 // API functions
 sp_pm4_ctx* sp_pm4_init(const char* device_path);
 void sp_pm4_cleanup(sp_pm4_ctx* ctx);
+int sp_pm4_get_device_info(sp_pm4_ctx* ctx, sp_device_info* info);
 
 sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags);
 void sp_buffer_free(sp_pm4_ctx* ctx, sp_bo* bo);

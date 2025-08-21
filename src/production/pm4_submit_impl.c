@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <pthread.h>
 #include <drm/drm.h>
 #include <drm/amdgpu_drm.h>
 
@@ -28,6 +29,22 @@ enum {
 
 static int g_log_level = SP_LOG_INFO;
 
+// VA allocator structures
+typedef struct va_range {
+    uint64_t start;
+    uint64_t size;
+    struct va_range* next;
+} va_range;
+
+typedef struct va_allocator {
+    va_range* free_list;
+    uint64_t base_addr;
+    uint64_t total_size;
+    pthread_mutex_t lock;
+} va_allocator;
+
+static va_allocator g_va_alloc = {0};
+
 // Simple logger (no emojis!)
 static void sp_log(int level, const char* fmt, ...) {
     if (level < g_log_level) return;
@@ -40,6 +57,134 @@ static void sp_log(int level, const char* fmt, ...) {
     vfprintf(stderr, fmt, args);
     va_end(args);
     fprintf(stderr, "\n");
+}
+
+// Initialize VA allocator
+static int va_allocator_init(uint64_t base, uint64_t size) {
+    pthread_mutex_init(&g_va_alloc.lock, NULL);
+    g_va_alloc.base_addr = base;
+    g_va_alloc.total_size = size;
+    
+    // Create initial free range covering entire VA space
+    g_va_alloc.free_list = malloc(sizeof(va_range));
+    if (!g_va_alloc.free_list) return -ENOMEM;
+    
+    g_va_alloc.free_list->start = base;
+    g_va_alloc.free_list->size = size;
+    g_va_alloc.free_list->next = NULL;
+    
+    sp_log(SP_LOG_TRACE, "VA allocator initialized: base=0x%lx, size=0x%lx", base, size);
+    return 0;
+}
+
+// Cleanup VA allocator
+static void va_allocator_cleanup(void) {
+    pthread_mutex_lock(&g_va_alloc.lock);
+    
+    va_range* current = g_va_alloc.free_list;
+    while (current) {
+        va_range* next = current->next;
+        free(current);
+        current = next;
+    }
+    g_va_alloc.free_list = NULL;
+    
+    pthread_mutex_unlock(&g_va_alloc.lock);
+    pthread_mutex_destroy(&g_va_alloc.lock);
+}
+
+// Allocate VA space
+static uint64_t va_alloc(uint64_t size) {
+    // Align to 64KB
+    size = (size + 0xFFFF) & ~0xFFFF;
+    
+    pthread_mutex_lock(&g_va_alloc.lock);
+    
+    va_range* prev = NULL;
+    va_range* current = g_va_alloc.free_list;
+    
+    while (current) {
+        if (current->size >= size) {
+            // Found a suitable range
+            uint64_t addr = current->start;
+            
+            if (current->size == size) {
+                // Exact match - remove this range
+                if (prev) {
+                    prev->next = current->next;
+                } else {
+                    g_va_alloc.free_list = current->next;
+                }
+                free(current);
+            } else {
+                // Split the range
+                current->start += size;
+                current->size -= size;
+            }
+            
+            pthread_mutex_unlock(&g_va_alloc.lock);
+            sp_log(SP_LOG_TRACE, "VA allocated: addr=0x%lx, size=0x%lx", addr, size);
+            return addr;
+        }
+        prev = current;
+        current = current->next;
+    }
+    
+    pthread_mutex_unlock(&g_va_alloc.lock);
+    sp_log(SP_LOG_ERROR, "VA allocation failed: no space for size 0x%lx", size);
+    return 0;
+}
+
+// Free VA space
+static void va_free(uint64_t addr, uint64_t size) {
+    // Align to 64KB
+    size = (size + 0xFFFF) & ~0xFFFF;
+    
+    pthread_mutex_lock(&g_va_alloc.lock);
+    
+    // Create new free range
+    va_range* new_range = malloc(sizeof(va_range));
+    if (!new_range) {
+        pthread_mutex_unlock(&g_va_alloc.lock);
+        sp_log(SP_LOG_ERROR, "Failed to allocate free range");
+        return;
+    }
+    
+    new_range->start = addr;
+    new_range->size = size;
+    
+    // Insert into free list (sorted by address for coalescing)
+    va_range* prev = NULL;
+    va_range* current = g_va_alloc.free_list;
+    
+    while (current && current->start < addr) {
+        prev = current;
+        current = current->next;
+    }
+    
+    // Check if we can coalesce with previous range
+    if (prev && prev->start + prev->size == addr) {
+        prev->size += size;
+        free(new_range);
+        new_range = prev;
+    } else {
+        new_range->next = current;
+        if (prev) {
+            prev->next = new_range;
+        } else {
+            g_va_alloc.free_list = new_range;
+        }
+    }
+    
+    // Check if we can coalesce with next range
+    if (current && new_range->start + new_range->size == current->start) {
+        new_range->size += current->size;
+        new_range->next = current->next;
+        free(current);
+    }
+    
+    pthread_mutex_unlock(&g_va_alloc.lock);
+    sp_log(SP_LOG_TRACE, "VA freed: addr=0x%lx, size=0x%lx", addr, size);
 }
 
 // Initialize PM4 context
@@ -90,7 +235,20 @@ sp_pm4_ctx* sp_pm4_init(const char* device_path) {
     }
     
     ctx->device_id = dev_info.device_id;
-    ctx->num_compute_rings = 1;  // TODO: Query actual ring count
+    
+    // Query actual compute ring count
+    struct drm_amdgpu_info_hw_ip hw_ip_info = {0};
+    request.return_pointer = (uintptr_t)&hw_ip_info;
+    request.return_size = sizeof(hw_ip_info);
+    request.query = AMDGPU_INFO_HW_IP_INFO;
+    request.query_hw_ip.type = AMDGPU_HW_IP_COMPUTE;
+    
+    if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_INFO, &request) == 0) {
+        ctx->num_compute_rings = hw_ip_info.available_rings;
+    } else {
+        sp_log(SP_LOG_WARN, "Failed to query compute rings, defaulting to 1");
+        ctx->num_compute_rings = 1;
+    }
     
     sp_log(SP_LOG_INFO, "PM4 context initialized on device 0x%04x", ctx->device_id);
     sp_log(SP_LOG_INFO, "Compute rings available: %d", ctx->num_compute_rings);
@@ -109,6 +267,24 @@ sp_pm4_ctx* sp_pm4_init(const char* device_path) {
     
     ctx->gpu_ctx_id = ctx_args.out.alloc.ctx_id;
     sp_log(SP_LOG_TRACE, "GPU context created: %u", ctx->gpu_ctx_id);
+    
+    // Initialize VA allocator on first context creation
+    static int va_init_done = 0;
+    if (!va_init_done) {
+        // VA space from 32GB to 1TB
+        if (va_allocator_init(0x800000000ULL, 0xF800000000ULL) < 0) {
+            sp_log(SP_LOG_ERROR, "Failed to initialize VA allocator");
+            // Cleanup and fail
+            union drm_amdgpu_ctx cleanup_args = {0};
+            cleanup_args.in.op = AMDGPU_CTX_OP_FREE_CTX;
+            cleanup_args.in.ctx_id = ctx->gpu_ctx_id;
+            ioctl(ctx->fd, DRM_IOCTL_AMDGPU_CTX, &cleanup_args);
+            close(ctx->fd);
+            free(ctx);
+            return NULL;
+        }
+        va_init_done = 1;
+    }
     
     return ctx;
 }
@@ -131,6 +307,59 @@ void sp_pm4_cleanup(sp_pm4_ctx* ctx) {
     
     sp_log(SP_LOG_TRACE, "PM4 context cleaned up");
     free(ctx);
+}
+
+// Get device info from PM4 context
+int sp_pm4_get_device_info(sp_pm4_ctx* ctx, sp_device_info* info) {
+    if (!ctx || !info) {
+        sp_log(SP_LOG_ERROR, "NULL context or info passed to sp_pm4_get_device_info");
+        return -1;
+    }
+    
+    struct drm_amdgpu_info request = {0};
+    struct drm_amdgpu_info_device dev_info = {0};
+    
+    request.return_pointer = (uintptr_t)&dev_info;
+    request.return_size = sizeof(dev_info);
+    request.query = AMDGPU_INFO_DEV_INFO;
+    
+    if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_INFO, &request) < 0) {
+        sp_log(SP_LOG_ERROR, "Failed to get device info: %s", strerror(errno));
+        return -1;
+    }
+    
+    // Fill in device info
+    info->device_id = dev_info.device_id;
+    info->family = dev_info.family;
+    info->num_compute_units = dev_info.cu_active_number;
+    info->num_shader_engines = dev_info.num_shader_engines;
+    info->max_engine_clock = dev_info.max_engine_clock;
+    info->max_memory_clock = dev_info.max_memory_clock;
+    info->gpu_counter_freq = dev_info.gpu_counter_freq;
+    info->vram_type = dev_info.vram_type;
+    info->vram_bit_width = dev_info.vram_bit_width;
+    info->ce_ram_size = dev_info.ce_ram_size;
+    info->num_tcc_blocks = dev_info.num_tcc_blocks;
+    
+    // Get memory info
+    request.query = AMDGPU_INFO_VRAM_GTT;
+    struct drm_amdgpu_info_vram_gtt vram_gtt = {0};
+    request.return_pointer = (uintptr_t)&vram_gtt;
+    request.return_size = sizeof(vram_gtt);
+    
+    if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_INFO, &request) == 0) {
+        info->vram_size = vram_gtt.vram_size;
+        info->gtt_size = vram_gtt.gtt_size;
+    }
+    
+    // Determine device name based on device ID
+    switch (info->device_id) {
+        case 0x164e: snprintf(info->name, sizeof(info->name), "AMD Raphael (iGPU)"); break;
+        case 0x744c: snprintf(info->name, sizeof(info->name), "AMD Radeon RX 7900 XT"); break;
+        default: snprintf(info->name, sizeof(info->name), "AMD GPU 0x%04x", info->device_id); break;
+    }
+    
+    return 0;
 }
 
 // Allocate GPU buffer
@@ -173,10 +402,16 @@ sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags) {
     
     bo->handle = gem_args.out.handle;
     
-    // Simple VA allocator - use fixed offset for now
-    static uint64_t next_va = 0x800000000ULL;  // Start at 32GB
-    bo->gpu_va = next_va;
-    next_va += (size + 0xFFFF) & ~0xFFFF;  // Align to 64KB
+    // Allocate VA space using proper allocator
+    bo->gpu_va = va_alloc(size);
+    if (!bo->gpu_va) {
+        sp_log(SP_LOG_ERROR, "Failed to allocate VA space for size %zu", size);
+        struct drm_gem_close close_args = {0};
+        close_args.handle = bo->handle;
+        ioctl(ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args);
+        free(bo);
+        return NULL;
+    }
     
     // Map buffer to GPU VA
     struct drm_amdgpu_gem_va va_args = {0};
@@ -249,6 +484,9 @@ void sp_buffer_free(sp_pm4_ctx* ctx, sp_bo* bo) {
         va_args.va_address = bo->gpu_va;
         va_args.map_size = bo->size;
         ioctl(ctx->fd, DRM_IOCTL_AMDGPU_GEM_VA, &va_args);
+        
+        // Return VA space to allocator
+        va_free(bo->gpu_va, bo->size);
     }
     
     // Free GEM object
@@ -266,6 +504,40 @@ void sp_buffer_free(sp_pm4_ctx* ctx, sp_bo* bo) {
 int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw, 
                          sp_bo* data_bo, sp_fence* out_fence) {
     if (!ctx || !ib_bo || !out_fence) return -EINVAL;
+    
+    // Validate IB buffer size
+    uint32_t ib_size_bytes = ib_size_dw * 4;
+    sp_log(SP_LOG_TRACE, "IB validation: requested=%u bytes, buffer_size=%zu bytes", 
+           ib_size_bytes, ib_bo->size);
+    if (ib_size_bytes > ib_bo->size) {
+        sp_log(SP_LOG_ERROR, "IB size overflow: %u bytes requested, buffer is %zu bytes",
+               ib_size_bytes, ib_bo->size);
+        return -EINVAL;
+    }
+    
+    // Validate GPU VA alignment (must be 4-byte aligned for IB)
+    if (ib_bo->gpu_va & 0x3) {
+        sp_log(SP_LOG_ERROR, "IB GPU VA not aligned: 0x%lx (must be 4-byte aligned)",
+               ib_bo->gpu_va);
+        return -EINVAL;
+    }
+    
+    // Validate data buffer if provided
+    if (data_bo) {
+        if (data_bo->gpu_va == 0) {
+            sp_log(SP_LOG_ERROR, "Data buffer has no GPU VA mapping");
+            return -EINVAL;
+        }
+        // Check for VA range overlap
+        uint64_t ib_end = ib_bo->gpu_va + ib_bo->size;
+        uint64_t data_start = data_bo->gpu_va;
+        uint64_t data_end = data_bo->gpu_va + data_bo->size;
+        if ((ib_bo->gpu_va < data_end) && (ib_end > data_start)) {
+            sp_log(SP_LOG_ERROR, "Buffer VA overlap: IB [0x%lx-0x%lx], Data [0x%lx-0x%lx]",
+                   ib_bo->gpu_va, ib_end, data_start, data_end);
+            return -EINVAL;
+        }
+    }
     
     sp_log(SP_LOG_TRACE, "sp_submit_ib_with_bo: ctx=%p, ib_bo=%p, size_dw=%u, data_bo=%p", 
            ctx, ib_bo, ib_size_dw, data_bo);
