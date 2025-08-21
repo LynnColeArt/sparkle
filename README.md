@@ -1,6 +1,6 @@
 # Sporkle: A Novel Heterogeneous Computing Framework for Device-Agnostic Parallel Execution
 
-> **⚠️ CURRENT STATE: UNSTABLE - Build system repairs in progress after recent merge. We're working on it!**
+> **🚧 GPU Backend Transition: We are transitioning from OpenGL to Vulkan + PM4 direct submission. Some GPU features may be temporarily unavailable.**
 
 ## Abstract
 
@@ -152,9 +152,35 @@ Exposes intuitive interfaces for common parallel patterns including map, reduce,
 
 ## 3. Implementation
 
-### 3.1 Direct Kernel Driver Implementation
+### 3.1 GPU Backend Architecture
 
-Sporkle achieves vendor-independent GPU execution through direct kernel driver communication. Our AMD GPU implementation demonstrates the feasibility of this approach:
+Sporkle supports multiple GPU backends for maximum flexibility:
+
+#### Current GPU Backends:
+- **PM4 Direct Submission** (AMD GPUs) - Native command processor interface
+  - Direct hardware access without graphics API overhead
+  - RAII buffer management with automatic cleanup
+  - EOP timestamps for GPU-based timing
+  - Ready for Summit-class performance
+  
+- **Vulkan** (Cross-platform) - Modern GPU compute
+  - SPIR-V shader compilation
+  - Works on AMD, NVIDIA, Intel GPUs
+  - Async compute queues
+
+- **OpenGL** (Being removed - see issue #39)
+  - Legacy backend being phased out
+  - Use Vulkan or PM4 instead
+
+#### Platform Support Status:
+- **Linux + AMD**: Full support via PM4 direct submission
+- **Linux + NVIDIA**: Vulkan support (native submission planned)
+- **macOS**: Metal + Neural Engine support complete
+- **Windows**: Vulkan support
+
+### 3.2 Direct Kernel Driver Implementation
+
+Our PM4 implementation demonstrates vendor-independent GPU execution through direct kernel driver communication:
 
 ```fortran
 ! Direct AMDGPU kernel driver interface
