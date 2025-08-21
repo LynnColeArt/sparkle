@@ -165,6 +165,7 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/production/gpu_ring_buffer.f90 \
                                 $(SRC_DIR)/production/pm4_conv2d_builder.f90 \
                                 $(SRC_DIR)/production/pm4_submit.f90 \
+                                $(SRC_DIR)/production/pm4_buffer_raii.f90 \
                                 $(SRC_DIR)/production/pm4_safe_submit.f90 \
                                 # $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_v3.f90
@@ -946,6 +947,26 @@ $(BUILD_DIR)/test_pm4_minimal: $(OBJECTS) $(C_OBJECTS) test_pm4_minimal.f90
 	@echo "🔨 Building PM4 minimal test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		test_pm4_minimal.f90 -o $@ $(LDFLAGS)
+
+# PM4 RAII test
+test_pm4_raii: $(BUILD_DIR)/test_pm4_raii
+	@echo "🧹 Running PM4 RAII test..."
+	@SPORKLE_RENDER_NODE=/dev/dri/renderD129 ./$(BUILD_DIR)/test_pm4_raii
+
+$(BUILD_DIR)/test_pm4_raii: $(OBJECTS) $(C_OBJECTS) test_pm4_raii.f90
+	@echo "🔨 Building PM4 RAII test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_raii.f90 -o $@ $(LDFLAGS)
+
+# PM4 leak test
+test_pm4_leak: $(BUILD_DIR)/test_pm4_leak
+	@echo "💧 Running PM4 leak test (1000 iterations)..."
+	@SPORKLE_RENDER_NODE=/dev/dri/renderD129 ./$(BUILD_DIR)/test_pm4_leak
+
+$(BUILD_DIR)/test_pm4_leak: $(OBJECTS) $(C_OBJECTS) test_pm4_leak.f90
+	@echo "🔨 Building PM4 leak test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_leak.f90 -o $@ $(LDFLAGS)
 
 .PHONY: info clean clean-all cpu apple amd nvidia
 

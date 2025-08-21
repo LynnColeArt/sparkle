@@ -24,6 +24,26 @@ module pm4_submit
   integer(c_int32_t), parameter, public :: PM4_SET_SH_REG = int(z'76', c_int32_t)
   integer(c_int32_t), parameter, public :: PM4_DISPATCH_DIRECT = int(z'15', c_int32_t)
   integer(c_int32_t), parameter, public :: PM4_WRITE_DATA = int(z'37', c_int32_t)
+  integer(c_int32_t), parameter, public :: PM4_COPY_DATA = int(z'40', c_int32_t)
+  integer(c_int32_t), parameter, public :: PM4_RELEASE_MEM = int(z'49', c_int32_t)
+  
+  ! RELEASE_MEM event types
+  integer(c_int32_t), parameter, public :: CS_DONE = int(z'9', c_int32_t)
+  integer(c_int32_t), parameter, public :: BOTTOM_OF_PIPE_TS = int(z'4', c_int32_t)
+  
+  ! RELEASE_MEM field values (Mini's precise recipe)
+  integer(c_int32_t), parameter, public :: EVENT_INDEX_EOP = int(z'5', c_int32_t)
+  integer(c_int32_t), parameter, public :: DATA_SEL_TIMESTAMP = int(z'3', c_int32_t)
+  integer(c_int32_t), parameter, public :: INT_SEL_NONE = int(z'0', c_int32_t)
+  integer(c_int32_t), parameter, public :: DST_SEL_MEM = int(z'2', c_int32_t)
+  
+  ! Compute shader setup registers
+  integer(c_int32_t), parameter, public :: COMPUTE_PGM_LO = int(z'20C', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_PGM_HI = int(z'20D', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_PGM_RSRC1 = int(z'212', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_PGM_RSRC2 = int(z'213', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_RESOURCE_LIMITS = int(z'215', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_USER_DATA_0 = int(z'240', c_int32_t)
   
   ! Register offsets
   integer(c_int32_t), parameter, public :: COMPUTE_NUM_THREAD_X = int(z'219', c_int32_t)
