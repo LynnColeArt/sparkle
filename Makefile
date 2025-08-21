@@ -164,12 +164,14 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90 \
                                 $(SRC_DIR)/production/gpu_ring_buffer.f90 \
                                 $(SRC_DIR)/production/pm4_conv2d_builder.f90 \
+                                $(SRC_DIR)/production/pm4_submit.f90 \
                                 $(SRC_DIR)/production/pm4_safe_submit.f90 \
                                 # $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_v3.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
                                   $(SRC_DIR)/gpu_dynamic_shader_exec.c \
-                                  $(SRC_DIR)/production/aligned_alloc.c
+                                  $(SRC_DIR)/production/aligned_alloc.c \
+                                  $(SRC_DIR)/production/pm4_submit_impl.c
         endif
         
         ifeq ($(HAS_VULKAN),yes)
@@ -924,6 +926,26 @@ $(BUILD_DIR)/test_pm4_conv2d: $(OBJECTS) $(C_OBJECTS) test_pm4_conv2d.f90
 	@echo "🔨 Building PM4 direct Conv2D test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		test_pm4_conv2d.f90 -o $@ $(LDFLAGS)
+
+# PM4 canary test (real submission)
+test_pm4_canary: $(BUILD_DIR)/test_pm4_canary
+	@echo "🐤 Running PM4 canary test..."
+	@./$(BUILD_DIR)/test_pm4_canary
+
+$(BUILD_DIR)/test_pm4_canary: $(OBJECTS) $(C_OBJECTS) test_pm4_canary.f90
+	@echo "🔨 Building PM4 canary test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_canary.f90 -o $@ $(LDFLAGS)
+
+# PM4 minimal test (just NOPs)
+test_pm4_minimal: $(BUILD_DIR)/test_pm4_minimal
+	@echo "🔵 Running PM4 minimal test..."
+	@SPORKLE_LOG_LEVEL=TRACE SPORKLE_RENDER_NODE=/dev/dri/renderD129 ./$(BUILD_DIR)/test_pm4_minimal
+
+$(BUILD_DIR)/test_pm4_minimal: $(OBJECTS) $(C_OBJECTS) test_pm4_minimal.f90
+	@echo "🔨 Building PM4 minimal test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_minimal.f90 -o $@ $(LDFLAGS)
 
 .PHONY: info clean clean-all cpu apple amd nvidia
 
