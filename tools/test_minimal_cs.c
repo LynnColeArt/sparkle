@@ -157,6 +157,9 @@ int main() {
     
     // Create IB chunk data structure
     // The chunk_data points to an IB descriptor, not the IB itself
+    // WARNING: This test uses a SIMPLIFIED/INCORRECT structure!
+    // Real code should use struct drm_amdgpu_cs_chunk_ib from amdgpu_drm.h
+    // This test also incorrectly uses mmap offset as VA instead of proper GPU VA
     struct {
         uint32_t handle;     // Buffer handle
         uint32_t flags;      // IB flags

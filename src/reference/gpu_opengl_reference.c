@@ -435,3 +435,28 @@ float gpu_execute_conv2d_fortran(const float* input, const float* weights, float
 int gpu_get_compute_program() {
     return (int)g_compute_program;
 }
+
+// TODO: Implement custom shader compilation
+// For now, return a stub to keep the build working
+int gpu_compile_custom_shader(const char* shader_source) {
+    printf("gpu_compile_custom_shader: Custom shader compilation not yet implemented\n");
+    printf("  Shader source length: %zu characters\n", strlen(shader_source));
+    // Return reference program ID as fallback
+    return (int)g_compute_program;
+}
+
+// TODO: Implement custom shader execution  
+// For now, fall back to reference implementation
+float gpu_execute_conv2d_custom(int custom_program, const float* input, const float* weights, float* output,
+                                int N, int C, int H, int W, int K, int kernel_size, int stride, int pad, int H_out, int W_out) {
+    printf("gpu_execute_conv2d_custom: Custom execution not yet implemented, using reference\n");
+    
+    // Fall back to reference implementation
+    conv2d_params_t params = {
+        .N = N, .C = C, .H = H, .W = W, .K = K,
+        .kernel_size = kernel_size, .stride = stride, .pad = pad,
+        .H_out = H_out, .W_out = W_out
+    };
+    
+    return (float)gpu_execute_conv2d(input, weights, output, &params);
+}

@@ -1,0 +1,12 @@
+🌟 Building Sporkle - The People's AI Infrastructure
+==================================================
+
+📦 Compiling src/sporkle_types.f90...
+gfortran -O2 -Wall -fcheck=bounds -c src/sporkle_types.f90 -o build/sporkle_types.o -Jbuild
+src/sporkle_types.f90:3:7:
+
+    3 |   use kinds
+      |       1
+Fatal Error: Cannot open module file ‘kinds.mod’ for reading at (1): No such file or directory
+compilation terminated.
+make: *** [Makefile:83: build/sporkle_types.o] Error 1

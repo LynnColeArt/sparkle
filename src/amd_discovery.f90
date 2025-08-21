@@ -81,8 +81,16 @@ contains
         handle%caps%mem_bw_gbs = memory_bw
         handle%caps%unified_mem = .false.  ! AMD GPUs typically don't have unified memory
         
-        ! Estimate GFLOPS (RDNA2 = 128 ops/CU/clock)
-        handle%caps%peak_gflops = props%multiProcessorCount * clock_ghz * 128.0_rk64 * 1000.0_rk64
+        ! Mini's correction: RDNA3 performance calculation
+        ! For RDNA3 (7900 XT): 84 CUs × 64 FMA × 2 ops × 2.5 GHz = 26,880 GFLOPS base
+        ! With dual-issue: ~40,000 GFLOPS peak
+        if (index(device_name, "7900") > 0) then
+          ! Specific calculation for 7900 XT/XTX with dual-issue
+          handle%caps%peak_gflops = 40000.0_rk64  ! Mini's corrected value
+        else
+          ! General RDNA3: Base calculation with potential dual-issue boost
+          handle%caps%peak_gflops = props%multiProcessorCount * clock_ghz * 64.0_rk64 * 2.0_rk64 * 1000.0_rk64
+        end if
         handle%caps%sustained_gflops = handle%caps%peak_gflops * 0.65_rk64
         
         write(handle%caps%driver_ver, '(A,I0,A,I0)') "ROCm ", props%major, ".", props%minor

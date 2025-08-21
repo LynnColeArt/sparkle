@@ -10,8 +10,14 @@ After achieving 6.5x speedup with the GPU async executor and 196.7 GFLOPS on CPU
 
 1. **Multiple High-Performance Backends**
    - CPU: 196.7 GFLOPS with AVX-512 SIMD
-   - GPU: 451 GFLOPS single kernel, 3,630 GFLOPS with async pipeline
-   - AMDGPU Direct: Low-level kernel driver interface (not integrated)
+   - Vulkan: Modern GPU compute with SPIR-V shaders
+     - Cross-platform GPU abstraction
+     - Async compute queues for pipeline optimization
+   - PM4 Direct Submission: Native AMD command processor interface
+     - RAII buffer management with automatic cleanup
+     - EOP timestamp support for GPU-based timing
+     - Summit kernel infrastructure ready for compute shaders
+     - Direct hardware access for maximum performance
    - Metal/Neural Engine: Complete implementation (needs integration)
 
 2. **Abstract Device Interface**
@@ -115,6 +121,22 @@ After achieving 6.5x speedup with the GPU async executor and 196.7 GFLOPS on CPU
 2. Register all available compute devices
 3. Implement device discovery for each platform
 4. Add performance profiling infrastructure
+
+### Phase 1.5: PM4 Direct Submission Integration
+1. **Device Discovery**: Use existing discovery to find AMD GPUs
+   - Leverage `/sys/class/drm/card*/device/vendor` scanning
+   - Identify discrete vs integrated GPUs (prefer 7900 XT over Raphael)
+2. **PM4 Context Management**:
+   - Modify `sp_pm4_init` to accept optional device path
+   - Check `SPORKLE_RENDER_NODE` environment variable
+   - Fall back to device selector recommendation
+3. **Device Scoring for PM4**:
+   - Add PM4-specific capabilities to device profiles
+   - Score based on compute units, memory bandwidth
+   - Consider command processor (CP) capabilities
+4. **Multi-GPU PM4 Support**:
+   - Allow multiple PM4 contexts simultaneously
+   - Track performance per device for adaptive routing
 
 ### Phase 2: Routing Intelligence
 1. Port `intelligent_device_juggling` concepts

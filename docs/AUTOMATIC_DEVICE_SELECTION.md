@@ -77,8 +77,16 @@ call set_profiling_mode(.false.) ! Silent operation
 
 ### Device Types Supported
 - CPU (Performance cores with AVX-512)
-- GPU (Discrete with async pipeline)
-- Future: iGPU, Neural Engines, Matrix Units
+- GPU (Vulkan - cross-platform compute)
+  - SPIR-V shader compilation
+  - Async compute queues
+  - Modern GPU abstraction
+- GPU (PM4 Direct Submission - native AMD)
+  - RAII buffer management
+  - EOP timestamps for GPU timing
+  - Direct hardware access for maximum performance
+  - Ready for Summit kernel integration
+- Future: iGPU selection, Neural Engines, Matrix Units
 
 ### Selection Criteria
 - Arithmetic intensity (compute vs memory bound)

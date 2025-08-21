@@ -173,6 +173,7 @@ contains
     ! For now, do CPU memcpy since buffers are mapped
     block
       character, pointer :: src_bytes(:), dst_bytes(:)
+      integer :: n
       
       if (.not. c_associated(src%data) .or. .not. c_associated(dst%data)) then
         status = -1
@@ -180,7 +181,6 @@ contains
       end if
       
       ! Fix: Convert int64 size_bytes to default integer for c_f_pointer shape
-      integer :: n
       n = int(size_bytes, kind(n))
       call c_f_pointer(src%data, src_bytes, [n])
       call c_f_pointer(dst%data, dst_bytes, [n])
