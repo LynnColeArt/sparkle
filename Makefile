@@ -135,7 +135,8 @@ ifeq ($(PLATFORM),LINUX)
             $(SRC_DIR)/sporkle_pm4_packets.f90 \
             $(SRC_DIR)/sporkle_gpu_va_allocator.f90 \
             $(SRC_DIR)/sporkle_rdna3_shaders.f90 \
-            $(SRC_DIR)/sporkle_pm4_compute.f90
+            $(SRC_DIR)/sporkle_pm4_compute.f90 \
+            $(SRC_DIR)/production/gpu_safety_guards.f90
             
         ifeq ($(HAS_OPENGL),yes)
             PLATFORM_MODULES += $(SRC_DIR)/production/gpu_opengl_interface.f90 \
@@ -147,15 +148,23 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/production/timing_helpers.f90 \
                                 $(SRC_DIR)/production/gemm_simd_optimized_v2.f90 \
                                 $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
+                                $(SRC_DIR)/production/gpu_fence_primitives.f90 \
+                                $(SRC_DIR)/production/gpu_opengl_interface_fence.f90 \
+                                $(SRC_DIR)/production/gpu_unified_buffers.f90 \
+                                $(SRC_DIR)/production/gpu_opengl_zero_copy.f90 \
                                 $(SRC_DIR)/production/gpu_async_executor.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_juggling.f90 \
+                                $(SRC_DIR)/production/sporkle_conv2d_juggling_fence.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_auto_selector.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache.f90 \
                                 $(SRC_DIR)/production/gpu_opengl_cached.f90 \
                                 $(SRC_DIR)/production/gpu_binary_cache.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_v2.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache_threadsafe.f90 \
+                                $(SRC_DIR)/production/gpu_ring_buffer.f90 \
+                                $(SRC_DIR)/production/pm4_conv2d_builder.f90 \
+                                $(SRC_DIR)/production/pm4_safe_submit.f90 \
                                 # $(SRC_DIR)/production/gpu_dynamic_shader_cache.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_v3.f90
             PLATFORM_C_SOURCES += $(SRC_DIR)/reference/gpu_opengl_reference.c \
@@ -169,7 +178,9 @@ ifeq ($(PLATFORM),LINUX)
                                   $(SRC_DIR)/production/glsl_to_spirv.c \
                                   $(SRC_DIR)/production/conv2d_spirv_bytecode.c \
                                   $(SRC_DIR)/production/valid_spirv_generator.c \
-                                  $(SRC_DIR)/production/minimal_valid_spirv.c
+                                  $(SRC_DIR)/production/minimal_valid_spirv.c \
+                                  $(SRC_DIR)/production/vulkan_buffer_utils.c \
+                                  $(SRC_DIR)/production/vulkan_timing.c
         endif
     endif
     
@@ -192,6 +203,7 @@ ifeq ($(PLATFORM),LINUX)
                                 $(SRC_DIR)/reference/cpu_conv2d_reference.f90 \
                                 $(SRC_DIR)/production/timing_helpers.f90 \
                                 $(SRC_DIR)/production/cpu_conv2d_adaptive.f90 \
+                                $(SRC_DIR)/production/gpu_fence_primitives.f90 \
                                 $(SRC_DIR)/production/gpu_async_executor.f90 \
                                 $(SRC_DIR)/production/sporkle_conv2d_v2.f90 \
                                 $(SRC_DIR)/production/gpu_program_cache.f90 \
@@ -738,10 +750,180 @@ test_pm4_basic: $(BUILD_DIR)/test_pm4_basic
 	@echo "🚀 Running PM4 basic test..."
 	@./$(BUILD_DIR)/test_pm4_basic
 
+# PM4 driverless test
+test_pm4_driverless: $(BUILD_DIR)/test_pm4_driverless
+	@echo "🚀 Running PM4 driverless test..."
+	@./$(BUILD_DIR)/test_pm4_driverless
+
+# PM4 Neo Geo test
+test_pm4_neogeo: $(BUILD_DIR)/test_pm4_neogeo
+	@echo "🕹️  Running PM4 Neo Geo test..."
+	@./$(BUILD_DIR)/test_pm4_neogeo
+
 $(BUILD_DIR)/test_pm4_basic: $(OBJECTS) $(C_OBJECTS) $(EXAMPLES_DIR)/test_pm4_basic.f90
 	@echo "🔨 Building PM4 basic test..."
 	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		$(EXAMPLES_DIR)/test_pm4_basic.f90 -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/test_pm4_driverless: $(OBJECTS) $(C_OBJECTS) test_pm4_driverless.f90
+	@echo "🔨 Building PM4 driverless test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_driverless.f90 -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/test_pm4_neogeo: $(OBJECTS) $(C_OBJECTS) test_pm4_neogeo.f90
+	@echo "🔨 Building PM4 Neo Geo test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_neogeo.f90 -o $@ $(LDFLAGS)
+
+# PM4 Ring Buffer concept test
+test_pm4_ring_buffer: $(BUILD_DIR)/test_pm4_ring_buffer_concept
+	@echo "💍 Running PM4 Ring Buffer concept test..."
+	@./$(BUILD_DIR)/test_pm4_ring_buffer_concept
+
+$(BUILD_DIR)/test_pm4_ring_buffer_concept: $(OBJECTS) $(C_OBJECTS) test_pm4_ring_buffer_concept.f90
+	@echo "🔨 Building PM4 Ring Buffer concept test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_ring_buffer_concept.f90 -o $@ $(LDFLAGS)
+
+# RDNA3 ISA shader test
+test_rdna3_isa: $(BUILD_DIR)/test_rdna3_isa_shader
+	@echo "🔧 Running RDNA3 ISA shader test..."
+	@./$(BUILD_DIR)/test_rdna3_isa_shader
+
+$(BUILD_DIR)/test_rdna3_isa_shader: $(OBJECTS) $(C_OBJECTS) test_rdna3_isa_shader.f90
+	@echo "🔨 Building RDNA3 ISA shader test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_rdna3_isa_shader.f90 -o $@ $(LDFLAGS)
+
+# Fence primitives test
+test_fence: $(BUILD_DIR)/test_fence_primitives
+	@echo "🧪 Running fence primitives test..."
+	@./$(BUILD_DIR)/test_fence_primitives
+
+$(BUILD_DIR)/test_fence_primitives: $(OBJECTS) $(C_OBJECTS) test_fence_primitives.f90
+	@echo "🔨 Building fence primitives test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_fence_primitives.f90 -o $@ $(LDFLAGS)
+
+# Neo Geo quality check
+test_quality: $(BUILD_DIR)/test_neo_geo_quality
+	@echo "🔍 Running Neo Geo quality checks..."
+	@./$(BUILD_DIR)/test_neo_geo_quality
+
+$(BUILD_DIR)/test_neo_geo_quality: $(OBJECTS) $(C_OBJECTS) test_neo_geo_quality.f90
+	@echo "🔨 Building Neo Geo quality test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_neo_geo_quality.f90 -o $@ $(LDFLAGS)
+
+# PM4 Direct concept test
+test_pm4_direct: $(BUILD_DIR)/test_pm4_direct_concept
+	@echo "🚀 Running PM4 Direct concept test..."
+	@./$(BUILD_DIR)/test_pm4_direct_concept
+
+$(BUILD_DIR)/test_pm4_direct_concept: $(OBJECTS) $(C_OBJECTS) test_pm4_direct_concept.f90
+	@echo "🔨 Building PM4 Direct concept test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_direct_concept.f90 -o $@ $(LDFLAGS)
+
+# Juggler fence upgrade test
+test_juggler_fence: $(BUILD_DIR)/test_juggler_fence_upgrade
+	@echo "⚡ Running juggler fence upgrade test..."
+	@./$(BUILD_DIR)/test_juggler_fence_upgrade
+
+$(BUILD_DIR)/test_juggler_fence_upgrade: $(OBJECTS) $(C_OBJECTS) test_juggler_fence_upgrade.f90
+	@echo "🔨 Building juggler fence upgrade test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_juggler_fence_upgrade.f90 -o $@ $(LDFLAGS)
+
+# Comprehensive fence benchmark
+test_fence_benchmark: $(BUILD_DIR)/test_fence_comprehensive_benchmark
+	@echo "📊 Running comprehensive fence benchmark..."
+	@./$(BUILD_DIR)/test_fence_comprehensive_benchmark
+
+$(BUILD_DIR)/test_fence_comprehensive_benchmark: $(OBJECTS) $(C_OBJECTS) test_fence_comprehensive_benchmark.f90
+	@echo "🔨 Building fence benchmark..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_fence_comprehensive_benchmark.f90 -o $@ $(LDFLAGS)
+
+# Persistent buffer POC
+test_persistent_buffer: $(BUILD_DIR)/test_persistent_buffer_poc
+	@echo "🧪 Running persistent buffer POC..."
+	@./$(BUILD_DIR)/test_persistent_buffer_poc
+
+$(BUILD_DIR)/test_persistent_buffer_poc: $(OBJECTS) $(C_OBJECTS) test_persistent_buffer_poc.f90
+	@echo "🔨 Building persistent buffer POC..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_persistent_buffer_poc.f90 -o $@ $(LDFLAGS)
+
+# Unified buffers test
+test_unified_buffers: $(BUILD_DIR)/test_unified_buffers
+	@echo "🧪 Running unified buffers test..."
+	@./$(BUILD_DIR)/test_unified_buffers
+
+$(BUILD_DIR)/test_unified_buffers: $(OBJECTS) $(C_OBJECTS) test_unified_buffers.f90
+	@echo "🔨 Building unified buffers test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_unified_buffers.f90 -o $@ $(LDFLAGS)
+
+# Conv2D zero-copy test
+test_conv2d_zero_copy: $(BUILD_DIR)/test_conv2d_zero_copy
+	@echo "🏎️ Running Conv2D zero-copy test..."
+	@./$(BUILD_DIR)/test_conv2d_zero_copy
+
+$(BUILD_DIR)/test_conv2d_zero_copy: $(OBJECTS) $(C_OBJECTS) test_conv2d_zero_copy.f90
+	@echo "🔨 Building Conv2D zero-copy test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_conv2d_zero_copy.f90 -o $@ $(LDFLAGS)
+
+# Simple zero-copy test
+test_zero_copy_simple: $(BUILD_DIR)/test_zero_copy_simple
+	@echo "🧪 Running simple zero-copy test..."
+	@./$(BUILD_DIR)/test_zero_copy_simple
+
+$(BUILD_DIR)/test_zero_copy_simple: $(OBJECTS) $(C_OBJECTS) test_zero_copy_simple.f90
+	@echo "🔨 Building simple zero-copy test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_zero_copy_simple.f90 -o $@ $(LDFLAGS)
+
+# Standalone zero-copy test
+test_zero_copy_standalone: $(BUILD_DIR)/test_zero_copy_standalone
+	@echo "🚀 Running standalone zero-copy test..."
+	@./$(BUILD_DIR)/test_zero_copy_standalone
+
+$(BUILD_DIR)/test_zero_copy_standalone: $(OBJECTS) $(C_OBJECTS) test_zero_copy_standalone.f90
+	@echo "🔨 Building standalone zero-copy test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_zero_copy_standalone.f90 -o $@ $(LDFLAGS)
+
+# Parallel zero-copy test
+test_zero_copy_parallel: $(BUILD_DIR)/test_zero_copy_parallel
+	@echo "🚀 Running parallel zero-copy test..."
+	@./$(BUILD_DIR)/test_zero_copy_parallel
+
+$(BUILD_DIR)/test_zero_copy_parallel: $(OBJECTS) $(C_OBJECTS) test_zero_copy_parallel.f90
+	@echo "🔨 Building parallel zero-copy test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_zero_copy_parallel.f90 -o $@ $(LDFLAGS)
+
+# Large workload zero-copy test
+test_zero_copy_large: $(BUILD_DIR)/test_zero_copy_large
+	@echo "🚀 Running large workload zero-copy test..."
+	@./$(BUILD_DIR)/test_zero_copy_large
+
+$(BUILD_DIR)/test_zero_copy_large: $(OBJECTS) $(C_OBJECTS) test_zero_copy_large.f90
+	@echo "🔨 Building large workload zero-copy test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_zero_copy_large.f90 -o $@ $(LDFLAGS)
+
+# PM4 direct Conv2D test
+test_pm4_conv2d: $(BUILD_DIR)/test_pm4_conv2d
+	@echo "🎮 Running PM4 direct Conv2D test..."
+	@./$(BUILD_DIR)/test_pm4_conv2d
+
+$(BUILD_DIR)/test_pm4_conv2d: $(OBJECTS) $(C_OBJECTS) test_pm4_conv2d.f90
+	@echo "🔨 Building PM4 direct Conv2D test..."
+	$(FC) $(BASE_FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_pm4_conv2d.f90 -o $@ $(LDFLAGS)
 
 .PHONY: info clean clean-all cpu apple amd nvidia
 
@@ -833,3 +1015,23 @@ $(BUILD_DIR)/test_vulkan_memory_only: $(OBJECTS) $(C_OBJECTS) test_vulkan_memory
 	@echo "🔨 Building Vulkan memory test..."
 	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		test_vulkan_memory_only.f90 -o $@ $(LDFLAGS)
+
+# Test Vulkan safe compute
+test_vulkan_safe: $(BUILD_DIR)/test_vulkan_safe_compute
+	@echo "🛡️  Testing Vulkan safe compute..."
+	@./$(BUILD_DIR)/test_vulkan_safe_compute
+
+$(BUILD_DIR)/test_vulkan_safe_compute: $(OBJECTS) $(C_OBJECTS) test_vulkan_safe_compute.f90
+	@echo "🔨 Building Vulkan safe compute test..."
+	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_vulkan_safe_compute.f90 -o $@ $(LDFLAGS)
+
+# Test Vulkan real performance
+test_vulkan_real_performance: $(BUILD_DIR)/test_vulkan_real_performance
+	@echo "🎯 Testing Vulkan real performance..."
+	@./$(BUILD_DIR)/test_vulkan_real_performance
+
+$(BUILD_DIR)/test_vulkan_real_performance: $(OBJECTS) $(C_OBJECTS) test_vulkan_real_performance.f90
+	@echo "🔨 Building Vulkan real performance test..."
+	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		test_vulkan_real_performance.f90 -o $@ $(LDFLAGS)

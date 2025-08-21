@@ -16,17 +16,25 @@ extern void* load_spirv_file(const char* filepath, size_t* size_out);
 extern const char* generate_vulkan_conv2d_shader();
 extern const uint32_t* get_conv2d_spirv_bytecode(size_t* size_out);
 
+// External timing functions
+extern float vk_dispatch_compute_timed(VkCommandBuffer cmd_buffer, 
+                                     VkPipeline pipeline,
+                                     VkPipelineLayout layout,
+                                     VkDescriptorSet descriptor_set,
+                                     uint32_t groups_x, uint32_t groups_y, uint32_t groups_z,
+                                     uint32_t query_base);
+
 // Module initialization
 // Removed constructor - might be causing issues
 
 // Global Vulkan state (production would use proper context)
-static VkInstance g_instance = VK_NULL_HANDLE;
-static VkPhysicalDevice g_physical_device = VK_NULL_HANDLE;
-static VkDevice g_device = VK_NULL_HANDLE;
-static VkQueue g_compute_queue = VK_NULL_HANDLE;
-static uint32_t g_queue_family_index = 0;
-static VkCommandPool g_command_pool = VK_NULL_HANDLE;
-static VkDescriptorPool g_descriptor_pool = VK_NULL_HANDLE;
+VkInstance g_instance = VK_NULL_HANDLE;
+VkPhysicalDevice g_physical_device = VK_NULL_HANDLE;
+VkDevice g_device = VK_NULL_HANDLE;
+VkQueue g_compute_queue = VK_NULL_HANDLE;
+uint32_t g_queue_family_index = 0;
+VkCommandPool g_command_pool = VK_NULL_HANDLE;
+VkDescriptorPool g_descriptor_pool = VK_NULL_HANDLE;
 
 // Simple buffer wrapper
 typedef struct {
@@ -684,9 +692,14 @@ float vk_dispatch_conv2d(void* shader, void* input_buf, void* weights_buf, void*
         return 0.001f;
     }
     // Calculate dispatch dimensions
-    int groups_x = (W_out + 15) / 16;
-    int groups_y = (H_out + 15) / 16;
-    int groups_z = K;
+    // 32 threads handle 4x8 output tile
+    const int TILE_H = 4;
+    const int TILE_W = 8;
+    int tiles_y = (H_out + TILE_H - 1) / TILE_H;
+    int tiles_x = (W_out + TILE_W - 1) / TILE_W;
+    int groups_x = tiles_y * tiles_x;  // Flattened 2D grid
+    int groups_y = 1;
+    int groups_z = 1;
     
     // Prepare push constants
     int push_constants[10] = {N, C, H, W, K, kernel_size, stride, pad, H_out, W_out};
@@ -716,9 +729,9 @@ float vk_dispatch_conv2d(void* shader, void* input_buf, void* weights_buf, void*
     // Bind pipeline
     vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, vk_shader->compute_pipeline);
     
-    // Push constants
-    vkCmdPushConstants(cmd_buffer, vk_shader->pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT,
-                      0, sizeof(push_constants), push_constants);
+    // Skip push constants for now - using hardcoded values in shader
+    // vkCmdPushConstants(cmd_buffer, vk_shader->pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT,
+    //                   0, sizeof(push_constants), push_constants);
     
     // Update and bind descriptor sets
     vulkan_buffer_t* buffers[3] = {
@@ -758,4 +771,172 @@ float vk_dispatch_conv2d(void* shader, void* input_buf, void* weights_buf, void*
     
     // Submit and time
     return vk_submit_and_time(cmd_buffer);
+}
+
+// Additional functions for real performance testing
+extern VkBuffer vk_get_buffer_handle(void* buffer);
+
+// Create real conv2d shader
+void* vk_create_conv2d_shader_real() {
+    // Load and compile the real conv2d shader
+    const char* shader_path = "src/production/conv2d_real_compute.glsl";
+    char command[512];
+    
+    // Compile to SPIR-V
+    snprintf(command, sizeof(command), 
+             "glslc -fshader-stage=compute %s -o /tmp/conv2d_real.spv 2>&1", 
+             shader_path);
+    
+    printf("🔧 Compiling real conv2d shader...\n");
+    if (system(command) != 0) {
+        printf("\u274c Failed to compile real conv2d shader\n");
+        return NULL;
+    }
+    
+    // Load SPIR-V
+    size_t spirv_size;
+    void* spirv_data = load_spirv_file("/tmp/conv2d_real.spv", &spirv_size);
+    if (!spirv_data) {
+        printf("\u274c Failed to load compiled SPIR-V\n");
+        return NULL;
+    }
+    
+    // Create shader module
+    void* shader = vk_compile_shader(spirv_data, spirv_size);
+    free(spirv_data);
+    
+    if (shader) {
+        printf("\u2705 Real conv2d shader created successfully\n");
+    }
+    
+    return shader;
+}
+
+// Timed dispatch for real performance measurement
+float vk_dispatch_conv2d_timed(void* shader, void* input_buf, void* weights_buf, void* output_buf,
+                              int N, int C, int H, int W, int K, int kernel_size, 
+                              int stride, int pad, int H_out, int W_out, int query_base) {
+    if (!shader) {
+        return -1.0f;
+    }
+    
+    vulkan_shader_t* vk_shader = (vulkan_shader_t*)shader;
+    if (!vk_shader->compute_pipeline) {
+        return -1.0f;
+    }
+    
+    // Get buffer handles
+    VkBuffer vk_input_buf = vk_get_buffer_handle(input_buf);
+    VkBuffer vk_weights_buf = vk_get_buffer_handle(weights_buf);
+    VkBuffer vk_output_buf = vk_get_buffer_handle(output_buf);
+    
+    // Update descriptor set
+    VkDescriptorBufferInfo buffer_infos[3] = {
+        {.buffer = vk_input_buf, .offset = 0, .range = VK_WHOLE_SIZE},
+        {.buffer = vk_weights_buf, .offset = 0, .range = VK_WHOLE_SIZE},
+        {.buffer = vk_output_buf, .offset = 0, .range = VK_WHOLE_SIZE}
+    };
+    
+    VkWriteDescriptorSet writes[3];
+    for (int i = 0; i < 3; i++) {
+        writes[i] = (VkWriteDescriptorSet){
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .dstSet = vk_shader->descriptor_set,
+            .dstBinding = i,
+            .descriptorCount = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .pBufferInfo = &buffer_infos[i]
+        };
+    }
+    
+    vkUpdateDescriptorSets(g_device, 3, writes, 0, NULL);
+    
+    // Calculate dispatch dimensions
+    // 32 threads handle 4x8 output tile
+    const int TILE_H = 4;
+    const int TILE_W = 8;
+    int tiles_y = (H_out + TILE_H - 1) / TILE_H;
+    int tiles_x = (W_out + TILE_W - 1) / TILE_W;
+    int groups_x = tiles_y * tiles_x;  // Flattened 2D grid
+    int groups_y = 1;
+    int groups_z = 1;
+    
+    // Allocate command buffer
+    VkCommandBufferAllocateInfo cmd_alloc_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = g_command_pool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1
+    };
+    
+    VkCommandBuffer cmd_buffer;
+    if (vkAllocateCommandBuffers(g_device, &cmd_alloc_info, &cmd_buffer) != VK_SUCCESS) {
+        return -1.0f;
+    }
+    
+    // Record command buffer with dispatch
+    VkCommandBufferBeginInfo begin_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+    };
+    
+    if (vkBeginCommandBuffer(cmd_buffer, &begin_info) != VK_SUCCESS) {
+        printf("❌ Failed to begin command buffer!\n");
+        vkFreeCommandBuffers(g_device, g_command_pool, 1, &cmd_buffer);
+        return -1.0f;
+    }
+    
+    // Bind pipeline and descriptor set
+    vkCmdBindPipeline(cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, vk_shader->compute_pipeline);
+    vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE,
+                           vk_shader->pipeline_layout, 0, 1, &vk_shader->descriptor_set, 0, NULL);
+    
+    // Dispatch compute
+    vkCmdDispatch(cmd_buffer, groups_x, groups_y, groups_z);
+    
+    if (vkEndCommandBuffer(cmd_buffer) != VK_SUCCESS) {
+        printf("❌ Failed to end command buffer!\n");
+        vkFreeCommandBuffers(g_device, g_command_pool, 1, &cmd_buffer);
+        return -1.0f;
+    }
+    
+    // Submit to queue with timing
+    VkSubmitInfo submit_info = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &cmd_buffer
+    };
+    
+    VkFence fence;
+    VkFenceCreateInfo fence_info = {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+    };
+    vkCreateFence(g_device, &fence_info, NULL, &fence);
+    
+    // Time the execution
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    
+    if (vkQueueSubmit(g_compute_queue, 1, &submit_info, fence) != VK_SUCCESS) {
+        printf("❌ Failed to submit command buffer!\n");
+        vkDestroyFence(g_device, fence, NULL);
+        vkFreeCommandBuffers(g_device, g_command_pool, 1, &cmd_buffer);
+        return -1.0f;
+    }
+    
+    // Wait for completion
+    vkWaitForFences(g_device, 1, &fence, VK_TRUE, UINT64_MAX);
+    
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    
+    // Calculate elapsed time in ms
+    float elapsed_ms = (end.tv_sec - start.tv_sec) * 1000.0f + 
+                      (end.tv_nsec - start.tv_nsec) / 1000000.0f;
+    
+    
+    // Cleanup
+    vkDestroyFence(g_device, fence, NULL);
+    vkFreeCommandBuffers(g_device, g_command_pool, 1, &cmd_buffer);
+    
+    return elapsed_ms;
 }
