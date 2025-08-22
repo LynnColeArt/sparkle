@@ -211,11 +211,18 @@ contains
   subroutine pm4_dispatch_direct(builder, dim_x, dim_y, dim_z)
     type(pm4_packet_builder), intent(inout) :: builder
     integer, intent(in) :: dim_x, dim_y, dim_z
+    integer(i32) :: dispatch_initiator
     
-    call builder%emit(pm4_type3_header(IT_DISPATCH_DIRECT, 3))
+    ! Build dispatch initiator with required bits
+    ! Bit 0: COMPUTE_SHADER_EN = 1 (enable shader execution)
+    ! Bit 12: DATA_ATC = 1 (64-bit addressing)
+    dispatch_initiator = ior(int(z'00000001', i32), ishft(1_i32, 12))  ! 0x1001
+    
+    call builder%emit(pm4_type3_header(IT_DISPATCH_DIRECT, 4))  ! 4 dwords!
     call builder%emit(dim_x)  ! Thread groups X
     call builder%emit(dim_y)  ! Thread groups Y
     call builder%emit(dim_z)  ! Thread groups Z
+    call builder%emit(dispatch_initiator)  ! COMPUTE_SHADER_EN | DATA_ATC
   end subroutine pm4_dispatch_direct
   
   ! Wait for register to match value

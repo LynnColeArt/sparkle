@@ -1,5 +1,7 @@
-! Test Peak CPU Performance
-! =========================
+! Test Peak CPU Performance (Convolution Workload)
+! ================================================
+! NOTE: This tests convolution performance (~30 GFLOPS), not peak GEMM.
+! For peak CPU performance (196+ GFLOPS), use test_simd_performance.f90
 ! Focus on measuring peak GFLOPS using the proven gemm_universal_memory
 
 program test_peak_cpu_performance

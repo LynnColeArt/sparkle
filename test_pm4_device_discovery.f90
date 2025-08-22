@@ -47,12 +47,12 @@ program test_pm4_device_discovery
     print '(A,I0)', "  Family: ", dev_info%family
     print '(A,I0)', "  Compute Units: ", dev_info%num_compute_units
     print '(A,I0)', "  Shader Engines: ", dev_info%num_shader_engines
-    print '(A,F0.1,A)', "  Max Engine Clock: ", real(dev_info%max_engine_clock)/1000.0, " MHz"
-    print '(A,F0.1,A)', "  Max Memory Clock: ", real(dev_info%max_memory_clock)/1000.0, " MHz"
+    print '(A,F0.1,A)', "  Max Engine Clock: ", real(dev_info%max_engine_clock)/1000.0_sp, " MHz"
+    print '(A,F0.1,A)', "  Max Memory Clock: ", real(dev_info%max_memory_clock)/1000.0_sp, " MHz"
     print '(A,I0)', "  VRAM Type: ", dev_info%vram_type
     print '(A,I0)', "  Memory Bus Width: ", dev_info%vram_bit_width
-    print '(A,F0.1,A)', "  VRAM Size: ", real(dev_info%vram_size)/1024.0**3, " GB"
-    print '(A,F0.1,A)', "  GTT Size: ", real(dev_info%gtt_size)/1024.0**3, " GB"
+    print '(A,F0.1,A)', "  VRAM Size: ", real(dev_info%vram_size)/1024.0_sp**3, " GB"
+    print '(A,F0.1,A)', "  GTT Size: ", real(dev_info%gtt_size)/1024.0_sp**3, " GB"
     print *, ""
     
     ! Cleanup

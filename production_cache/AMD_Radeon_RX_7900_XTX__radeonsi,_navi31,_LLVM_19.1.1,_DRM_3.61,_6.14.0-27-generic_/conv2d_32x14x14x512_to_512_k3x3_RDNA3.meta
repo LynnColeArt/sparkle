@@ -1,0 +1,6 @@
+# GPU Program Binary Metadata
+cache_key=conv2d_32x14x14x512_to_512_k3x3_RDNA3
+gpu_id=AMD_Radeon_RX_7900_XTX__radeonsi,_navi31,_LLVM_19.1.1,_DRM_3.61,_6.14.0-27-generic_
+format=34655
+size=6813
+timestamp=2025-08-18 15:47:48             

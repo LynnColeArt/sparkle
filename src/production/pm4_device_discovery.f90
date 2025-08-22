@@ -138,8 +138,8 @@ contains
           discovered_devices(num_devices)%family = dev_info%family
           discovered_devices(num_devices)%compute_units = dev_info%num_compute_units
           discovered_devices(num_devices)%shader_engines = dev_info%num_shader_engines
-          discovered_devices(num_devices)%max_engine_clock_ghz = real(dev_info%max_engine_clock) / 1.0e6
-          discovered_devices(num_devices)%max_memory_clock_ghz = real(dev_info%max_memory_clock) / 1.0e6
+          discovered_devices(num_devices)%max_engine_clock_ghz = real(dev_info%max_engine_clock) / 1.0e6_sp
+          discovered_devices(num_devices)%max_memory_clock_ghz = real(dev_info%max_memory_clock) / 1.0e6_sp
           
           ! Debug: print raw values
           print '(A,A)', "  Device: ", trim(discovered_devices(num_devices)%device_name)
@@ -150,8 +150,8 @@ contains
                                effective_mem_rate_gbps, " Gbps"
           discovered_devices(num_devices)%vram_type = dev_info%vram_type
           discovered_devices(num_devices)%memory_bus_width = dev_info%vram_bit_width
-          discovered_devices(num_devices)%vram_size_gb = real(dev_info%vram_size) / 1024.0**3
-          discovered_devices(num_devices)%gtt_size_gb = real(dev_info%gtt_size) / 1024.0**3
+          discovered_devices(num_devices)%vram_size_gb = real(dev_info%vram_size) / 1024.0_sp**3
+          discovered_devices(num_devices)%gtt_size_gb = real(dev_info%gtt_size) / 1024.0_sp**3
           
           ! Convert C string to Fortran
           call c_string_to_fortran(dev_info%name, discovered_devices(num_devices)%device_name)
@@ -179,16 +179,16 @@ contains
           ! For GDDR6: effective rate = controller clock * 2
           ! Then: bandwidth = (bus_width_bits / 8) * effective_rate_Gbps
           ! Convert controller clock from KHz to GHz, then to effective Gbps
-          effective_mem_rate_gbps = real(dev_info%max_memory_clock) / 1.0e6 * 2.0  ! KHz to GHz, then *2 for DDR
+          effective_mem_rate_gbps = real(dev_info%max_memory_clock) / 1.0e6_sp * 2.0_sp  ! KHz to GHz, then *2 for DDR
           
           ! For 7900 series, we know they use 20 Gbps GDDR6, so use that if it looks wrong
           if (dev_info%device_id == int(z'744C')) then
             ! 7900 XT/XTX use 20 Gbps GDDR6
-            effective_mem_rate_gbps = 20.0
+            effective_mem_rate_gbps = 20.0_sp
           end if
           
           discovered_devices(num_devices)%memory_bandwidth_gb = &
-            real(discovered_devices(num_devices)%memory_bus_width) / 8.0 * effective_mem_rate_gbps
+            real(discovered_devices(num_devices)%memory_bus_width) / 8.0_sp * effective_mem_rate_gbps
         end if
         
         ! Cleanup temporary context
@@ -200,10 +200,15 @@ contains
     
     ! Return discovered devices
     if (num_devices > 0) then
-      allocate(devices(num_devices))
+      allocate(devices(num_devices), stat=status)
+      if (status /= 0) then
+        print *, "ERROR: Failed to allocate device array"
+        allocate(devices(0), stat=status)  ! Fallback allocation
+        return
+      end if
       devices = discovered_devices(1:num_devices)
     else
-      allocate(devices(0))
+      allocate(devices(0), stat=status)  ! Empty device list
     end if
   end function discover_pm4_devices
   

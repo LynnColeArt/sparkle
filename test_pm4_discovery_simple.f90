@@ -26,7 +26,7 @@ program test_pm4_discovery_simple
     print '(A,A)', "  Name: ", trim(devices(i)%device_name)
     print '(A,Z4)', "  Device ID: 0x", devices(i)%device_id
     print '(A,I0)', "  Compute Units: ", devices(i)%compute_units
-    print '(A,F0.1,A)', "  Theoretical Performance: ", devices(i)%theoretical_gflops/1000.0, " TFLOPS"
+    print '(A,F0.1,A)', "  Theoretical Performance: ", devices(i)%theoretical_gflops/1000.0_sp, " TFLOPS"
     print '(A,F0.1,A)', "  Memory Bandwidth: ", devices(i)%memory_bandwidth_gb, " GB/s"
     print '(A,F0.1,A)', "  VRAM: ", devices(i)%vram_size_gb, " GB"
     print *, ""

@@ -12,7 +12,7 @@ module pm4_submit
   public :: sp_pm4_ctx, sp_bo, sp_fence, sp_device_info
   public :: sp_pm4_init, sp_pm4_cleanup, sp_pm4_get_device_info
   public :: sp_buffer_alloc, sp_buffer_free
-  public :: sp_submit_ib, sp_submit_ib_with_bo, sp_fence_wait, sp_fence_check
+  public :: sp_submit_ib, sp_submit_ib_with_bo, sp_submit_ib_with_bos, sp_fence_wait, sp_fence_check
   
   ! Buffer flags
   integer(c_int), parameter, public :: SP_BO_DEVICE_LOCAL = int(z'01', c_int)
@@ -25,14 +25,23 @@ module pm4_submit
   integer(c_int32_t), parameter, public :: PM4_WRITE_DATA = int(z'37', c_int32_t)
   integer(c_int32_t), parameter, public :: PM4_COPY_DATA = int(z'40', c_int32_t)
   integer(c_int32_t), parameter, public :: PM4_RELEASE_MEM = int(z'49', c_int32_t)
+  integer(c_int32_t), parameter, public :: PM4_CLEAR_STATE = int(z'12', c_int32_t)
+  integer(c_int32_t), parameter, public :: PM4_CONTEXT_CONTROL = int(z'28', c_int32_t)
+  integer(c_int32_t), parameter, public :: PM4_SET_UCONFIG_REG = int(z'79', c_int32_t)
+  integer(c_int32_t), parameter, public :: PM4_ACQUIRE_MEM = int(z'58', c_int32_t)
+  
+  ! DISPATCH_INITIATOR bits
+  integer(c_int32_t), parameter, public :: COMPUTE_SHADER_EN = int(z'1', c_int32_t)
   
   ! RELEASE_MEM event types
   integer(c_int32_t), parameter, public :: CS_DONE = int(z'9', c_int32_t)
   integer(c_int32_t), parameter, public :: BOTTOM_OF_PIPE_TS = int(z'4', c_int32_t)
+  integer(c_int32_t), parameter, public :: CACHE_FLUSH_AND_INV_TS_EVENT = int(z'4', c_int32_t)
   
   ! RELEASE_MEM field values (Mini's precise recipe)
   integer(c_int32_t), parameter, public :: EVENT_INDEX_EOP = int(z'5', c_int32_t)
   integer(c_int32_t), parameter, public :: DATA_SEL_TIMESTAMP = int(z'3', c_int32_t)
+  integer(c_int32_t), parameter, public :: DATA_SEL_IMMEDIATE_32 = int(z'1', c_int32_t)
   integer(c_int32_t), parameter, public :: INT_SEL_NONE = int(z'0', c_int32_t)
   integer(c_int32_t), parameter, public :: DST_SEL_MEM = int(z'2', c_int32_t)
   
@@ -41,6 +50,7 @@ module pm4_submit
   integer(c_int32_t), parameter, public :: COMPUTE_PGM_HI = int(z'20D', c_int32_t)
   integer(c_int32_t), parameter, public :: COMPUTE_PGM_RSRC1 = int(z'212', c_int32_t)
   integer(c_int32_t), parameter, public :: COMPUTE_PGM_RSRC2 = int(z'213', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_PGM_RSRC3 = int(z'214', c_int32_t)
   integer(c_int32_t), parameter, public :: COMPUTE_RESOURCE_LIMITS = int(z'215', c_int32_t)
   integer(c_int32_t), parameter, public :: COMPUTE_USER_DATA_0 = int(z'240', c_int32_t)
   
@@ -48,6 +58,31 @@ module pm4_submit
   integer(c_int32_t), parameter, public :: COMPUTE_NUM_THREAD_X = int(z'219', c_int32_t)
   integer(c_int32_t), parameter, public :: COMPUTE_NUM_THREAD_Y = int(z'21A', c_int32_t)
   integer(c_int32_t), parameter, public :: COMPUTE_NUM_THREAD_Z = int(z'21B', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_DISPATCH_INITIATOR = int(z'211', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_START_X = int(z'204', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_START_Y = int(z'205', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_START_Z = int(z'206', c_int32_t)
+  
+  ! Compute preamble registers (Mini's recipe)
+  integer(c_int32_t), parameter, public :: GRBM_GFX_INDEX = int(z'30800', c_int32_t)  ! UCONFIG reg
+  
+  ! HQD registers for debugging
+  integer(c_int32_t), parameter, public :: CP_HQD_ACTIVE = int(z'21EC', c_int32_t)
+  integer(c_int32_t), parameter, public :: CP_HQD_VMID = int(z'21ED', c_int32_t)
+  integer(c_int32_t), parameter, public :: CP_HQD_PQ_BASE = int(z'21C0', c_int32_t)
+  integer(c_int32_t), parameter, public :: CP_HQD_PQ_RPTR = int(z'21C8', c_int32_t)
+  integer(c_int32_t), parameter, public :: CP_HQD_PQ_WPTR = int(z'21C9', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_STATIC_THREAD_MGMT_SE0 = int(z'21E', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_STATIC_THREAD_MGMT_SE1 = int(z'21F', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_STATIC_THREAD_MGMT_SE2 = int(z'220', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_STATIC_THREAD_MGMT_SE3 = int(z'221', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_TMPRING_SIZE = int(z'218', c_int32_t)
+  integer(c_int32_t), parameter, public :: SH_MEM_CONFIG = int(z'21C', c_int32_t)
+  integer(c_int32_t), parameter, public :: SH_MEM_BASES = int(z'21D', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_TBA_LO = int(z'22C', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_TBA_HI = int(z'22D', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_TMA_LO = int(z'22E', c_int32_t)
+  integer(c_int32_t), parameter, public :: COMPUTE_TMA_HI = int(z'22F', c_int32_t)
   
   ! PM4 context
   type, bind(C) :: sp_pm4_ctx
@@ -146,6 +181,18 @@ module pm4_submit
       integer(c_int) :: sp_submit_ib_with_bo_c
     end function
     
+    function sp_submit_ib_with_bos_c(ctx, ib_bo, ib_size_dw, data_bos, num_data_bos, out_fence) &
+         bind(C, name="sp_submit_ib_with_bos")
+      import :: c_ptr, c_int32_t, c_int, sp_fence
+      type(c_ptr), value :: ctx
+      type(c_ptr), value :: ib_bo
+      integer(c_int32_t), value :: ib_size_dw
+      type(c_ptr), value :: data_bos  ! array of sp_bo pointers
+      integer(c_int32_t), value :: num_data_bos
+      type(sp_fence), intent(out) :: out_fence
+      integer(c_int) :: sp_submit_ib_with_bos_c
+    end function
+    
     function sp_fence_wait_c(ctx, fence, timeout_ns) bind(C, name="sp_fence_wait")
       import :: c_ptr, c_int, c_int64_t, sp_fence
       type(c_ptr), value :: ctx
@@ -233,6 +280,19 @@ contains
     
     status = sp_submit_ib_with_bo_c(ctx_ptr, ib_bo_ptr, int(ib_size_dw, c_int32_t), &
                                     data_bo_ptr, fence)
+  end function
+  
+  ! Submit IB with multiple data buffers
+  function sp_submit_ib_with_bos(ctx_ptr, ib_bo_ptr, ib_size_dw, data_bo_ptrs, fence) result(status)
+    type(c_ptr), intent(in) :: ctx_ptr
+    type(c_ptr), intent(in) :: ib_bo_ptr
+    integer, intent(in) :: ib_size_dw
+    type(c_ptr), intent(in), target :: data_bo_ptrs(:)
+    type(sp_fence), intent(out) :: fence
+    integer :: status
+    
+    status = sp_submit_ib_with_bos_c(ctx_ptr, ib_bo_ptr, int(ib_size_dw, c_int32_t), &
+                                     c_loc(data_bo_ptrs), int(size(data_bo_ptrs), c_int32_t), fence)
   end function
   
   ! Wait for fence

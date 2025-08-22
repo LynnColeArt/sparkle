@@ -420,10 +420,10 @@ sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags) {
     
     // Set flags based on buffer type
     if (flags & SP_BO_HOST_VISIBLE) {
-        // IB buffers need executable permission
-        va_args.flags = AMDGPU_VM_PAGE_READABLE | AMDGPU_VM_PAGE_EXECUTABLE;
+        // Host visible buffers need read/write for data, executable for shaders
+        va_args.flags = AMDGPU_VM_PAGE_READABLE | AMDGPU_VM_PAGE_WRITEABLE | AMDGPU_VM_PAGE_EXECUTABLE;
     } else {
-        // Data buffers need read/write
+        // Device local buffers need read/write
         va_args.flags = AMDGPU_VM_PAGE_READABLE | AMDGPU_VM_PAGE_WRITEABLE;
     }
     
@@ -662,6 +662,130 @@ int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
 // Submit indirect buffer (simple wrapper)
 int sp_submit_ib(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw, sp_fence* out_fence) {
     return sp_submit_ib_with_bo(ctx, ib_bo, ib_size_dw, NULL, out_fence);
+}
+
+// Submit IB with multiple buffer objects
+int sp_submit_ib_with_bos(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
+                          sp_bo** data_bos, uint32_t num_data_bos, sp_fence* out_fence) {
+    sp_log(SP_LOG_INFO, "sp_submit_ib_with_bos: ctx=%p, ib_bo=%p, data_bos=%p, num=%u", 
+           ctx, ib_bo, data_bos, num_data_bos);
+    
+    if (!ctx || !ib_bo || !out_fence) return -EINVAL;
+    
+    // Validate IB buffer
+    uint32_t ib_size_bytes = ib_size_dw * 4;
+    if (ib_size_bytes > ib_bo->size) {
+        sp_log(SP_LOG_ERROR, "IB size overflow: %u bytes requested, buffer is %zu bytes",
+               ib_size_bytes, ib_bo->size);
+        return -EINVAL;
+    }
+    
+    // Create BO list with all buffers
+    uint32_t bo_list_handle = 0;
+    union drm_amdgpu_bo_list bo_list_args = {0};
+    
+    int total_bos = 1 + num_data_bos;
+    struct drm_amdgpu_bo_list_entry* bo_info = calloc(total_bos, sizeof(struct drm_amdgpu_bo_list_entry));
+    if (!bo_info) return -ENOMEM;
+    
+    // Add IB buffer
+    bo_info[0].bo_handle = ib_bo->handle;
+    bo_info[0].bo_priority = 0;
+    
+    // Add data buffers
+    for (uint32_t i = 0; i < num_data_bos; i++) {
+        if (!data_bos[i]) {
+            free(bo_info);
+            return -EINVAL;
+        }
+        bo_info[i + 1].bo_handle = data_bos[i]->handle;
+        bo_info[i + 1].bo_priority = 0;
+    }
+    
+    bo_list_args.in.operation = AMDGPU_BO_LIST_OP_CREATE;
+    bo_list_args.in.bo_number = total_bos;
+    bo_list_args.in.bo_info_size = sizeof(struct drm_amdgpu_bo_list_entry);
+    bo_list_args.in.bo_info_ptr = (uintptr_t)bo_info;
+    
+    sp_log(SP_LOG_TRACE, "Creating BO list with %d buffers (IB + %d data)", total_bos, num_data_bos);
+    
+    if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args) < 0) {
+        sp_log(SP_LOG_ERROR, "Failed to create BO list: %s", strerror(errno));
+        free(bo_info);
+        return -errno;
+    }
+    
+    free(bo_info);
+    bo_list_handle = bo_list_args.out.list_handle;
+    
+    // Build CS submission
+    struct drm_amdgpu_cs_chunk *chunks = calloc(1, sizeof(struct drm_amdgpu_cs_chunk));
+    struct drm_amdgpu_cs_chunk_ib *ib_data = calloc(1, sizeof(struct drm_amdgpu_cs_chunk_ib));
+    uint64_t *chunk_ptrs = calloc(1, sizeof(uint64_t));
+    
+    if (!chunks || !ib_data || !chunk_ptrs) {
+        sp_log(SP_LOG_ERROR, "Failed to allocate CS structures");
+        // Clean up BO list
+        bo_list_args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
+        bo_list_args.in.list_handle = bo_list_handle;
+        ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args);
+        free(chunks);
+        free(ib_data);
+        free(chunk_ptrs);
+        return -ENOMEM;
+    }
+    
+    // Fill IB info
+    ib_data->_pad = 0;
+    ib_data->flags = 0;
+    ib_data->va_start = ib_bo->gpu_va;
+    ib_data->ib_bytes = ib_size_bytes;
+    ib_data->ip_type = AMDGPU_HW_IP_COMPUTE;
+    ib_data->ip_instance = 0;
+    ib_data->ring = 0;
+    
+    chunks[0].chunk_id = AMDGPU_CHUNK_ID_IB;
+    chunks[0].length_dw = sizeof(struct drm_amdgpu_cs_chunk_ib) / 4;
+    chunks[0].chunk_data = (uint64_t)(uintptr_t)ib_data;
+    
+    chunk_ptrs[0] = (uint64_t)(uintptr_t)&chunks[0];
+    
+    union drm_amdgpu_cs cs_args = {0};
+    cs_args.in.ctx_id = ctx->gpu_ctx_id;
+    cs_args.in.bo_list_handle = bo_list_handle;
+    cs_args.in.num_chunks = 1;
+    cs_args.in.chunks = (uint64_t)(uintptr_t)chunk_ptrs;
+    
+    sp_log(SP_LOG_TRACE, "CS submit with %d BOs: ctx=%u, bo_list=%u, ib_va=0x%lx, ib_bytes=%u",
+           total_bos, ctx->gpu_ctx_id, bo_list_handle, ib_data->va_start, ib_data->ib_bytes);
+    
+    int ret = ioctl(ctx->fd, DRM_IOCTL_AMDGPU_CS, &cs_args);
+    
+    // Clean up BO list
+    bo_list_args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
+    bo_list_args.in.list_handle = bo_list_handle;
+    ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args);
+    
+    if (ret < 0) {
+        sp_log(SP_LOG_ERROR, "CS submit failed: %s", strerror(errno));
+        free(chunks);
+        free(ib_data);
+        free(chunk_ptrs);
+        return -errno;
+    }
+    
+    // Return fence info
+    out_fence->ctx_id = ctx->gpu_ctx_id;
+    out_fence->ip_type = AMDGPU_HW_IP_COMPUTE;
+    out_fence->ring = 0;
+    out_fence->fence = cs_args.out.handle;
+    
+    sp_log(SP_LOG_TRACE, "Submitted IB with %d BOs: fence=%lu", total_bos, out_fence->fence);
+    
+    free(chunks);
+    free(ib_data);
+    free(chunk_ptrs);
+    return 0;
 }
 
 // Wait for fence (blocking)
