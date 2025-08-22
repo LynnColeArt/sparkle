@@ -124,8 +124,8 @@ program test_pm4_summit_kernel
     timer_data(2_i64) = 0_i64  ! T1
     
     ! Submit CP alive test (Mini's EOP validation)
-    status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 17_i32, &
-                                  timer_buffer%bo_ptr, fence)
+    status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 17_i32, [&
+                                  timer_buffer%bo_ptr], fence)
     if (status /= 0_i32) then
       print *, "ERROR: Failed to submit Summit kernel"
       cycle

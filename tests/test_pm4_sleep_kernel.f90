@@ -7,6 +7,7 @@ program test_pm4_sleep_kernel
   use iso_c_binding
   use pm4_submit
   use pm4_buffer_raii
+  use time_utils
   implicit none
   
   type(c_ptr) :: ctx_ptr
@@ -15,7 +16,7 @@ program test_pm4_sleep_kernel
   
   integer(c_int32_t), pointer :: ib_data(:), shader_data(:)
   integer(i32) :: status
-  integer(i64) :: start_time, end_time, elapsed_ns, clock_rate
+  real(f64) :: start_time, end_time, elapsed_ns
   
   print *, "======================================="
   print *, "PM4 Sleep Kernel Test"
@@ -49,11 +50,11 @@ program test_pm4_sleep_kernel
   call build_sleep_dispatch_ib(ib_data, shader_buffer%get_va())
   
   ! Get start time
-  call system_clock(start_time, clock_rate)
+  start_time = get_time()
   
   ! Submit
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 100_i32, &
-                                shader_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 100_i32, [&
+                                shader_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: Submit failed with status:", status
     stop 1
@@ -63,13 +64,13 @@ program test_pm4_sleep_kernel
   status = sp_fence_wait(ctx_ptr, fence, 1000000000_i64)
   
   ! Get end time
-  call system_clock(end_time)
-  elapsed_ns = (end_time - start_time) * 1000000000_i64 / clock_rate
+  end_time = get_time()
+  elapsed_ns = (end_time - start_time) * 1.0e9_f64
   
   print *, ""
-  print '(A,F8.3,A)', "✅ Dispatch completed in ", real(elapsed_ns)/1000000.0, " ms"
+  print '(A,F8.3,A)', "✅ Dispatch completed in ", real(elapsed_ns, f64)/1.0e6_f64, " ms"
   
-  if (elapsed_ns > 1000000_i64) then  ! > 1ms
+  if (elapsed_ns > 1.0e6_f64) then  ! > 1ms
     print *, "🎉 SUCCESS! Sleep kernel executed (measurable delay)"
     print *, "GPU is executing shaders - dispatch works!"
   else
@@ -160,7 +161,7 @@ contains
     ib_data(idx+3) = 1_i32
     idx = idx + 4
     
-    print '(A,I0)', "Total PM4 dwords: ", idx-1
+    print '(A,I0)', "Total PM4 dwords: ", idx-1_i32
     
   end subroutine
 

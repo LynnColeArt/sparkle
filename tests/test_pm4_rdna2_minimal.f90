@@ -131,7 +131,7 @@ program test_pm4_rdna2_minimal
   print '(A,I0,A)', "Built IB with ", i-1, " dwords"
   
   ! Submit
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, i-1, output_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, i-1, [output_buffer%bo_ptr], fence)
   if (status /= 0) stop 1
   
   ! Wait

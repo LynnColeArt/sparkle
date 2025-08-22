@@ -66,8 +66,8 @@ program test_pm4_pal_kernel
   ! Submit
   print *, ""
   print *, "Submitting PAL kernel..."
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 30_i32, &
-                                output_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 30_i32, [&
+                                output_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: Submit failed"
     stop 1

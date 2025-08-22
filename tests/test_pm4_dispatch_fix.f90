@@ -58,8 +58,8 @@ program test_pm4_dispatch_fix
                                signal_buffer%get_va(), shader_buffer%get_va())
   
   ! Submit with shader buffer (most critical for execution)
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 120_i32, &
-                                shader_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 120_i32, [&
+                                shader_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: Submit failed"
     stop 1

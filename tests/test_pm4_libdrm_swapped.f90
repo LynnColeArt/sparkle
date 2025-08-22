@@ -137,8 +137,8 @@ program test_pm4_libdrm_swapped
   print *, "Submitting with swapped shader..."
   
   ! Submit
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, idx-1, &
-                                data_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, idx-1, [&
+                                data_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: Submit failed with status", status
     stop 1

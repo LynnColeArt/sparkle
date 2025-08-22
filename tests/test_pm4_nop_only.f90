@@ -56,7 +56,7 @@ program test_pm4_nop_only
   
   ! Submit with both buffers in BO list
   print *, "Submitting IB with output buffer in BO list..."
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_bo_ptr, 4, output_bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_bo_ptr, 4, [output_bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: IB submission failed:", status
   else

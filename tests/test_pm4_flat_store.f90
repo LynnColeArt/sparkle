@@ -104,7 +104,7 @@ program test_pm4_flat_store
   i = i + 4
   
   ! Submit
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, i-1, output_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, i-1, [output_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "Submit failed!"
     stop 1

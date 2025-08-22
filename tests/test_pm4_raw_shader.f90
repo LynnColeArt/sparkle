@@ -67,8 +67,8 @@ program test_pm4_raw_shader
   call build_raw_dispatch(ib_data, output_buffer%get_va(), shader_buffer%get_va())
   
   ! Submit
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 45_i32, &
-                                output_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 45_i32, [&
+                                output_buffer%bo_ptr], fence)
   if (status /= 0) stop 1
   
   ! Wait

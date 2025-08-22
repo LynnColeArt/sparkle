@@ -57,8 +57,8 @@ program test_pm4_compute_preamble
   call build_compute_preamble_ib(ib_data, output_buffer%get_va(), shader_buffer%get_va())
   
   ! Submit
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 120_i32, &
-                                output_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 120_i32, [&
+                                output_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: Submit failed with status:", status
     stop 1

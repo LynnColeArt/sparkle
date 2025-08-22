@@ -121,7 +121,7 @@ program test_pm4_canary
   print '(A,I0,A)', "  IB size: ", ib_size_dw, " dwords"
   print '(A,Z16)', "  IB VA: 0x", ib_bo%gpu_va
   print '(A,Z16)', "  Output buffer VA: 0x", output_bo%gpu_va
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_bo_ptr, ib_size_dw, output_bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_bo_ptr, ib_size_dw, [output_bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: IB submission failed:", status
     call cleanup_and_exit(1)

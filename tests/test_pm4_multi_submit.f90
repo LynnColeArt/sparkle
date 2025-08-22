@@ -59,8 +59,8 @@ program test_pm4_multi_submit
   
   ! Submit 1: With shader buffer
   print *, "Submit 1: IB + shader buffer"
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 150_i32, &
-                                shader_buffer%bo_ptr, fence1)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 150_i32, [&
+                                shader_buffer%bo_ptr], fence1)
   if (status /= 0) then
     print *, "ERROR: Submit 1 failed"
     stop 1
@@ -68,8 +68,8 @@ program test_pm4_multi_submit
   
   ! Submit 2: With output buffer
   print *, "Submit 2: IB + output buffer"
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 150_i32, &
-                                output_buffer%bo_ptr, fence2)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 150_i32, [&
+                                output_buffer%bo_ptr], fence2)
   if (status /= 0) then
     print *, "ERROR: Submit 2 failed"
     stop 1
@@ -77,8 +77,8 @@ program test_pm4_multi_submit
   
   ! Submit 3: With signal buffer
   print *, "Submit 3: IB + signal buffer"
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 150_i32, &
-                                signal_buffer%bo_ptr, fence3)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 150_i32, [&
+                                signal_buffer%bo_ptr], fence3)
   if (status /= 0) then
     print *, "ERROR: Submit 3 failed"
     stop 1

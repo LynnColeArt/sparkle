@@ -44,7 +44,7 @@ program test_pm4_bounds_validation
   end if
   
   ! Valid submission should succeed
-  status = sp_submit_ib_with_bo(ctx, ib_bo, IB_SIZE_DW, data_bo, fence)
+  status = sp_submit_ib_with_bos(ctx, ib_bo, IB_SIZE_DW, [data_bo_ptr], fence)
   if (status == 0) then
     print *, "✓ Valid submission succeeded"
     ! Wait for it to complete before reusing buffer
@@ -60,7 +60,7 @@ program test_pm4_bounds_validation
   ! Try to submit with size larger than buffer (account for page rounding)
   ! Buffer was rounded up to 4096 bytes, so submit more than that
   print '(A,I0,A)', "  Attempting to submit ", 1025, " dwords (4100 bytes) to page-aligned buffer"
-  status = sp_submit_ib_with_bo(ctx, ib_bo, 1025, data_bo, fence)
+  status = sp_submit_ib_with_bos(ctx, ib_bo, 1025, [data_bo_ptr], fence)
   if (status < 0) then
     print '(A,I0)', "✓ IB size overflow correctly rejected with status: ", status
   else
@@ -72,7 +72,7 @@ program test_pm4_bounds_validation
   print *, "----------------------------"
   
   ! Try to submit empty IB
-  status = sp_submit_ib_with_bo(ctx, ib_bo, 0, data_bo, fence)
+  status = sp_submit_ib_with_bos(ctx, ib_bo, 0, [data_bo_ptr], fence)
   if (status == 0) then
     print *, "✓ Zero size submission allowed (valid)"
   else
@@ -84,7 +84,7 @@ program test_pm4_bounds_validation
   print *, "-----------------------------------"
   
   ! Submit with null data buffer (should be valid)
-  status = sp_submit_ib(ctx, ib_bo, IB_SIZE_DW, fence)
+  status = sp_submit_ib_with_bos(ctx, ib_bo, IB_SIZE_DW, [c_ptr::], fence)
   if (status == 0) then
     print *, "✓ Null data buffer submission succeeded"
   else

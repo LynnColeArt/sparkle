@@ -114,7 +114,7 @@ program test_pm4_debug
   do i = 1, 3
     print '(A,I0)', "Attempt ", i
     
-    status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, idx-1, output_buffer%bo_ptr, fence)
+    status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, idx-1, [output_buffer%bo_ptr], fence)
     if (status /= 0) then
       print *, "  Submit failed!"
       cycle

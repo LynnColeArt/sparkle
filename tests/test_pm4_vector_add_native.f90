@@ -94,8 +94,8 @@ program test_pm4_vector_add_native
   timer_data(1) = 0_i64
   timer_data(2) = 0_i64
   
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 50_i32, &
-                                timer_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 50_i32, [&
+                                timer_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: Failed to submit PM4 command buffer"
     stop 1

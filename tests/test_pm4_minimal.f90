@@ -65,9 +65,10 @@ program test_pm4_minimal
     print '(A,I2,A,Z8)', "  [", i, "] = 0x", ib_data(i)
   end do
   
-  ! Submit the minimal IB
+  ! Submit the minimal IB using unified API
   print *, "Submitting minimal IB..."
-  status = sp_submit_ib(ctx_ptr, ib_bo_ptr, 4, fence)
+  ! For minimal test, we have no data BOs
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_bo_ptr, 4, [c_ptr::], fence)
   if (status /= 0) then
     print *, "ERROR: IB submission failed:", status
     call sp_buffer_free(ctx_ptr, ib_bo_ptr)

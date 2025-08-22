@@ -53,8 +53,8 @@ program test_pm4_inline_shader
                         signal_buffer%get_va(), shader_buffer%get_va())
   
   ! Submit with shader buffer first
-  status = sp_submit_ib_with_bo(ctx_ptr, ib_buffer%bo_ptr, 100_i32, &
-                                shader_buffer%bo_ptr, fence)
+  status = sp_submit_ib_with_bos(ctx_ptr, ib_buffer%bo_ptr, 100_i32, [&
+                                shader_buffer%bo_ptr], fence)
   if (status /= 0) then
     print *, "ERROR: Submit failed with status", status
     stop 1
