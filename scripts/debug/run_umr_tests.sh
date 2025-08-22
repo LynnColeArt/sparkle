@@ -1,0 +1,10 @@
+#!/bin/bash
+echo "Please run the following commands with sudo:"
+echo ""
+echo "sudo ./test_compute_rings.sh"
+echo "sudo ./find_rings.sh"
+echo ""
+echo "These will show:"
+echo "- Whether waves are created on compute rings"
+echo "- The exact register values during/after PM4 submission"
+echo "- Any GPU state issues"

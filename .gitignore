@@ -43,3 +43,4 @@ test_threadsafe_cache/
 test_binary_cache/
 benchmark_cache/
 production_cache/references/
+sporkle

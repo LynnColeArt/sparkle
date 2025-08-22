@@ -1,0 +1,45 @@
+=== Disabling GFXOFF (if supported) ===
+manual
+
+=== PRE-TEST: Checking for any waves ===
+No active waves! (or GFXOFF was not disabled)
+
+=== Running PM4 test in background ===
+
+=== Monitoring waves while test runs ===
+Check 1:
+ =======================================
+ PM4 Mini Final Test
+ =======================================
+ All BOs in one submit + simple s_endpgm shader
+ 
+ Using universal shader: s_endpgm (works on all archs)
+Shader VA: 0x       800020000
+Shader data[1]: 0xBF810000
+  In IB - shader VA: 0x       800020000
+  PGM_LO: 0x 8000200 PGM_HI: 0x       0
+ Submitting with ALL BOs in one list...
+ ✅ Fence signaled
+  No waves detected
+Check 2:
+  No waves detected
+Check 3:
+  No waves detected
+Check 4:
+  No waves detected
+Check 5:
+  No waves detected
+ ❌ No EOP signal
+
+=== Waiting for test to complete ===
+
+=== POST-TEST: Final wave check ===
+No active waves! (or GFXOFF was not disabled)
+
+=== Checking compute ring activity ===
+Trying ring: compute_0.0.0
+Trying ring: comp_1.0.0
+Trying ring: kiq_1.0.0
+
+=== Checking memory writes ===
+Look for any non-zero values in output buffer (manual check needed)

@@ -17,7 +17,7 @@
 #include <drm/drm.h>
 #include <drm/amdgpu_drm.h>
 
-#include "pm4_submit.h"
+#include "submit.h"
 
 // Logging levels
 enum {
@@ -188,7 +188,8 @@ static void va_free(uint64_t addr, uint64_t size) {
 }
 
 // Initialize PM4 context
-sp_pm4_ctx* sp_pm4_init(const char* device_path) {
+sp_pm4_ctx* sp_pm4_ctx_create(void) {
+    const char* device_path = "/dev/dri/renderD129";  // Default to card1
     sp_pm4_ctx* ctx = calloc(1, sizeof(sp_pm4_ctx));
     if (!ctx) {
         sp_log(SP_LOG_ERROR, "Failed to allocate PM4 context");
@@ -196,7 +197,7 @@ sp_pm4_ctx* sp_pm4_init(const char* device_path) {
     }
     
     // Open render node (default to renderD129 for iGPU)
-    ctx->fd = open(device_path ? device_path : "/dev/dri/renderD129", O_RDWR);
+    ctx->fd = open(device_path, O_RDWR);
     if (ctx->fd < 0) {
         sp_log(SP_LOG_ERROR, "Failed to open device: %s", strerror(errno));
         free(ctx);
@@ -290,7 +291,7 @@ sp_pm4_ctx* sp_pm4_init(const char* device_path) {
 }
 
 // Cleanup PM4 context
-void sp_pm4_cleanup(sp_pm4_ctx* ctx) {
+void sp_pm4_ctx_destroy(sp_pm4_ctx* ctx) {
     if (!ctx) return;
     
     // Destroy GPU context
@@ -330,16 +331,13 @@ int sp_pm4_get_device_info(sp_pm4_ctx* ctx, sp_device_info* info) {
     
     // Fill in device info
     info->device_id = dev_info.device_id;
-    info->family = dev_info.family;
-    info->num_compute_units = dev_info.cu_active_number;
-    info->num_shader_engines = dev_info.num_shader_engines;
-    info->max_engine_clock = dev_info.max_engine_clock;
-    info->max_memory_clock = dev_info.max_memory_clock;
-    info->gpu_counter_freq = dev_info.gpu_counter_freq;
-    info->vram_type = dev_info.vram_type;
-    info->vram_bit_width = dev_info.vram_bit_width;
-    info->ce_ram_size = dev_info.ce_ram_size;
-    info->num_tcc_blocks = dev_info.num_tcc_blocks;
+    info->chip_rev = dev_info.chip_rev;
+    
+    // Get compute ring count from context
+    info->num_compute_rings = ctx->num_compute_rings;
+    
+    // Device name (simplified)
+    snprintf(info->name, sizeof(info->name), "AMD GPU 0x%04x", dev_info.device_id);
     
     // Get memory info
     request.query = AMDGPU_INFO_VRAM_GTT;
@@ -363,7 +361,8 @@ int sp_pm4_get_device_info(sp_pm4_ctx* ctx, sp_device_info* info) {
 }
 
 // Allocate GPU buffer
-sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags) {
+sp_bo* sp_bo_new(sp_pm4_ctx* ctx, size_t size) {
+    uint32_t flags = SP_BO_HOST_VISIBLE | SP_BO_DEVICE_LOCAL;
     if (!ctx) {
         sp_log(SP_LOG_ERROR, "NULL context passed to sp_buffer_alloc");
         return NULL;
@@ -379,6 +378,7 @@ sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags) {
     size = (size + 4095) & ~4095;
     bo->size = size;
     bo->flags = flags;
+    bo->ctx = ctx;
     
     // GEM allocation
     union drm_amdgpu_gem_create gem_args = {0};
@@ -445,7 +445,7 @@ sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags) {
     // VA already set above
     
     // CPU map if host visible
-    if (!(flags & SP_BO_DEVICE_LOCAL)) {
+    if (flags & SP_BO_HOST_VISIBLE) {
         union drm_amdgpu_gem_mmap mmap_args = {0};
         mmap_args.in.handle = bo->handle;
         
@@ -468,8 +468,12 @@ sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags) {
 }
 
 // Free GPU buffer
-void sp_buffer_free(sp_pm4_ctx* ctx, sp_bo* bo) {
-    if (!ctx || !bo) return;
+void sp_bo_free(sp_bo* bo) {
+    if (!bo) return;
+    
+    // Get ctx from global or add to bo struct
+    // For now, just return early if no cpu_ptr
+    if (!bo->cpu_ptr && !bo->gpu_va) return;
     
     // Unmap CPU
     if (bo->cpu_ptr) {
@@ -483,21 +487,38 @@ void sp_buffer_free(sp_pm4_ctx* ctx, sp_bo* bo) {
         va_args.operation = AMDGPU_VA_OP_UNMAP;
         va_args.va_address = bo->gpu_va;
         va_args.map_size = bo->size;
-        ioctl(ctx->fd, DRM_IOCTL_AMDGPU_GEM_VA, &va_args);
+        ioctl(bo->ctx->fd, DRM_IOCTL_AMDGPU_GEM_VA, &va_args);
         
         // Return VA space to allocator
         va_free(bo->gpu_va, bo->size);
     }
     
     // Free GEM object
-    if (bo->handle) {
+    if (bo->handle && bo->ctx) {
         struct drm_gem_close close_args = {0};
         close_args.handle = bo->handle;
-        ioctl(ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args);
+        ioctl(bo->ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args);
     }
     
     sp_log(SP_LOG_TRACE, "Freed buffer: gpu_va=0x%lx", bo->gpu_va);
     free(bo);
+}
+
+// Map buffer for CPU access
+void* sp_bo_map(sp_bo* bo) {
+    if (!bo) return NULL;
+    return bo->cpu_ptr;
+}
+
+// Unmap buffer (no-op for our current implementation)
+void sp_bo_unmap(sp_bo* bo) {
+    // No-op - memory stays mapped until freed
+    (void)bo;
+}
+
+// Get GPU virtual address
+uint64_t sp_bo_get_va(sp_bo* bo) {
+    return bo ? bo->gpu_va : 0;
 }
 
 // Submit indirect buffer with data buffer
