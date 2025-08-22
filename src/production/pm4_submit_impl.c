@@ -500,7 +500,9 @@ void sp_buffer_free(sp_pm4_ctx* ctx, sp_bo* bo) {
     free(bo);
 }
 
-// Submit indirect buffer with data buffer
+// REMOVED: sp_submit_ib_with_bo - use sp_submit_ib_with_bos instead
+// This function was replaced to ensure all BOs are submitted together
+#if 0
 int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw, 
                          sp_bo* data_bo, sp_fence* out_fence) {
     if (!ctx || !ib_bo || !out_fence) return -EINVAL;
@@ -658,11 +660,9 @@ int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
     free(chunk_ptrs);
     return 0;
 }
+#endif
 
-// Submit indirect buffer (simple wrapper)
-int sp_submit_ib(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw, sp_fence* out_fence) {
-    return sp_submit_ib_with_bo(ctx, ib_bo, ib_size_dw, NULL, out_fence);
-}
+// REMOVED: sp_submit_ib - use sp_submit_ib_with_bos instead
 
 // Submit IB with multiple buffer objects
 int sp_submit_ib_with_bos(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,

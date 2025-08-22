@@ -161,25 +161,8 @@ module pm4_submit
       type(c_ptr), value :: bo
     end subroutine
     
-    function sp_submit_ib_c(ctx, ib_bo, ib_size_dw, out_fence) bind(C, name="sp_submit_ib")
-      import :: c_ptr, c_int32_t, c_int, sp_fence
-      type(c_ptr), value :: ctx
-      type(c_ptr), value :: ib_bo
-      integer(c_int32_t), value :: ib_size_dw
-      type(sp_fence), intent(out) :: out_fence
-      integer(c_int) :: sp_submit_ib_c
-    end function
-    
-    function sp_submit_ib_with_bo_c(ctx, ib_bo, ib_size_dw, data_bo, out_fence) &
-         bind(C, name="sp_submit_ib_with_bo")
-      import :: c_ptr, c_int32_t, c_int, sp_fence
-      type(c_ptr), value :: ctx
-      type(c_ptr), value :: ib_bo
-      integer(c_int32_t), value :: ib_size_dw
-      type(c_ptr), value :: data_bo
-      type(sp_fence), intent(out) :: out_fence
-      integer(c_int) :: sp_submit_ib_with_bo_c
-    end function
+    ! REMOVED: sp_submit_ib and sp_submit_ib_with_bo
+    ! Use sp_submit_ib_with_bos exclusively for all submissions
     
     function sp_submit_ib_with_bos_c(ctx, ib_bo, ib_size_dw, data_bos, num_data_bos, out_fence) &
          bind(C, name="sp_submit_ib_with_bos")
@@ -258,29 +241,9 @@ contains
     call sp_buffer_free_c(ctx_ptr, bo_ptr)
   end subroutine
   
-  ! Submit IB
-  function sp_submit_ib(ctx_ptr, ib_bo_ptr, ib_size_dw, fence) result(status)
-    type(c_ptr), intent(in) :: ctx_ptr
-    type(c_ptr), intent(in) :: ib_bo_ptr
-    integer, intent(in) :: ib_size_dw
-    type(sp_fence), intent(out) :: fence
-    integer :: status
-    
-    status = sp_submit_ib_c(ctx_ptr, ib_bo_ptr, int(ib_size_dw, c_int32_t), fence)
-  end function
-  
-  ! Submit IB with data buffer
-  function sp_submit_ib_with_bo(ctx_ptr, ib_bo_ptr, ib_size_dw, data_bo_ptr, fence) result(status)
-    type(c_ptr), intent(in) :: ctx_ptr
-    type(c_ptr), intent(in) :: ib_bo_ptr
-    integer, intent(in) :: ib_size_dw
-    type(c_ptr), intent(in) :: data_bo_ptr
-    type(sp_fence), intent(out) :: fence
-    integer :: status
-    
-    status = sp_submit_ib_with_bo_c(ctx_ptr, ib_bo_ptr, int(ib_size_dw, c_int32_t), &
-                                    data_bo_ptr, fence)
-  end function
+  ! REMOVED: sp_submit_ib and sp_submit_ib_with_bo
+  ! Use sp_submit_ib_with_bos exclusively for all submissions
+  ! This ensures all buffer objects are included in the submission list
   
   ! Submit IB with multiple data buffers
   function sp_submit_ib_with_bos(ctx_ptr, ib_bo_ptr, ib_size_dw, data_bo_ptrs, fence) result(status)

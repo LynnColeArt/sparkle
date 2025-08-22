@@ -80,9 +80,14 @@ int sp_pm4_get_device_info(sp_pm4_ctx* ctx, sp_device_info* info);
 sp_bo* sp_buffer_alloc(sp_pm4_ctx* ctx, size_t size, uint32_t flags);
 void sp_buffer_free(sp_pm4_ctx* ctx, sp_bo* bo);
 
-int sp_submit_ib(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw, sp_fence* out_fence);
-int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw, 
-                         sp_bo* data_bo, sp_fence* out_fence);
+// REMOVED: sp_submit_ib and sp_submit_ib_with_bo
+// Use sp_submit_ib_with_bos from src/compute/submit.h instead
+
+// Specialized debug function for testing specific ring/instance combinations
+// Note: For normal use, always use sp_submit_ib_with_bos from src/compute/submit.h
+int sp_submit_ib_ring(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw, 
+                      uint32_t ip_instance, uint32_t ring, sp_fence* out_fence);
+
 int sp_fence_wait(sp_pm4_ctx* ctx, sp_fence* fence, uint64_t timeout_ns);
 int sp_fence_check(sp_pm4_ctx* ctx, sp_fence* fence);
 
