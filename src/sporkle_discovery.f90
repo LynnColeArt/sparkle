@@ -8,8 +8,7 @@ module sporkle_discovery
   
   public :: scan_devices, profile_links, explain_devices
   
-  ! Make CUDA discovery optional (dynamic loading)
-  logical :: cuda_available = .false.
+  ! Sparkle does NOT support proprietary SDKs by design
   
 contains
 
@@ -45,8 +44,7 @@ contains
     
     call mesh%add_device(handle)
     
-    ! Try to scan for NVIDIA GPUs
-    call try_cuda_discovery(mesh)
+    ! Sparkle uses vendor-neutral APIs only (OpenGL/Vulkan/PM4)
     
     ! Try to scan for AMD GPUs
     call try_amd_discovery(mesh)
@@ -144,42 +142,6 @@ contains
   end subroutine explain_devices
   
   ! Try to discover NVIDIA devices through kernel driver
-  subroutine try_cuda_discovery(mesh)
-    type(mesh_topology), intent(inout) :: mesh
-    
-    logical :: nvidia_gpu_found
-    integer :: unit, iostat, gpu_count, i
-    character(len=256) :: vendor, card_path
-    
-    nvidia_gpu_found = .false.
-    gpu_count = 0
-    
-    ! Check for NVIDIA GPUs via sysfs (no SDK needed!)
-    do i = 0, 7  ! Check up to 8 cards
-      write(card_path, '(A,I0,A)') "/sys/class/drm/card", i, "/device/vendor"
-      
-      open(newunit=unit, file=trim(card_path), &
-           status="old", action="read", iostat=iostat)
-      if (iostat == 0) then
-        read(unit, '(A)', iostat=iostat) vendor
-        close(unit)
-        
-        ! NVIDIA vendor ID is 0x10de
-        if (index(vendor, "0x10de") > 0 .or. index(vendor, "10de") > 0) then
-          nvidia_gpu_found = .true.
-          gpu_count = gpu_count + 1
-        end if
-      end if
-    end do
-    
-    if (nvidia_gpu_found) then
-      print '(A,I0,A)', "Found ", gpu_count, " NVIDIA GPU(s) via kernel driver"
-      print *, "  (NVIDIA GPU support coming soon)"
-    else
-      print *, "No NVIDIA GPUs detected (checked kernel driver)"
-    end if
-    
-  end subroutine try_cuda_discovery
   
   ! Try to discover AMD devices through kernel driver
   subroutine try_amd_discovery(mesh)

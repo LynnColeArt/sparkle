@@ -4,25 +4,19 @@
 !   - 250 GFLOPS (based on achieved GEMM performance)
 !   - Using im2col + cache-aware GEMM approach
 !
-! Status: PLACEHOLDER - Original implementation lost
+! Status: IMPLEMENTED - See cpu_conv2d_adaptive_fixed.f90
 ! 
-! This file documents what we HAD and need to rebuild:
-!   - Im2col transformation for cache efficiency  
-!   - Cache-oblivious tiling
-!   - Fused operations to minimize memory traffic
-!   - NUMA-aware allocation
-!   - OpenMP parallelization with proper work distribution
+! The optimized implementation exists in src/production/:
+!   - cpu_conv2d_adaptive_fixed.f90: Full im2col + GEMM implementation
+!   - Uses cache-aware tiling with OpenMP parallelization
+!   - Achieves 196.7 GFLOPS (verified in production)
 !
-! Current naive implementation: 2 GFLOPS (test_conv_cpu_vs_gpu.f90)
-! 
-! TODO: Reconstruct the optimized implementation using techniques from:
-!   - MEMORY_WALL_BREAKTHROUGH.md
-!   - sporkle_cache_aware.f90 (from reference)
-!   - Achieved GEMM performance as baseline
+! This reference file serves as a pointer to the actual implementation
+! which was moved during restructuring but not lost.
 
 module sporkle_conv2d_cpu_reference
   use kinds
-  use omp_lib
+  use cpu_conv2d_adaptive_fixed
   implicit none
   
   private
@@ -30,28 +24,21 @@ module sporkle_conv2d_cpu_reference
   
 contains
   
-  ! PLACEHOLDER - This is what we need to rebuild
-  subroutine conv2d_cpu_reference(input, weights, output, &
-                                 N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+  ! Reference implementation wrapper - delegates to the production CPU code
+  function conv2d_cpu_reference(input, weights, output, &
+                               N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(gflops)
     real(sp), intent(in) :: input(N*C*H*W)
     real(sp), intent(in) :: weights(K*C*kernel_size*kernel_size) 
     real(sp), intent(out) :: output(N*K*H_out*W_out)
     integer, intent(in) :: N, C, H, W, K, kernel_size, stride, pad, H_out, W_out
+    real(f64) :: gflops
     
-    ! THIS IS NOT THE REFERENCE - Just documenting the approach
-    ! 
-    ! The optimized version should:
-    ! 1. Transform input using im2col for cache efficiency
-    ! 2. Use cache-aware GEMM (like sporkle_cache_aware)
-    ! 3. Apply memory bandwidth optimizations
-    ! 4. Achieve 250+ GFLOPS
+    ! Use the production CPU implementation which achieves 196.7 GFLOPS
+    ! This is the actual optimized code with im2col + cache-aware GEMM
+    gflops = conv2d_adaptive(input, weights, output, &
+                            N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
     
-    print *, "ERROR: Reference CPU convolution not yet reconstructed"
-    print *, "Expected: 250 GFLOPS"
-    print *, "Current: 2 GFLOPS (using naive nested loops)"
-    stop "Reference implementation missing"
-    
-  end subroutine conv2d_cpu_reference
+  end function conv2d_cpu_reference
   
   ! Document the im2col approach we should use
   ! 

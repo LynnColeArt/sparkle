@@ -187,9 +187,17 @@ static void va_free(uint64_t addr, uint64_t size) {
     sp_log(SP_LOG_TRACE, "VA freed: addr=0x%lx, size=0x%lx", addr, size);
 }
 
+// External function from gpu_device_discovery.c
+extern const char* sp_get_gpu_device_path(void);
+
 // Initialize PM4 context
 sp_pm4_ctx* sp_pm4_ctx_create(void) {
-    const char* device_path = "/dev/dri/renderD129";  // Default to card1
+    const char* device_path = sp_get_gpu_device_path();
+    if (!device_path) {
+        sp_log(SP_LOG_ERROR, "No GPU device found. Set SPORKLE_GPU_DEVICE or check /dev/dri/");
+        return NULL;
+    }
+    sp_log(SP_LOG_INFO, "Using GPU device: %s", device_path);
     sp_pm4_ctx* ctx = calloc(1, sizeof(sp_pm4_ctx));
     if (!ctx) {
         sp_log(SP_LOG_ERROR, "Failed to allocate PM4 context");

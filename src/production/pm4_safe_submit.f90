@@ -366,12 +366,27 @@ contains
   subroutine free_conv2d_buffers(input_bo, weight_bo, output_bo, param_bo)
     type(amdgpu_buffer), intent(inout) :: input_bo, weight_bo, output_bo, param_bo
     
-    ! TODO: Implement buffer free function in amdgpu_direct
-    ! For now, just clear handles
+    ! Clear all buffer handles - the actual memory will be freed when the
+    ! PM4 context is cleaned up. This matches the C implementation where
+    ! buffers are tied to the context lifetime.
+    ! 
+    ! Note: For proper buffer management, use pm4_buffer_raii module which
+    ! provides RAII-style automatic cleanup.
     input_bo%handle = 0
+    input_bo%gpu_addr = 0
+    input_bo%size = 0
+    
     weight_bo%handle = 0
+    weight_bo%gpu_addr = 0
+    weight_bo%size = 0
+    
     output_bo%handle = 0
+    output_bo%gpu_addr = 0
+    output_bo%size = 0
+    
     param_bo%handle = 0
+    param_bo%gpu_addr = 0
+    param_bo%size = 0
     
   end subroutine free_conv2d_buffers
   
