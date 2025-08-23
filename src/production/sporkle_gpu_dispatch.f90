@@ -197,9 +197,38 @@ contains
       return
     end if
     
-    mem%size_bytes = size_bytes
-    mem%gpu_ptr = int(loc(mem), int64)  ! Fake GPU pointer for now
-    mem%allocated = .true.
+    ! Use AMDGPU direct allocation
+    block
+      use sporkle_amdgpu_direct
+      type(amdgpu_buffer) :: gpu_buffer
+      integer :: domain
+      
+      ! Allocate in GTT for CPU visibility
+      domain = AMDGPU_GEM_DOMAIN_GTT
+      gpu_buffer = amdgpu_allocate_buffer(get_default_device(), size_bytes, domain)
+      
+      if (gpu_buffer%handle == 0) then
+        print *, "❌ Failed to allocate GPU buffer"
+        mem%allocated = .false.
+        return
+      end if
+      
+      ! Map to GPU VA space
+      if (gpu_buffer%va_addr == 0) then
+        gpu_buffer%va_addr = allocate_gpu_va(size_bytes)
+        if (amdgpu_map_va(get_default_device(), gpu_buffer, gpu_buffer%va_addr) /= 0) then
+          print *, "❌ Failed to map GPU VA"
+          mem%allocated = .false.
+          return
+        end if
+      end if
+      
+      mem%size_bytes = size_bytes
+      mem%gpu_ptr = gpu_buffer%va_addr  ! Real GPU virtual address
+      mem%allocated = .true.
+      
+      ! TODO: Store gpu_buffer handle for cleanup
+    end block
     
     print '(A,F0.2,A)', "🎯 Allocated ", real(size_bytes) / real(1024**2), " MB on GPU"
     
