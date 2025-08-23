@@ -287,7 +287,9 @@ sp_pm4_ctx* sp_pm4_ctx_create(void) {
             union drm_amdgpu_ctx cleanup_args = {0};
             cleanup_args.in.op = AMDGPU_CTX_OP_FREE_CTX;
             cleanup_args.in.ctx_id = ctx->gpu_ctx_id;
-            ioctl(ctx->fd, DRM_IOCTL_AMDGPU_CTX, &cleanup_args);
+            if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_CTX, &cleanup_args) < 0) {
+                sp_log(SP_LOG_WARN, "Failed to cleanup context during error: %s", strerror(errno));
+            }
             close(ctx->fd);
             free(ctx);
             return NULL;
@@ -307,7 +309,9 @@ void sp_pm4_ctx_destroy(sp_pm4_ctx* ctx) {
         union drm_amdgpu_ctx ctx_args = {0};
         ctx_args.in.op = AMDGPU_CTX_OP_FREE_CTX;
         ctx_args.in.ctx_id = ctx->gpu_ctx_id;
-        ioctl(ctx->fd, DRM_IOCTL_AMDGPU_CTX, &ctx_args);
+        if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_CTX, &ctx_args) < 0) {
+            sp_log(SP_LOG_WARN, "Failed to destroy GPU context: %s", strerror(errno));
+        }
     }
     
     if (ctx->fd >= 0) {
@@ -416,7 +420,9 @@ sp_bo* sp_bo_new(sp_pm4_ctx* ctx, size_t size) {
         sp_log(SP_LOG_ERROR, "Failed to allocate VA space for size %zu", size);
         struct drm_gem_close close_args = {0};
         close_args.handle = bo->handle;
-        ioctl(ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args);
+        if (ioctl(ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args) < 0) {
+            sp_log(SP_LOG_WARN, "Failed to close GEM handle: %s", strerror(errno));
+        }
         free(bo);
         return NULL;
     }
@@ -445,7 +451,9 @@ sp_bo* sp_bo_new(sp_pm4_ctx* ctx, size_t size) {
         // Don't free here - causes double free
         struct drm_gem_close close_args = {0};
         close_args.handle = bo->handle;
-        ioctl(ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args);
+        if (ioctl(ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args) < 0) {
+            sp_log(SP_LOG_WARN, "Failed to close GEM handle: %s", strerror(errno));
+        }
         free(bo);
         return NULL;
     }
@@ -495,7 +503,9 @@ void sp_bo_free(sp_bo* bo) {
         va_args.operation = AMDGPU_VA_OP_UNMAP;
         va_args.va_address = bo->gpu_va;
         va_args.map_size = bo->size;
-        ioctl(bo->ctx->fd, DRM_IOCTL_AMDGPU_GEM_VA, &va_args);
+        if (ioctl(bo->ctx->fd, DRM_IOCTL_AMDGPU_GEM_VA, &va_args) < 0) {
+            sp_log(SP_LOG_WARN, "Failed to unmap GPU VA: %s", strerror(errno));
+        }
         
         // Return VA space to allocator
         va_free(bo->gpu_va, bo->size);
@@ -505,7 +515,9 @@ void sp_bo_free(sp_bo* bo) {
     if (bo->handle && bo->ctx) {
         struct drm_gem_close close_args = {0};
         close_args.handle = bo->handle;
-        ioctl(bo->ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args);
+        if (ioctl(bo->ctx->fd, DRM_IOCTL_GEM_CLOSE, &close_args) < 0) {
+            sp_log(SP_LOG_WARN, "Failed to close GEM object: %s", strerror(errno));
+        }
     }
     
     sp_log(SP_LOG_TRACE, "Freed buffer: gpu_va=0x%lx", bo->gpu_va);
@@ -614,7 +626,9 @@ int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
         if (bo_list_handle > 0) {
             bo_list_args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
             bo_list_args.in.list_handle = bo_list_handle;
-            ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args);
+            if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args) < 0) {
+                sp_log(SP_LOG_WARN, "Failed to destroy BO list: %s", strerror(errno));
+            }
         }
         free(chunks);
         free(ib_data);
@@ -663,7 +677,9 @@ int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
     if (bo_list_handle > 0) {
         bo_list_args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
         bo_list_args.in.list_handle = bo_list_handle;
-        ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args);
+        if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args) < 0) {
+            sp_log(SP_LOG_WARN, "Failed to destroy BO list: %s", strerror(errno));
+        }
     }
     
     if (ret < 0) {
@@ -757,7 +773,9 @@ int sp_submit_ib_with_bos(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
         // Clean up BO list
         bo_list_args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
         bo_list_args.in.list_handle = bo_list_handle;
-        ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args);
+        if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args) < 0) {
+            sp_log(SP_LOG_WARN, "Failed to destroy BO list in error path: %s", strerror(errno));
+        }
         free(chunks);
         free(ib_data);
         free(chunk_ptrs);
@@ -793,7 +811,9 @@ int sp_submit_ib_with_bos(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
     // Clean up BO list
     bo_list_args.in.operation = AMDGPU_BO_LIST_OP_DESTROY;
     bo_list_args.in.list_handle = bo_list_handle;
-    ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args);
+    if (ioctl(ctx->fd, DRM_IOCTL_AMDGPU_BO_LIST, &bo_list_args) < 0) {
+        sp_log(SP_LOG_WARN, "Failed to destroy BO list: %s", strerror(errno));
+    }
     
     if (ret < 0) {
         sp_log(SP_LOG_ERROR, "CS submit failed: %s", strerror(errno));

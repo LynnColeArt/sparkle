@@ -76,10 +76,10 @@ contains
     integer :: tile_m, tile_n, tile_k
     real(sp) :: sum
     
-    ! Tile sizes optimized for AVX-512 and cache
-    tile_m = 64    ! Multiple of 16 for AVX-512
-    tile_n = 64    
-    tile_k = 256   ! Larger K tile for better cache reuse
+    ! Tile sizes optimized for L1 cache (32KB typical)
+    tile_m = 32    ! Multiple of 16 for AVX-512, fits L1 cache
+    tile_n = 64    ! Keep reasonable N tile size
+    tile_k = 64    ! Reduced K tile to fit in L1 cache
     
     ! Initialize C with beta scaling
     if (beta /= 1.0) then
@@ -103,7 +103,7 @@ contains
     end if
     
     ! Tiled matrix multiplication with OpenMP parallelization
-    !$omp parallel do collapse(2) private(i, j, kk, ii, jj, kkk, sum) schedule(dynamic, 1)
+    !$omp parallel do collapse(2) private(i, j, kk, ii, jj, kkk, sum) schedule(static)
     do jj = 1, n, tile_n
       do ii = 1, m, tile_m
         ! K-loop (innermost for better cache reuse)
@@ -111,9 +111,11 @@ contains
           ! Micro-kernel
           do j = jj, min(jj + tile_n - 1, n)
             do kk = kkk, min(kkk + tile_k - 1, k)
+              !$omp simd
               do i = ii, min(ii + tile_m - 1, m)
-                C((j-1)*m + i) = C((j-1)*m + i) + alpha * A((kk-1)*m + i) * B(kk + (j-1)*k)
+                C((j-1)*m + i) = C((j-1)*m + i) + alpha * A((kk-1)*m + i) * B((j-1)*k + kk)
               end do
+              !$omp end simd
             end do
           end do
         end do

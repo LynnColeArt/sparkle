@@ -24,11 +24,11 @@ contains
     integer :: i_end, j_end, kk_end
     real(sp) :: sum
     
-    ! Tile sizes optimized for cache hierarchy
-    ! AVX-512 processes 16 floats at once
-    tile_m = 64    ! Multiple of 16 for AVX-512
-    tile_n = 64    
-    tile_k = 256   ! Larger K tile for better cache reuse
+    ! Tile sizes optimized for L1 cache (32KB typical)
+    ! Working set: 32*32*4 + 32*64*4 + 32*64*4 ≈ 20KB (fits in L1)
+    tile_m = 32    ! Multiple of 16 for AVX-512, fits L1 cache
+    tile_n = 64    ! Keep reasonable N tile size
+    tile_k = 64    ! Reduced K tile to fit in L1 cache
     
     ! Initialize C with beta scaling
     if (beta /= 1.0) then
@@ -48,7 +48,7 @@ contains
     end if
     
     ! Triple-nested tiled loops with proper SIMD
-    !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(ii,jj,kk_tile,i,j,kk,i_end,j_end,kk_end,sum) SCHEDULE(DYNAMIC,1)
+    !$OMP PARALLEL DO COLLAPSE(2) PRIVATE(ii,jj,kk_tile,i,j,kk,i_end,j_end,kk_end,sum) SCHEDULE(STATIC)
     do jj = 1, n, tile_n
       do ii = 1, m, tile_m
         j_end = min(jj + tile_n - 1, n)
@@ -64,7 +64,7 @@ contains
               ! AVX-512 can process 16 floats at once
               !$OMP SIMD
               do i = ii, i_end
-                C((j-1)*m + i) = C((j-1)*m + i) + alpha * A((kk-1)*m + i) * B(kk + (j-1)*k)
+                C((j-1)*m + i) = C((j-1)*m + i) + alpha * A((kk-1)*m + i) * B((j-1)*k + kk)
               end do
               !$OMP END SIMD
             end do

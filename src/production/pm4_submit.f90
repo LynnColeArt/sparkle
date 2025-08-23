@@ -12,7 +12,7 @@ module pm4_submit
   public :: sp_pm4_ctx, sp_bo, sp_fence, sp_device_info
   public :: sp_pm4_init, sp_pm4_cleanup, sp_pm4_get_device_info
   public :: sp_buffer_alloc, sp_buffer_free
-  public :: sp_submit_ib, sp_submit_ib_with_bo, sp_submit_ib_with_bos, sp_fence_wait, sp_fence_check
+  public :: sp_submit_ib_with_bos, sp_fence_wait, sp_fence_check
   
   ! Buffer flags
   integer(c_int), parameter, public :: SP_BO_DEVICE_LOCAL = int(z'01', c_int)

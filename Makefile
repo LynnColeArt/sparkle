@@ -1078,3 +1078,13 @@ $(BUILD_DIR)/test_vulkan_real_performance: $(OBJECTS) $(C_OBJECTS) test_vulkan_r
 	@echo "🔨 Building Vulkan real performance test..."
 	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
 		test_vulkan_real_performance.f90 -o $@ $(LDFLAGS)
+
+# Test CPU kernel dispatch
+test_cpu_dispatch: $(BUILD_DIR)/test_cpu_kernel_dispatch
+	@echo "🧠 Running CPU kernel dispatch test..."
+	@./$(BUILD_DIR)/test_cpu_kernel_dispatch
+
+$(BUILD_DIR)/test_cpu_kernel_dispatch: $(OBJECTS) $(C_OBJECTS) tests/test_cpu_kernel_dispatch.f90
+	@echo "🧠 Building CPU kernel dispatch test..."
+	@$(FC) $(FFLAGS) -I$(BUILD_DIR) $(OBJECTS) $(C_OBJECTS) \
+		tests/test_cpu_kernel_dispatch.f90 -o $@ $(LDFLAGS)

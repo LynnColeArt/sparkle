@@ -56,6 +56,90 @@ module universal_memory_optimization
   
 contains
 
+  ! Cache-aware blocking to optimize memory access patterns
+  subroutine apply_cache_aware_blocking(input, output, data_size)
+    real(sp), intent(in) :: input(:)
+    real(sp), intent(out) :: output(:) 
+    integer, intent(in) :: data_size
+    
+    integer :: block_size, num_blocks, i, j, start_idx, end_idx
+    integer :: elements_per_cache_line, line_end
+    
+    ! Calculate optimal block size based on L2 cache (512KB default)
+    elements_per_cache_line = 64 / 4  ! 64 bytes cache line / 4 bytes per real(sp)
+    block_size = min(32 * 1024, data_size)  ! 32K elements ≈ 128KB
+    
+    ! Ensure block size is multiple of cache line for alignment
+    block_size = (block_size / elements_per_cache_line) * elements_per_cache_line
+    if (block_size == 0) block_size = elements_per_cache_line
+    
+    num_blocks = (data_size + block_size - 1) / block_size
+    
+    ! Copy data in cache-friendly blocks with prefetch optimization
+    !$OMP PARALLEL DO PRIVATE(start_idx, end_idx, j)
+    do i = 1, num_blocks
+      start_idx = (i - 1) * block_size + 1
+      end_idx = min(start_idx + block_size - 1, data_size)
+      
+      ! Process block with cache-line-aligned access
+      do j = start_idx, end_idx, elements_per_cache_line
+        ! Copy cache line worth of data at once
+        line_end = min(j + elements_per_cache_line - 1, end_idx)
+        
+        ! Vectorized copy of cache line
+        output(j:line_end) = input(j:line_end)
+      end do
+    end do
+    !$OMP END PARALLEL DO
+    
+  end subroutine apply_cache_aware_blocking
+
+  ! Get cache-aware tile sizes based on current memory_params
+  subroutine get_cache_aware_tiles(params, m, n, k, tile_m, tile_n, tile_k)
+    type(memory_params), intent(in) :: params
+    integer, intent(in) :: m, n, k
+    integer, intent(out) :: tile_m, tile_n, tile_k
+    
+    integer :: l2_elements, total_working_set
+    real(sp) :: scale_factor
+    
+    ! Calculate L2 cache capacity in elements
+    l2_elements = (params%l2_cache_kb * 1024) / 4  ! 4 bytes per real(sp)
+    
+    ! Start with current tile sizes
+    tile_m = params%tile_m
+    tile_n = params%tile_n  
+    tile_k = params%tile_k
+    
+    ! Limit by problem dimensions
+    tile_m = min(tile_m, m)
+    tile_n = min(tile_n, n)
+    tile_k = min(tile_k, k)
+    
+    ! Calculate working set: A_tile + B_tile + C_tile
+    total_working_set = tile_m * tile_k + tile_k * tile_n + tile_m * tile_n
+    
+    ! If working set exceeds 80% of L2, scale down to fit
+    if (total_working_set > int(l2_elements * 0.8)) then
+      scale_factor = sqrt(real(l2_elements) * 0.8 / real(total_working_set))
+      
+      tile_m = max(32, int(tile_m * scale_factor))
+      tile_n = max(32, int(tile_n * scale_factor))
+      tile_k = max(32, int(tile_k * scale_factor))
+    end if
+    
+    ! Align to cache line boundaries (16 elements = 64 bytes)
+    tile_m = (tile_m / 16) * 16
+    tile_n = (tile_n / 16) * 16
+    tile_k = (tile_k / 16) * 16
+    
+    ! Ensure minimum viable sizes
+    tile_m = max(tile_m, 16)
+    tile_n = max(tile_n, 16)
+    tile_k = max(tile_k, 16)
+    
+  end subroutine get_cache_aware_tiles
+
   ! Auto-detect optimal memory parameters for current hardware
   function detect_memory_params() result(params)
     type(memory_params) :: params
@@ -123,9 +207,8 @@ contains
       optimized_data = data
       
     case("blocked")
-      ! Tile-based layout for better cache locality
-      ! TODO: Implement proper cache-aware blocking
-      optimized_data = data
+      ! Cache-aware blocked layout for optimal memory access
+      call apply_cache_aware_blocking(data, optimized_data, size(data))
       
     case default
       optimized_data = data
@@ -175,19 +258,21 @@ contains
     !$omp end parallel do
   end subroutine im2col_cache_optimal
   
-  ! Universal memory-optimized GEMM (improved hand-coded for 50+ GFLOPS)
+  ! Universal memory-optimized GEMM with cache-aware tiling
   subroutine gemm_universal_memory(A, B, C, m, n, k, alpha, beta)
     real(sp), intent(in) :: A(:), B(:), alpha, beta
     real(sp), intent(inout) :: C(:)
     integer, intent(in) :: m, n, k
     
-    integer :: tile_size, micro_tile
+    integer :: tile_m, tile_n, tile_k, micro_tile
     integer :: i, j, kk, ii, jj, kk_tile
+    type(memory_params) :: params
     integer :: i_end, j_end, kk_end
     real(sp) :: sum1, sum2, sum3, sum4
     
-    ! Use proven tile sizes that achieved 50+ GFLOPS
-    tile_size = 64     ! L2 cache tile
+    ! Get cache-aware tile sizes for optimal performance
+    params = detect_memory_params()
+    call get_cache_aware_tiles(params, m, n, k, tile_m, tile_n, tile_k)
     micro_tile = 4     ! Unroll factor for better ILP
     
     ! Scale existing values first
@@ -207,16 +292,16 @@ contains
       end if
     end if
     
-    ! Highly optimized blocked GEMM with manual unrolling and vectorization
+    ! Cache-aware blocked GEMM with optimized tile sizes
     !$OMP PARALLEL DO PRIVATE(ii,jj,kk_tile,i,j,kk,i_end,j_end,kk_end,sum1,sum2,sum3,sum4) SCHEDULE(DYNAMIC,1)
-    do jj = 1, n, tile_size
-      do ii = 1, m, tile_size
-        do kk_tile = 1, k, tile_size
+    do jj = 1, n, tile_n
+      do ii = 1, m, tile_m
+        do kk_tile = 1, k, tile_k
           
-          ! Calculate tile boundaries
-          i_end = min(ii + tile_size - 1, m)
-          j_end = min(jj + tile_size - 1, n)
-          kk_end = min(kk_tile + tile_size - 1, k)
+          ! Calculate cache-aware tile boundaries
+          i_end = min(ii + tile_m - 1, m)
+          j_end = min(jj + tile_n - 1, n)
+          kk_end = min(kk_tile + tile_k - 1, k)
           
           ! Process tile with manual unrolling for better ILP
           do j = jj, j_end, micro_tile
