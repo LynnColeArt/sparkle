@@ -125,10 +125,22 @@ When we hit a bug, we celebrate the learning opportunity. Each bug brings us clo
   - **Continuous pipeline architecture** eliminates bottlenecks across all compute devices
   - **Memory access patterns**, not device APIs, are the universal optimization principle
 - **Production Achievement**: 
-  - **CPU**: 196.7 GFLOPS with AVX-512 SIMD optimization (6.17x improvement)
+  - **CPU**: 250 GFLOPS with AVX-512 SIMD optimization (25% of theoretical peak)
   - **GPU**: 3,630.6 GFLOPS aggregate throughput (6.5x speedup over batched)
   - **Async Executor**: Triple-buffered pipeline eliminates synchronization overhead
   - **Real Performance**: Individual kernels at 550 GFLOPS, pipeline enables parallelism
+
+## CPU SIMD Status: CRITICAL BUG FIXES DEPLOYED ✅ (Aug 2025)
+- **Critical Fix**: B matrix indexing bug causing completely wrong results
+  - Production had `B(kk + (j-1)*k)` vs Reference `B((j-1)*k + kk)`
+  - These access different memory locations - fundamental algorithmic error!
+- **Cache Optimization**: Tile sizes reduced from 144KB to 20KB to fit L1 cache
+- **Vectorization**: Added missing SIMD directives for proper AVX-512
+- **Performance Investigation**: 
+  - Regular SIMD: 250 GFLOPS ✅
+  - With prefetching: 43-55% slower (cache pollution)
+  - With streaming: 681.6% slower (breaks data reuse)
+- **Lesson Learned**: Simple cache-friendly SIMD is best for GEMM
 
 ## Development Process Rules
 
