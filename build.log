@@ -1,0 +1,952 @@
+AMD GPU detected: 0x1002
+GPU Backend: OpenGL enabled
+Vulkan: Available for experimental use
+📦 Compiling src/common/kinds.f90 (common) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/common/kinds.f90 -o build/LINUX/common/kinds.o -Jbuild/LINUX
+📦 Compiling src/common/flopcount.f90 (common) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/common/flopcount.f90 -o build/LINUX/common/flopcount.o -Jbuild/LINUX
+📦 Compiling src/sporkle_types.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_types.f90 -o build/LINUX/sporkle_types.o -Jbuild/LINUX
+📦 Compiling src/sporkle_mesh_types.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_mesh_types.f90 -o build/LINUX/sporkle_mesh_types.o -Jbuild/LINUX
+📦 Compiling src/sporkle_error_handling.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_error_handling.f90 -o build/LINUX/sporkle_error_handling.o -Jbuild/LINUX
+📦 Compiling src/sporkle_config.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_config.f90 -o build/LINUX/sporkle_config.o -Jbuild/LINUX
+src/sporkle_config.f90:69:2:
+
+   69 |   function get_safe_thread_count() result(num_threads)
+      |  ^
+Warning: ‘get_safe_thread_count’ defined but not used [-Wunused-function]
+📦 Compiling src/sporkle_memory.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_memory.f90 -o build/LINUX/sporkle_memory.o -Jbuild/LINUX
+src/sporkle_memory.f90:233:62:
+
+  233 |   function memory_copy_async(dst, src, size, direction, stream) result(success)
+      |                                                              1
+Warning: Unused dummy argument ‘stream’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/sporkle_kernels.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_kernels.f90 -o build/LINUX/sporkle_kernels.o -Jbuild/LINUX
+📦 Compiling src/sporkle_safe_kernels.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_safe_kernels.f90 -o build/LINUX/sporkle_safe_kernels.o -Jbuild/LINUX
+src/sporkle_safe_kernels.f90:189:19:
+
+  189 |     integer :: ierr
+      |                   1
+Warning: Unused variable ‘ierr’ declared at (1) [-Wunused-variable]
+src/sporkle_safe_kernels.f90:134:19:
+
+  134 |     integer :: ierr
+      |                   1
+Warning: Unused variable ‘ierr’ declared at (1) [-Wunused-variable]
+src/sporkle_safe_kernels.f90:26:46:
+
+   26 |     integer(i64) :: expected_size, actual_size
+      |                                              1
+Warning: Unused variable ‘actual_size’ declared at (1) [-Wunused-variable]
+src/sporkle_safe_kernels.f90:130:2:
+
+  130 |   function create_safe_vector_add(n, x_mem, y_mem, z_mem) result(kernel)
+      |  ^
+Warning: ‘create_safe_vector_add’ defined but not used [-Wunused-function]
+src/sporkle_safe_kernels.f90:185:33:
+
+  185 |   subroutine safe_vector_add_impl(args)
+      |                                 ^
+Warning: ‘safe_vector_add_impl’ defined but not used [-Wunused-function]
+📦 Compiling src/sporkle_platform.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_platform.f90 -o build/LINUX/sporkle_platform.o -Jbuild/LINUX
+src/sporkle_platform.f90:103:21:
+
+  103 |     integer :: status
+      |                     1
+Warning: Unused variable ‘status’ declared at (1) [-Wunused-variable]
+src/sporkle_platform.f90:206:32:
+
+  206 |   subroutine print_platform_info(info)
+      |                                ^
+Warning: ‘print_platform_info’ defined but not used [-Wunused-function]
+📦 Compiling src/gl_constants.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/gl_constants.f90 -o build/LINUX/gl_constants.o -Jbuild/LINUX
+📦 Compiling src/sporkle_gpu_kernels.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_gpu_kernels.f90 -o build/LINUX/sporkle_gpu_kernels.o -Jbuild/LINUX
+📦 Compiling src/sporkle_glsl_generator.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_glsl_generator.f90 -o build/LINUX/sporkle_glsl_generator.o -Jbuild/LINUX
+📦 Compiling src/sporkle_rdna_shader_generator.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_rdna_shader_generator.f90 -o build/LINUX/sporkle_rdna_shader_generator.o -Jbuild/LINUX
+src/sporkle_rdna_shader_generator.f90:233:43:
+
+  233 |   function generate_rdna_gemm_shader(config, M, N, K) result(shader_source)
+      |                                           1
+Warning: Unused dummy argument ‘config’ at (1) [-Wunused-dummy-argument]
+src/sporkle_rdna_shader_generator.f90:49:56:
+
+   49 |   function generate_rdna_conv_shader(config, conv_params) result(shader_source)
+      |                                                        1
+Warning: Unused dummy argument ‘conv_params’ at (1) [-Wunused-dummy-argument]
+src/sporkle_rdna_shader_generator.f90:33:37:
+
+   33 |   function detect_rdna_arch(device_id) result(arch)
+      |                                     1
+Warning: Unused dummy argument ‘device_id’ at (1) [-Wunused-dummy-argument]
+src/sporkle_rdna_shader_generator.f90:233:2:
+
+  233 |   function generate_rdna_gemm_shader(config, M, N, K) result(shader_source)
+      |  ^
+Warning: ‘generate_rdna_gemm_shader’ defined but not used [-Wunused-function]
+📦 Compiling src/sporkle_dynamic_shader_system.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_dynamic_shader_system.f90 -o build/LINUX/sporkle_dynamic_shader_system.o -Jbuild/LINUX
+src/sporkle_dynamic_shader_system.f90:381:30:
+
+  381 |   subroutine load_cache(system)
+      |                              1
+Warning: Unused dummy argument ‘system’ at (1) [-Wunused-dummy-argument]
+src/sporkle_dynamic_shader_system.f90:374:30:
+
+  374 |   subroutine save_cache(system)
+      |                              1
+Warning: Unused dummy argument ‘system’ at (1) [-Wunused-dummy-argument]
+src/sporkle_dynamic_shader_system.f90:141:56:
+
+  141 |     type(shader_variant), allocatable :: new_variants(:)
+      |                                                        1
+Warning: Unused variable ‘new_variants’ declared at (1) [-Wunused-variable]
+📦 Compiling src/sporkle_adaptive_kernel.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_adaptive_kernel.f90 -o build/LINUX/sporkle_adaptive_kernel.o -Jbuild/LINUX
+📦 Compiling src/sporkle_kernel_variants.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_kernel_variants.f90 -o build/LINUX/sporkle_kernel_variants.o -Jbuild/LINUX
+src/sporkle_kernel_variants.f90:62:42:
+
+   62 |   subroutine execute_direct_variant(device, params, input, output, status)
+      |                                          1
+Warning: Unused dummy argument ‘device’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:62:57:
+
+   62 |   subroutine execute_direct_variant(device, params, input, output, status)
+      |                                                         1
+Warning: Unused dummy argument ‘input’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:62:65:
+
+   62 |   subroutine execute_direct_variant(device, params, input, output, status)
+      |                                                                 1
+Warning: Unused dummy argument ‘output’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:62:50:
+
+   62 |   subroutine execute_direct_variant(device, params, input, output, status)
+      |                                                  1
+Warning: Unused dummy argument ‘params’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:37:41:
+
+   37 |   subroutine execute_spirv_variant(device, params, input, output, status)
+      |                                         1
+Warning: Unused dummy argument ‘device’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:37:56:
+
+   37 |   subroutine execute_spirv_variant(device, params, input, output, status)
+      |                                                        1
+Warning: Unused dummy argument ‘input’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:37:64:
+
+   37 |   subroutine execute_spirv_variant(device, params, input, output, status)
+      |                                                                1
+Warning: Unused dummy argument ‘output’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:37:49:
+
+   37 |   subroutine execute_spirv_variant(device, params, input, output, status)
+      |                                                 1
+Warning: Unused dummy argument ‘params’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:12:40:
+
+   12 |   subroutine execute_glsl_variant(device, params, input, output, status)
+      |                                        1
+Warning: Unused dummy argument ‘device’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:12:55:
+
+   12 |   subroutine execute_glsl_variant(device, params, input, output, status)
+      |                                                       1
+Warning: Unused dummy argument ‘input’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:12:63:
+
+   12 |   subroutine execute_glsl_variant(device, params, input, output, status)
+      |                                                               1
+Warning: Unused dummy argument ‘output’ at (1) [-Wunused-dummy-argument]
+src/sporkle_kernel_variants.f90:12:48:
+
+   12 |   subroutine execute_glsl_variant(device, params, input, output, status)
+      |                                                1
+Warning: Unused dummy argument ‘params’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/sporkle_shader_parser.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_shader_parser.f90 -o build/LINUX/sporkle_shader_parser.o -Jbuild/LINUX
+src/sporkle_shader_parser.f90:386:19:
+
+  386 |     integer :: i, j, pos
+      |                   1
+Warning: Unused variable ‘j’ declared at (1) [-Wunused-variable]
+📦 Compiling src/sporkle_fortran_shaders.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_fortran_shaders.f90 -o build/LINUX/sporkle_fortran_shaders.o -Jbuild/LINUX
+📦 Compiling src/sporkle_fortran_params.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_fortran_params.f90 -o build/LINUX/sporkle_fortran_params.o -Jbuild/LINUX
+📦 Compiling src/sporkle_shader_parser_v2.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_shader_parser_v2.f90 -o build/LINUX/sporkle_shader_parser_v2.o -Jbuild/LINUX
+src/sporkle_shader_parser_v2.f90:201:36:
+
+  201 |           clean_line = adjustl(line)
+      |                                    1
+Warning: CHARACTER expression will be truncated in assignment (512/2048) at (1) [-Wcharacter-truncation]
+src/sporkle_shader_parser_v2.f90:765:19:
+
+  765 |     integer :: i, j, pos
+      |                   1
+Warning: Unused variable ‘j’ declared at (1) [-Wunused-variable]
+src/sporkle_shader_parser_v2.f90:791:42:
+
+  791 |       character(len=512) :: expr, type_arg
+      |                                          1
+Warning: Unused variable ‘type_arg’ declared at (1) [-Wunused-variable]
+src/sporkle_shader_parser_v2.f90:693:19:
+
+  693 |     integer :: i, j, pos
+      |                   1
+Warning: Unused variable ‘j’ declared at (1) [-Wunused-variable]
+src/sporkle_shader_parser_v2.f90:686:55:
+
+  686 |   function translate_fortran_line_v2(line, args, params) result(translated)
+      |                                                       1
+Warning: Unused dummy argument ‘params’ at (1) [-Wunused-dummy-argument]
+src/sporkle_shader_parser_v2.f90:375:53:
+
+  375 |     type(kernel_param), allocatable :: temp_params(:)
+      |                                                     1
+Warning: Unused variable ‘temp_params’ declared at (1) [-Wunused-variable]
+src/sporkle_shader_parser_v2.f90:308:37:
+
+  308 |           integer :: pos, name_len, j
+      |                                     1
+Warning: Unused variable ‘j’ declared at (1) [-Wunused-variable]
+src/sporkle_shader_parser_v2.f90:308:34:
+
+  308 |           integer :: pos, name_len, j
+      |                                  1
+Warning: Unused variable ‘name_len’ declared at (1) [-Wunused-variable]
+src/sporkle_shader_parser_v2.f90:144:38:
+
+  144 |     integer :: i, newline_pos, arg_idx
+      |                                      1
+Warning: Unused variable ‘arg_idx’ declared at (1) [-Wunused-variable]
+src/sporkle_shader_parser_v2.f90:49:30:
+
+   49 |     integer :: unit, iostat, i
+      |                              1
+Warning: Unused variable ‘i’ declared at (1) [-Wunused-variable]
+📦 Compiling src/sporkle_fortran_shaders_v2.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_fortran_shaders_v2.f90 -o build/LINUX/sporkle_fortran_shaders_v2.o -Jbuild/LINUX
+src/sporkle_fortran_shaders_v2.f90:220:23:
+
+  220 |     integer :: info_len
+      |                       1
+Warning: Unused variable ‘info_len’ declared at (1) [-Wunused-variable]
+src/sporkle_fortran_shaders_v2.f90:88:27:
+
+   88 |     integer :: param_buffer
+      |                           1
+Warning: Unused variable ‘param_buffer’ declared at (1) [-Wunused-variable]
+src/sporkle_fortran_shaders_v2.f90:89:37:
+
+   89 |     integer, target :: param_data(64)  ! Max 64 scalar params
+      |                                     1
+Warning: Unused variable ‘param_data’ declared at (1) [-Wunused-variable]
+📦 Compiling src/sporkle_universal_device_selector.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_universal_device_selector.f90 -o build/LINUX/sporkle_universal_device_selector.o -Jbuild/LINUX
+src/sporkle_universal_device_selector.f90:430:32:
+
+  430 |   subroutine rebalance_load(this)
+      |                                1
+Warning: Unused dummy argument ‘this’ at (1) [-Wunused-dummy-argument]
+src/sporkle_universal_device_selector.f90:314:42:
+
+  314 |   subroutine discover_special_devices(this)
+      |                                          1
+Warning: Unused dummy argument ‘this’ at (1) [-Wunused-dummy-argument]
+src/sporkle_universal_device_selector.f90:139:32:
+
+  139 |   function analyze_workload(this, flops, bytes, pattern) result(characteristics)
+      |                                1
+Warning: Unused dummy argument ‘this’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/sporkle_hardware_profiler.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_hardware_profiler.f90 -o build/LINUX/sporkle_hardware_profiler.o -Jbuild/LINUX
+src/sporkle_hardware_profiler.f90:123:45:
+
+  123 |     integer(c_int), target :: max_invocations
+      |                                             1
+Warning: Unused variable ‘max_invocations’ declared at (1) [-Wunused-variable]
+src/sporkle_hardware_profiler.f90:122:60:
+
+  122 |     integer(c_int), target :: work_group_size(3), shared_mem
+      |                                                            1
+Warning: Unused variable ‘shared_mem’ declared at (1) [-Wunused-variable]
+src/sporkle_hardware_profiler.f90:122:48:
+
+  122 |     integer(c_int), target :: work_group_size(3), shared_mem
+      |                                                1
+Warning: Unused variable ‘work_group_size’ declared at (1) [-Wunused-variable]
+📦 Compiling src/sporkle_autotuner_enhanced.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_autotuner_enhanced.f90 -o build/LINUX/sporkle_autotuner_enhanced.o -Jbuild/LINUX
+src/sporkle_autotuner_enhanced.f90:241:31:
+
+  241 |     integer(i64) :: total_flops
+      |                               1
+Warning: Unused variable ‘total_flops’ declared at (1) [-Wunused-variable]
+src/sporkle_autotuner_enhanced.f90:66:61:
+
+   66 |   function calculate_arithmetic_intensity(params, C, K, H_out, W_out) result(ai)
+      |                                                             1
+Warning: Unused dummy argument ‘h_out’ at (1) [-Wunused-dummy-argument]
+src/sporkle_autotuner_enhanced.f90:66:54:
+
+   66 |   function calculate_arithmetic_intensity(params, C, K, H_out, W_out) result(ai)
+      |                                                      1
+Warning: Unused dummy argument ‘k’ at (1) [-Wunused-dummy-argument]
+src/sporkle_autotuner_enhanced.f90:66:68:
+
+   66 |   function calculate_arithmetic_intensity(params, C, K, H_out, W_out) result(ai)
+      |                                                                    1
+Warning: Unused dummy argument ‘w_out’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/sporkle_gpu_safe_detect.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_gpu_safe_detect.f90 -o build/LINUX/sporkle_gpu_safe_detect.o -Jbuild/LINUX
+📦 Compiling src/sporkle_gpu_backend_detect.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_gpu_backend_detect.f90 -o build/LINUX/sporkle_gpu_backend_detect.o -Jbuild/LINUX
+📦 Compiling src/sporkle_gpu_backend.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_gpu_backend.f90 -o build/LINUX/sporkle_gpu_backend.o -Jbuild/LINUX
+src/sporkle_gpu_backend.f90:296:48:
+
+  296 |   function execute_vulkan_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                                1
+Warning: Unused dummy argument ‘args’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:296:71:
+
+  296 |   function execute_vulkan_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                                                       1
+Warning: Unused dummy argument ‘block_size’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:296:59:
+
+  296 |   function execute_vulkan_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                                           1
+Warning: Unused dummy argument ‘grid_size’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:296:42:
+
+  296 |   function execute_vulkan_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                          1
+Warning: Unused dummy argument ‘kernel_id’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:288:39:
+
+  288 |   function compile_vulkan_kernel(source, source_type) result(kernel_id)
+      |                                       1
+Warning: Unused dummy argument ‘source’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:288:52:
+
+  288 |   function compile_vulkan_kernel(source, source_type) result(kernel_id)
+      |                                                    1
+Warning: Unused dummy argument ‘source_type’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:268:48:
+
+  268 |   function execute_opengl_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                                1
+Warning: Unused dummy argument ‘args’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:268:71:
+
+  268 |   function execute_opengl_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                                                       1
+Warning: Unused dummy argument ‘block_size’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:268:59:
+
+  268 |   function execute_opengl_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                                           1
+Warning: Unused dummy argument ‘grid_size’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:268:42:
+
+  268 |   function execute_opengl_kernel(kernel_id, args, grid_size, block_size) result(status)
+      |                                          1
+Warning: Unused dummy argument ‘kernel_id’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:260:39:
+
+  260 |   function compile_opengl_kernel(source, source_type) result(kernel_id)
+      |                                       1
+Warning: Unused dummy argument ‘source’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_backend.f90:260:52:
+
+  260 |   function compile_opengl_kernel(source, source_type) result(kernel_id)
+      |                                                    1
+Warning: Unused dummy argument ‘source_type’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/sporkle_amdgpu_direct.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_amdgpu_direct.f90 -o build/LINUX/sporkle_amdgpu_direct.o -Jbuild/LINUX
+📦 Compiling src/sporkle_amdgpu_shader_binary.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_amdgpu_shader_binary.f90 -o build/LINUX/sporkle_amdgpu_shader_binary.o -Jbuild/LINUX
+📦 Compiling src/sporkle_amdgpu_memory.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_amdgpu_memory.f90 -o build/LINUX/sporkle_amdgpu_memory.o -Jbuild/LINUX
+src/sporkle_amdgpu_memory.f90:51:36:
+
+   51 |   function amdgpu_read_buffer(device, buffer, data, size) result(status)
+      |                                    1
+Warning: Unused dummy argument ‘device’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/sporkle_amdgpu_shaders.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_amdgpu_shaders.f90 -o build/LINUX/sporkle_amdgpu_shaders.o -Jbuild/LINUX
+📦 Compiling src/amdgpu_device.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/amdgpu_device.f90 -o build/LINUX/amdgpu_device.o -Jbuild/LINUX
+src/amdgpu_device.f90:193:53:
+
+  193 |   function amdgpu_dev_execute(self, kernel_name, args, grid_size, block_size) result(status)
+      |                                                     1
+Warning: Unused dummy argument ‘args’ at (1) [-Wunused-dummy-argument]
+src/amdgpu_device.f90:166:33:
+
+  166 |   function amdgpu_dev_memcpy(self, dst, src, size_bytes) result(status)
+      |                                 1
+Warning: Unused dummy argument ‘self’ at (1) [-Wunused-dummy-argument]
+src/amdgpu_device.f90:155:39:
+
+  155 |   subroutine amdgpu_dev_deallocate(self, buffer)
+      |                                       1
+Warning: Unused dummy argument ‘self’ at (1) [-Wunused-dummy-argument]
+src/amdgpu_device.f90:110:55:
+
+  110 |   function amdgpu_dev_allocate(self, size_bytes, pinned) result(buffer)
+      |                                                       1
+Warning: Unused dummy argument ‘pinned’ at (1) [-Wunused-dummy-argument]
+src/amdgpu_device.f90:58:21:
+
+   58 |     integer :: status
+      |                     1
+Warning: Unused variable ‘status’ declared at (1) [-Wunused-variable]
+📦 Compiling src/sporkle_pm4_packets.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_pm4_packets.f90 -o build/LINUX/sporkle_pm4_packets.o -Jbuild/LINUX
+📦 Compiling src/sporkle_gpu_va_allocator.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_gpu_va_allocator.f90 -o build/LINUX/sporkle_gpu_va_allocator.o -Jbuild/LINUX
+src/sporkle_gpu_va_allocator.f90:91:38:
+
+   91 |   subroutine gpu_va_free(va_addr, size)
+      |                                      1
+Warning: Unused dummy argument ‘size’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/sporkle_rdna3_shaders.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_rdna3_shaders.f90 -o build/LINUX/sporkle_rdna3_shaders.o -Jbuild/LINUX
+📦 Compiling src/sporkle_pm4_compute.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_pm4_compute.f90 -o build/LINUX/sporkle_pm4_compute.o -Jbuild/LINUX
+src/sporkle_pm4_compute.f90:397:32:
+
+  397 |                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
+      |                                1
+Warning: Unused dummy argument ‘c’ at (1) [-Wunused-dummy-argument]
+src/sporkle_pm4_compute.f90:397:35:
+
+  397 |                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
+      |                                   1
+Warning: Unused dummy argument ‘h’ at (1) [-Wunused-dummy-argument]
+src/sporkle_pm4_compute.f90:397:54:
+
+  397 |                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
+      |                                                      1
+Warning: Unused dummy argument ‘kernel_size’ at (1) [-Wunused-dummy-argument]
+src/sporkle_pm4_compute.f90:397:67:
+
+  397 |                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
+      |                                                                   1
+Warning: Unused dummy argument ‘pad’ at (1) [-Wunused-dummy-argument]
+src/sporkle_pm4_compute.f90:397:62:
+
+  397 |                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
+      |                                                              1
+Warning: Unused dummy argument ‘stride’ at (1) [-Wunused-dummy-argument]
+src/sporkle_pm4_compute.f90:397:38:
+
+  397 |                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out) result(time_ms)
+      |                                      1
+Warning: Unused dummy argument ‘w’ at (1) [-Wunused-dummy-argument]
+src/sporkle_pm4_compute.f90:450:31:
+
+  450 |       type(c_ptr) :: mapped_ptr
+      |                               1
+Warning: Unused variable ‘mapped_ptr’ declared at (1) [-Wunused-variable]
+src/sporkle_pm4_compute.f90:481:33:
+
+  481 |         type(c_ptr) :: mapped_ptr
+      |                                 1
+Warning: Unused variable ‘mapped_ptr’ declared at (1) [-Wunused-variable]
+src/sporkle_pm4_compute.f90:165:42:
+
+  165 |   function pm4_compile_shader(name, source) result(shader_addr)
+      |                                          1
+Warning: Unused dummy argument ‘source’ at (1) [-Wunused-dummy-argument]
+src/sporkle_pm4_compute.f90:96:21:
+
+   96 |     integer :: status
+      |                     1
+Warning: Unused variable ‘status’ declared at (1) [-Wunused-variable]
+src/sporkle_pm4_compute.f90:59:21:
+
+   59 |     integer :: status
+      |                     1
+Warning: Unused variable ‘status’ declared at (1) [-Wunused-variable]
+📦 Compiling src/production/gpu_safety_guards.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_safety_guards.f90 -o build/LINUX/production/gpu_safety_guards.o -Jbuild/LINUX
+📦 Compiling src/production/gpu_opengl_interface.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_opengl_interface.f90 -o build/LINUX/production/gpu_opengl_interface.o -Jbuild/LINUX
+📦 Compiling src/sporkle_gpu_opengl.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_gpu_opengl.f90 -o build/LINUX/sporkle_gpu_opengl.o -Jbuild/LINUX
+src/sporkle_gpu_opengl.f90:191:36:
+
+  191 |     integer(c_int) :: compile_status
+      |                                    1
+Warning: Unused variable ‘compile_status’ declared at (1) [-Wunused-variable]
+📦 Compiling src/sporkle_gpu_dispatch.f90 for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/sporkle_gpu_dispatch.f90 -o build/LINUX/sporkle_gpu_dispatch.o -Jbuild/LINUX
+src/sporkle_gpu_dispatch.f90:236:43:
+
+  236 |   subroutine launch_gpu_kernel(kernel, args, global_size, local_size)
+      |                                           1
+Warning: Unused dummy argument ‘args’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_dispatch.f90:218:27:
+
+  218 |   subroutine gpu_memcpy(dst, src, size_bytes, direction)
+      |                           1
+Warning: Unused dummy argument ‘dst’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_dispatch.f90:218:32:
+
+  218 |   subroutine gpu_memcpy(dst, src, size_bytes, direction)
+      |                                1
+Warning: Unused dummy argument ‘src’ at (1) [-Wunused-dummy-argument]
+src/sporkle_gpu_dispatch.f90:182:19:
+
+  182 |     integer :: ierr
+      |                   1
+Warning: Unused variable ‘ierr’ declared at (1) [-Wunused-variable]
+📦 Compiling src/reference/universal_memory_optimization.f90 (reference) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/reference/universal_memory_optimization.f90 -o build/LINUX/reference/universal_memory_optimization.o -Jbuild/LINUX
+src/reference/universal_memory_optimization.f90:202:16:
+
+  202 |     integer :: i, j, idx_in, idx_out
+      |                1
+Warning: Unused variable ‘i’ declared at (1) [-Wunused-variable]
+src/reference/universal_memory_optimization.f90:202:27:
+
+  202 |     integer :: i, j, idx_in, idx_out
+      |                           1
+Warning: Unused variable ‘idx_in’ declared at (1) [-Wunused-variable]
+src/reference/universal_memory_optimization.f90:202:36:
+
+  202 |     integer :: i, j, idx_in, idx_out
+      |                                    1
+Warning: Unused variable ‘idx_out’ declared at (1) [-Wunused-variable]
+src/reference/universal_memory_optimization.f90:202:19:
+
+  202 |     integer :: i, j, idx_in, idx_out
+      |                   1
+Warning: Unused variable ‘j’ declared at (1) [-Wunused-variable]
+src/reference/universal_memory_optimization.f90:196:43:
+
+  196 |   subroutine optimize_memory_layout(data, m, n, optimized_data, layout)
+      |                                           1
+Warning: Unused dummy argument ‘m’ at (1) [-Wunused-dummy-argument]
+src/reference/universal_memory_optimization.f90:196:46:
+
+  196 |   subroutine optimize_memory_layout(data, m, n, optimized_data, layout)
+      |                                              1
+Warning: Unused dummy argument ‘n’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/reference/gemm_simd_optimized.f90 (reference) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/reference/gemm_simd_optimized.f90 -o build/LINUX/reference/gemm_simd_optimized.o -Jbuild/LINUX
+📦 Compiling src/reference/cpu_conv2d_reference.f90 (reference) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/reference/cpu_conv2d_reference.f90 -o build/LINUX/reference/cpu_conv2d_reference.o -Jbuild/LINUX
+📦 Compiling src/production/timing_helpers.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/timing_helpers.f90 -o build/LINUX/production/timing_helpers.o -Jbuild/LINUX
+📦 Compiling src/production/gemm_simd_optimized_v2.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gemm_simd_optimized_v2.f90 -o build/LINUX/production/gemm_simd_optimized_v2.o -Jbuild/LINUX
+src/production/gemm_simd_optimized_v2.f90:24:16:
+
+   24 |     integer :: i, j, kk, ii, jj, kkk
+      |                1
+Warning: Unused variable ‘i’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:24:27:
+
+   24 |     integer :: i, j, kk, ii, jj, kkk
+      |                           1
+Warning: Unused variable ‘ii’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:24:19:
+
+   24 |     integer :: i, j, kk, ii, jj, kkk
+      |                   1
+Warning: Unused variable ‘j’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:24:31:
+
+   24 |     integer :: i, j, kk, ii, jj, kkk
+      |                               1
+Warning: Unused variable ‘jj’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:24:23:
+
+   24 |     integer :: i, j, kk, ii, jj, kkk
+      |                       1
+Warning: Unused variable ‘kk’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:24:36:
+
+   24 |     integer :: i, j, kk, ii, jj, kkk
+      |                                    1
+Warning: Unused variable ‘kkk’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:26:19:
+
+   26 |     real(sp) :: sum
+      |                   1
+Warning: Unused variable ‘sum’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:25:37:
+
+   25 |     integer :: tile_m, tile_n, tile_k
+      |                                     1
+Warning: Unused variable ‘tile_k’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:25:21:
+
+   25 |     integer :: tile_m, tile_n, tile_k
+      |                     1
+Warning: Unused variable ‘tile_m’ declared at (1) [-Wunused-variable]
+src/production/gemm_simd_optimized_v2.f90:25:29:
+
+   25 |     integer :: tile_m, tile_n, tile_k
+      |                             1
+Warning: Unused variable ‘tile_n’ declared at (1) [-Wunused-variable]
+📦 Compiling src/production/cpu_conv2d_adaptive.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/cpu_conv2d_adaptive.f90 -o build/LINUX/production/cpu_conv2d_adaptive.o -Jbuild/LINUX
+src/production/cpu_conv2d_adaptive.f90:30:47:
+
+   30 |   type(tile_config_t), save :: cached_tiles(10)
+      |                                               1
+Warning: Unused PRIVATE module variable ‘cached_tiles’ declared at (1) [-Wunused-value]
+src/production/cpu_conv2d_adaptive.f90:31:29:
+
+   31 |   integer, save :: num_cached = 0
+      |                             1
+Warning: Unused PRIVATE module variable ‘num_cached’ declared at (1) [-Wunused-value]
+src/production/cpu_conv2d_adaptive.f90:500:29:
+
+  500 |   subroutine autotune_tiles(I, N, K)
+      |                             1
+Warning: Unused dummy argument ‘i’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:500:35:
+
+  500 |   subroutine autotune_tiles(I, N, K)
+      |                                   1
+Warning: Unused dummy argument ‘k’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:500:32:
+
+  500 |   subroutine autotune_tiles(I, N, K)
+      |                                1
+Warning: Unused dummy argument ‘n’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:463:95:
+
+  463 |   subroutine write_c_block(Ct, output, k0, kt_size, j0, local_cols, H_out, W_out, K, N_total, N)
+      |                                                                                               1
+Warning: Unused dummy argument ‘n’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:463:92:
+
+  463 |   subroutine write_c_block(Ct, output, k0, kt_size, j0, local_cols, H_out, W_out, K, N_total, N)
+      |                                                                                            1
+Warning: Unused dummy argument ‘n_total’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:384:63:
+
+  384 |   subroutine load_a_block(weights, At, k0, kt_size, I, I_pad, K)
+      |                                                               1
+Warning: Unused dummy argument ‘k’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:322:29:
+
+  322 |                             N, C, H, W, kernel_size, stride, pad, H_out, W_out, I)
+      |                             1
+Warning: Unused dummy argument ‘n’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:329:43:
+
+  329 |     integer(i64) :: jj, j_col, i_row, n_idx, ch_idx, kh_idx, kw_idx
+      |                                           1
+Warning: Unused variable ‘n_idx’ declared at (1) [-Wunused-variable]
+src/production/cpu_conv2d_adaptive.f90:136:81:
+
+  136 |   subroutine partition_columns(N_total, thread_id, num_threads, j0, j1, tile_size)
+      |                                                                                 1
+Warning: Unused dummy argument ‘tile_size’ at (1) [-Wunused-dummy-argument]
+src/production/cpu_conv2d_adaptive.f90:51:2:
+
+   51 |   pure function idiv_safe(a, b) result(q)
+      |  ^
+Warning: ‘idiv_safe’ defined but not used [-Wunused-function]
+📦 Compiling src/production/gpu_fence_primitives.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_fence_primitives.f90 -o build/LINUX/production/gpu_fence_primitives.o -Jbuild/LINUX
+src/production/gpu_fence_primitives.f90:232:26:
+
+  232 |     integer :: wait_status
+      |                          1
+Warning: Unused variable ‘wait_status’ declared at (1) [-Wunused-variable]
+📦 Compiling src/production/gpu_opengl_interface_fence.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_opengl_interface_fence.f90 -o build/LINUX/production/gpu_opengl_interface_fence.o -Jbuild/LINUX
+src/production/gpu_opengl_interface_fence.f90:264:66:
+
+  264 |   subroutine gpu_execute_conv2d_fence_async(input, weights, output, &
+      |                                                                  1
+Warning: Dummy argument ‘output’ at (1) was declared INTENT(OUT) but was not set [-Wunused-dummy-argument]
+src/production/gpu_opengl_interface_fence.f90:265:82:
+
+  265 |                                            N, C, H, W, K, kernel_size, stride, pad, H_out, W_out, &
+      |                                                                                  1
+Warning: Unused dummy argument ‘pad’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_opengl_interface_fence.f90:265:77:
+
+  265 |                                            N, C, H, W, K, kernel_size, stride, pad, H_out, W_out, &
+      |                                                                             1
+Warning: Unused dummy argument ‘stride’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_opengl_interface_fence.f90:174:83:
+
+  174 |                                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out, &
+      |                                                                                   1
+Warning: Unused dummy argument ‘pad’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_opengl_interface_fence.f90:174:78:
+
+  174 |                                             N, C, H, W, K, kernel_size, stride, pad, H_out, W_out, &
+      |                                                                              1
+Warning: Unused dummy argument ‘stride’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/production/gpu_unified_buffers.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_unified_buffers.f90 -o build/LINUX/production/gpu_unified_buffers.o -Jbuild/LINUX
+📦 Compiling src/production/gpu_opengl_zero_copy.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_opengl_zero_copy.f90 -o build/LINUX/production/gpu_opengl_zero_copy.o -Jbuild/LINUX
+src/production/gpu_opengl_zero_copy.f90:370:22:
+
+  370 |       hash = transfer(weights(1), 0_int64)
+      |                      1
+Warning: Intrinsic TRANSFER at (1) has partly undefined result: source size 4 < result size 8 [-Wsurprising]
+src/production/gpu_opengl_zero_copy.f90:372:31:
+
+  372 |         hash = hash + transfer(weights(size(weights)), 0_int64)
+      |                               1
+Warning: Intrinsic TRANSFER at (1) has partly undefined result: source size 4 < result size 8 [-Wsurprising]
+src/production/gpu_opengl_zero_copy.f90:375:31:
+
+  375 |         hash = hash + transfer(weights(i), 0_int64)
+      |                               1
+Warning: Intrinsic TRANSFER at (1) has partly undefined result: source size 4 < result size 8 [-Wsurprising]
+src/production/gpu_opengl_zero_copy.f90:314:32:
+
+  314 |   subroutine set_conv2d_uniforms(N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      |                                ^
+Warning: ‘set_conv2d_uniforms’ defined but not used [-Wunused-function]
+📦 Compiling src/production/gpu_async_executor.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_async_executor.f90 -o build/LINUX/production/gpu_async_executor.o -Jbuild/LINUX
+src/production/gpu_async_executor.f90:371:56:
+
+  371 |                               N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      |                                                        1
+Warning: Unused dummy argument ‘kernel_size’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_async_executor.f90:371:69:
+
+  371 |                               N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      |                                                                     1
+Warning: Unused dummy argument ‘pad’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_async_executor.f90:371:64:
+
+  371 |                               N, C, H, W, K, kernel_size, stride, pad, H_out, W_out)
+      |                                                                1
+Warning: Unused dummy argument ‘stride’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_async_executor.f90:370:51:
+
+  370 |   subroutine gpu_async_conv2d(state, input, weights, output, &
+      |                                                   1
+Warning: Unused dummy argument ‘weights’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_async_executor.f90:250:73:
+
+  250 |   subroutine gpu_submit_work_async(state, set_id, input_data, output_data, &
+      |                                                                         1
+Warning: Dummy argument ‘output_data’ at (1) was declared INTENT(OUT) but was not set [-Wunused-dummy-argument]
+📦 Compiling src/production/sporkle_conv2d.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/sporkle_conv2d.f90 -o build/LINUX/production/sporkle_conv2d.o -Jbuild/LINUX
+src/production/sporkle_conv2d.f90:23:41:
+
+   23 |   logical, save :: async_executor_enabled = .true.  ! ENABLED BY DEFAULT for 3,630 GFLOPS!
+      |                                         1
+Warning: Unused PRIVATE module variable ‘async_executor_enabled’ declared at (1) [-Wunused-value]
+src/production/sporkle_conv2d.f90:24:45:
+
+   24 |   logical, save :: async_executor_initialized = .false.
+      |                                             1
+Warning: Unused PRIVATE module variable ‘async_executor_initialized’ declared at (1) [-Wunused-value]
+src/production/sporkle_conv2d.f90:22:44:
+
+   22 |   type(gpu_async_state), save :: async_state
+      |                                            1
+Warning: Unused PRIVATE module variable ‘async_state’ declared at (1) [-Wunused-value]
+📦 Compiling src/production/sporkle_conv2d_juggling.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/sporkle_conv2d_juggling.f90 -o build/LINUX/production/sporkle_conv2d_juggling.o -Jbuild/LINUX
+src/production/sporkle_conv2d_juggling.f90:226:22:
+
+  226 |       hash = transfer(weights(1), 0_int64)
+      |                      1
+Warning: Intrinsic TRANSFER at (1) has partly undefined result: source size 4 < result size 8 [-Wsurprising]
+src/production/sporkle_conv2d_juggling.f90:227:29:
+
+  227 |       hash = hash + transfer(weights(size(weights)), 0_int64)
+      |                             1
+Warning: Intrinsic TRANSFER at (1) has partly undefined result: source size 4 < result size 8 [-Wsurprising]
+src/production/sporkle_conv2d_juggling.f90:229:31:
+
+  229 |         hash = hash + transfer(weights(i), 0_int64)
+      |                               1
+Warning: Intrinsic TRANSFER at (1) has partly undefined result: source size 4 < result size 8 [-Wsurprising]
+src/production/sporkle_conv2d_juggling.f90:90:26:
+
+   90 |     integer :: max_threads
+      |                          1
+Warning: Unused variable ‘max_threads’ declared at (1) [-Wunused-variable]
+📦 Compiling src/production/sporkle_conv2d_juggling_fence.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/sporkle_conv2d_juggling_fence.f90 -o build/LINUX/production/sporkle_conv2d_juggling_fence.o -Jbuild/LINUX
+src/production/sporkle_conv2d_juggling_fence.f90:67:26:
+
+   67 |     integer :: max_threads
+      |                          1
+Warning: Unused variable ‘max_threads’ declared at (1) [-Wunused-variable]
+📦 Compiling src/production/sporkle_conv2d_auto_selector.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/sporkle_conv2d_auto_selector.f90 -o build/LINUX/production/sporkle_conv2d_auto_selector.o -Jbuild/LINUX
+📦 Compiling src/production/gpu_program_cache.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_program_cache.f90 -o build/LINUX/production/gpu_program_cache.o -Jbuild/LINUX
+📦 Compiling src/production/gpu_opengl_cached.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_opengl_cached.f90 -o build/LINUX/production/gpu_opengl_cached.o -Jbuild/LINUX
+src/production/gpu_opengl_cached.f90:128:35:
+
+  128 |     character(len=256) :: cache_key
+      |                                   1
+Warning: Unused variable ‘cache_key’ declared at (1) [-Wunused-variable]
+src/production/gpu_opengl_cached.f90:123:47:
+
+  123 |   function gpu_get_cached_program_id(config_key) result(program_id)
+      |                                               1
+Warning: Unused dummy argument ‘config_key’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/production/gpu_binary_cache.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_binary_cache.f90 -o build/LINUX/production/gpu_binary_cache.o -Jbuild/LINUX
+src/production/gpu_binary_cache.f90:242:58:
+
+  242 |     integer :: binary_format, binary_length, actual_length
+      |                                                          1
+Warning: Unused variable ‘actual_length’ declared at (1) [-Wunused-variable]
+src/production/gpu_binary_cache.f90:175:25:
+
+  175 |     logical :: dir_exists
+      |                         1
+Warning: Unused variable ‘dir_exists’ declared at (1) [-Wunused-variable]
+src/production/gpu_binary_cache.f90:117:16:
+
+  117 |     integer :: i
+      |                1
+Warning: Unused variable ‘i’ declared at (1) [-Wunused-variable]
+src/production/gpu_binary_cache.f90:93:35:
+
+   93 |     character(len=256) :: cache_dir
+      |                                   1
+Warning: Unused variable ‘cache_dir’ declared at (1) [-Wunused-variable]
+src/production/gpu_binary_cache.f90:232:36:
+
+  232 |   end subroutine save_program_binary
+      |                                    ^
+Warning: ‘binary_length’ may be used uninitialized [-Wmaybe-uninitialized]
+src/production/gpu_binary_cache.f90:170:28:
+
+  170 |     integer :: binary_length, binary_format
+      |                            ^
+note: ‘binary_length’ declared here
+📦 Compiling src/production/gpu_program_cache_v2.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_program_cache_v2.f90 -o build/LINUX/production/gpu_program_cache_v2.o -Jbuild/LINUX
+📦 Compiling src/production/gpu_program_cache_threadsafe.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_program_cache_threadsafe.f90 -o build/LINUX/production/gpu_program_cache_threadsafe.o -Jbuild/LINUX
+📦 Compiling src/production/gpu_ring_buffer.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_ring_buffer.f90 -o build/LINUX/production/gpu_ring_buffer.o -Jbuild/LINUX
+src/production/gpu_ring_buffer.f90:320:35:
+
+  320 |     integer(i64) :: space_available
+      |                                   1
+Warning: Unused variable ‘space_available’ declared at (1) [-Wunused-variable]
+src/production/gpu_ring_buffer.f90:268:42:
+
+  268 |     type(amdgpu_command_buffer) :: cmd_buf
+      |                                          1
+Warning: Unused variable ‘cmd_buf’ declared at (1) [-Wunused-variable]
+src/production/gpu_ring_buffer.f90:262:57:
+
+  262 |   function ring_buffer_submit(ring, ib_flags, fence_value) result(status)
+      |                                                         1
+Warning: Unused dummy argument ‘fence_value’ at (1) [-Wunused-dummy-argument]
+src/production/gpu_ring_buffer.f90:262:44:
+
+  262 |   function ring_buffer_submit(ring, ib_flags, fence_value) result(status)
+      |                                            1
+Warning: Unused dummy argument ‘ib_flags’ at (1) [-Wunused-dummy-argument]
+📦 Compiling src/production/pm4_conv2d_builder.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/pm4_conv2d_builder.f90 -o build/LINUX/production/pm4_conv2d_builder.o -Jbuild/LINUX
+src/production/pm4_conv2d_builder.f90:161:16:
+
+  161 |     integer :: i, reg_offset
+      |                1
+Warning: Unused variable ‘i’ declared at (1) [-Wunused-variable]
+📦 Compiling src/production/pm4_submit.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/pm4_submit.f90 -o build/LINUX/production/pm4_submit.o -Jbuild/LINUX
+📦 Compiling src/production/pm4_buffer_raii.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/pm4_buffer_raii.f90 -o build/LINUX/production/pm4_buffer_raii.o -Jbuild/LINUX
+📦 Compiling src/production/pm4_safe_submit.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/pm4_safe_submit.f90 -o build/LINUX/production/pm4_safe_submit.o -Jbuild/LINUX
+src/production/pm4_safe_submit.f90:355:26:
+
+  355 |     type(c_ptr) :: cpu_ptr
+      |                          1
+Warning: Unused variable ‘cpu_ptr’ declared at (1) [-Wunused-variable]
+src/production/pm4_safe_submit.f90:312:26:
+
+  312 |     type(c_ptr) :: cpu_ptr
+      |                          1
+Warning: Unused variable ‘cpu_ptr’ declared at (1) [-Wunused-variable]
+📦 Compiling src/production/gpu_vulkan_interface.f90 (production) for LINUX...
+gfortran -O3 -fopenmp -march=native -funroll-loops -ftree-vectorize -ffast-math -Wall -c src/production/gpu_vulkan_interface.f90 -o build/LINUX/production/gpu_vulkan_interface.o -Jbuild/LINUX
+src/production/gpu_vulkan_interface.f90:23:26:
+
+   23 |   type(c_ptr) :: vk_device = c_null_ptr
+      |                          1
+Warning: Unused PRIVATE module variable ‘vk_device’ declared at (1) [-Wunused-value]
+src/production/gpu_vulkan_interface.f90:22:28:
+
+   22 |   type(c_ptr) :: vk_instance = c_null_ptr
+      |                            1
+Warning: Unused PRIVATE module variable ‘vk_instance’ declared at (1) [-Wunused-value]
+src/production/gpu_vulkan_interface.f90:24:25:
+
+   24 |   type(c_ptr) :: vk_queue = c_null_ptr
+      |                         1
+Warning: Unused PRIVATE module variable ‘vk_queue’ declared at (1) [-Wunused-value]
+src/production/gpu_vulkan_interface.f90:210:35:
+
+  210 |   subroutine gpu_reset_fence_vulkan(fence)
+      |                                   ^
+Warning: ‘gpu_reset_fence_vulkan’ defined but not used [-Wunused-function]
+⚙️  Compiling src/reference/gpu_opengl_reference.c (reference C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/reference/gpu_opengl_reference.c -o build/LINUX/reference/gpu_opengl_reference.o
+⚙️  Compiling src/gpu_dynamic_shader_exec.c (C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/gpu_dynamic_shader_exec.c -o build/LINUX/gpu_dynamic_shader_exec.o
+⚙️  Compiling src/production/aligned_alloc.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/aligned_alloc.c -o build/LINUX/production/aligned_alloc.o
+⚙️  Compiling src/production/pm4_submit_impl.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/pm4_submit_impl.c -o build/LINUX/production/pm4_submit_impl.o
+src/production/pm4_submit_impl.c:81:13: warning: ‘va_allocator_cleanup’ defined but not used [-Wunused-function]
+   81 | static void va_allocator_cleanup(void) {
+      |             ^~~~~~~~~~~~~~~~~~~~
+⚙️  Compiling src/production/gpu_vulkan_backend.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/gpu_vulkan_backend.c -o build/LINUX/production/gpu_vulkan_backend.o
+src/production/gpu_vulkan_backend.c: In function ‘vk_dispatch_conv2d’:
+src/production/gpu_vulkan_backend.c:705:9: warning: unused variable ‘push_constants’ [-Wunused-variable]
+  705 |     int push_constants[10] = {N, C, H, W, K, kernel_size, stride, pad, H_out, W_out};
+      |         ^~~~~~~~~~~~~~
+⚙️  Compiling src/production/glsl_to_spirv.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/glsl_to_spirv.c -o build/LINUX/production/glsl_to_spirv.o
+⚙️  Compiling src/production/conv2d_spirv_bytecode.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/conv2d_spirv_bytecode.c -o build/LINUX/production/conv2d_spirv_bytecode.o
+⚙️  Compiling src/production/valid_spirv_generator.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/valid_spirv_generator.c -o build/LINUX/production/valid_spirv_generator.o
+⚙️  Compiling src/production/minimal_valid_spirv.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/minimal_valid_spirv.c -o build/LINUX/production/minimal_valid_spirv.o
+⚙️  Compiling src/production/vulkan_buffer_utils.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/vulkan_buffer_utils.c -o build/LINUX/production/vulkan_buffer_utils.o
+⚙️  Compiling src/production/vulkan_timing.c (production C)...
+gcc -O2 -Wall -O2 -Wall -DHAS_OPENGL -DHAS_VULKAN -c src/production/vulkan_timing.c -o build/LINUX/production/vulkan_timing.o
+make: *** No rule to make target 'examples/test_amd_full_stack.f90', needed by 'build/LINUX/sporkle_amd_stack'.  Stop.
