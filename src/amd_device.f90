@@ -2,12 +2,16 @@ module amd_device_mod
   use iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_f_pointer, c_loc
   use kinds
   use sporkle_types
+  use sporkle_amdgpu_direct
+  use sporkle_gpu_va_allocator
   implicit none
   private
   
   public :: amd_device
   
   type, extends(compute_device) :: amd_device
+    type(amdgpu_device_handle) :: gpu_device
+    logical :: use_gpu = .false.
   contains
     procedure :: allocate => amd_allocate
     procedure :: deallocate => amd_deallocate
@@ -15,6 +19,7 @@ module amd_device_mod
     procedure :: execute => amd_execute
     procedure :: synchronize => amd_synchronize
     procedure :: get_info => amd_get_info
+    procedure :: initialize => amd_initialize
   end type amd_device
   
 contains
@@ -25,19 +30,63 @@ contains
     logical, intent(in), optional :: pinned
     type(sporkle_buffer) :: buffer
     
-    ! For now, just allocate host memory
-    ! Real implementation would use HIP or Vulkan
     buffer%size_bytes = size_bytes
     buffer%owning_device = self%device_id
     buffer%is_pinned = .false.
     if (present(pinned)) buffer%is_pinned = pinned
     
-    ! Allocate host memory as placeholder
-    block
-      character, pointer :: mem(:)
-      allocate(mem(size_bytes))
-      buffer%data = c_loc(mem(1))
-    end block
+    if (self%use_gpu) then
+      ! Use real GPU allocation
+      block
+        type(amdgpu_buffer) :: gpu_buffer
+        integer :: domain
+        
+        ! Choose memory domain
+        if (present(pinned) .and. pinned) then
+          domain = AMDGPU_GEM_DOMAIN_GTT  ! System memory visible to GPU
+        else
+          domain = AMDGPU_GEM_DOMAIN_GTT  ! Use GTT for CPU visibility
+        end if
+        
+        ! Allocate GPU buffer
+        gpu_buffer = amdgpu_allocate_buffer(self%gpu_device, size_bytes, domain)
+        
+        if (gpu_buffer%handle == 0) then
+          print *, "❌ Failed to allocate GPU buffer"
+          buffer%data = c_null_ptr
+          return
+        end if
+        
+        ! Map to GPU VA if not already mapped
+        if (gpu_buffer%va_addr == 0) then
+          gpu_buffer%va_addr = allocate_gpu_va(size_bytes)
+          if (amdgpu_map_va(self%gpu_device, gpu_buffer, gpu_buffer%va_addr) /= 0) then
+            print *, "❌ Failed to map GPU VA"
+            buffer%data = c_null_ptr
+            return
+          end if
+        end if
+        
+        ! Map for CPU access
+        if (amdgpu_map_buffer(self%gpu_device, gpu_buffer) /= 0) then
+          print *, "❌ Failed to map buffer for CPU access"
+          buffer%data = c_null_ptr
+          return
+        end if
+        
+        buffer%data = gpu_buffer%cpu_ptr
+        
+        ! Store GPU buffer handle in a global table for cleanup
+        ! TODO: Need proper handle management
+      end block
+    else
+      ! Fallback to host memory
+      block
+        character, pointer :: mem(:)
+        allocate(mem(size_bytes))
+        buffer%data = c_loc(mem(1))
+      end block
+    end if
     
   end function amd_allocate
   
@@ -117,5 +166,33 @@ contains
     self%is_available = .true.
     
   end subroutine amd_get_info
+  
+  subroutine amd_initialize(self, enable_gpu)
+    class(amd_device), intent(inout) :: self
+    logical, intent(in), optional :: enable_gpu
+    
+    integer :: status
+    
+    self%use_gpu = .false.
+    if (present(enable_gpu)) self%use_gpu = enable_gpu
+    
+    if (self%use_gpu) then
+      ! Initialize AMDGPU
+      status = amdgpu_init()
+      if (status /= 0) then
+        print *, "⚠️ Failed to initialize AMDGPU, falling back to CPU"
+        self%use_gpu = .false.
+        return
+      end if
+      
+      ! Open device
+      self%gpu_device = amdgpu_device_handle(self%device_id)
+      
+      print *, "✅ AMD GPU initialized via AMDGPU direct interface"
+    else
+      print *, "ℹ️ AMD device using CPU allocation"
+    end if
+    
+  end subroutine amd_initialize
 
 end module amd_device_mod

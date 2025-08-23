@@ -157,11 +157,30 @@ contains
       handle%tag = "device_mem"
     end if
     
-    ! Device allocation delegated to device implementation
-    ! For now, use host memory until we update device interface
-    handle%ptr = c_null_ptr
-    handle%is_allocated = .false.
-    print *, "NOTE: Device memory allocation not yet implemented - using placeholder"
+    ! Use device's allocate method if available
+    if (present(device)) then
+      block
+        type(sporkle_buffer) :: buffer
+        logical :: pinned
+        
+        pinned = .false.  ! GPU memory by default
+        buffer = device%allocate(size, pinned)
+        
+        if (c_associated(buffer%data)) then
+          handle%ptr = buffer%data
+          handle%is_allocated = .true.
+          handle%size = buffer%size_bytes
+        else
+          print *, "❌ Device memory allocation failed"
+          handle%ptr = c_null_ptr
+          handle%is_allocated = .false.
+        end if
+      end block
+    else
+      print *, "❌ No device provided for device memory allocation"
+      handle%ptr = c_null_ptr
+      handle%is_allocated = .false.
+    end if
     
   end function create_memory_device
   
