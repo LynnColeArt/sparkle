@@ -186,10 +186,23 @@ contains
       return
     end if
     
-    ! Get shader (hardcoded for now)
-    params%shader_addr = int(z'1000000', i64)  ! Placeholder
-    params%num_vgprs = 32
-    params%num_sgprs = 16
+    ! Compile shader using PM4 compiler
+    block
+      use sporkle_pm4_compute, only: pm4_compile_shader
+      integer(i64) :: shader_addr
+      
+      ! For now use simple copy shader as conv2d placeholder
+      shader_addr = pm4_compile_shader("copy_shader", "")
+      if (shader_addr == 0) then
+        print *, "❌ Failed to compile shader"
+        call free_conv2d_buffers(input_bo, weight_bo, output_bo, param_bo)
+        return
+      end if
+      
+      params%shader_addr = shader_addr
+      params%num_vgprs = 32
+      params%num_sgprs = 16
+    end block
     
     ! Begin frame
     if (.not. ring_buffer_begin_frame(g_submit_ctx%ring)) then
