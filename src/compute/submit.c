@@ -187,8 +187,33 @@ static void va_free(uint64_t addr, uint64_t size) {
     sp_log(SP_LOG_TRACE, "VA freed: addr=0x%lx, size=0x%lx", addr, size);
 }
 
-// External function from gpu_device_discovery.c
-extern const char* sp_get_gpu_device_path(void);
+// Simple GPU device discovery
+static const char* sp_get_gpu_device_path(void) {
+    static char path[256];
+    
+    // Check environment variable first
+    const char* env_device = getenv("SPORKLE_GPU_DEVICE");
+    if (env_device && access(env_device, R_OK | W_OK) == 0) {
+        return env_device;
+    }
+    
+    // Try common render nodes
+    const char* candidates[] = {
+        "/dev/dri/renderD129",  // card0
+        "/dev/dri/renderD128",  // card1
+        "/dev/dri/card0",
+        "/dev/dri/card1"
+    };
+    
+    for (int i = 0; i < 4; i++) {
+        if (access(candidates[i], R_OK | W_OK) == 0) {
+            strncpy(path, candidates[i], sizeof(path) - 1);
+            return path;
+        }
+    }
+    
+    return NULL;
+}
 
 // Initialize PM4 context
 sp_pm4_ctx* sp_pm4_ctx_create(void) {
@@ -642,8 +667,18 @@ int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
     ib_data->va_start = ib_bo->gpu_va;
     ib_data->ib_bytes = ib_size_dw * 4;  // Size in BYTES, not dwords
     ib_data->ip_type = AMDGPU_HW_IP_COMPUTE;  // Use COMPUTE ring as Mini suggests
+    // Check for ring override
+    int ring_idx = 0;
+    const char* ring_env = getenv("PM4_COMPUTE_RING");
+    if (ring_env) {
+        ring_idx = atoi(ring_env);
+        if (ring_idx < 0 || ring_idx >= ctx->num_compute_rings) {
+            ring_idx = 0;
+        }
+    }
+    
     ib_data->ip_instance = 0;
-    ib_data->ring = 0;
+    ib_data->ring = ring_idx;
     
     // CRITICAL: length_dw is the size of the STRUCT, not the IB!
     chunks[0].chunk_id = AMDGPU_CHUNK_ID_IB;
@@ -693,10 +728,11 @@ int sp_submit_ib_with_bo(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
     // Return fence info
     out_fence->ctx_id = ctx->gpu_ctx_id;
     out_fence->ip_type = AMDGPU_HW_IP_COMPUTE;  // Match the submission type
-    out_fence->ring = 0;
+    out_fence->ring = ring_idx;
     out_fence->fence = cs_args.out.handle;
     
-    sp_log(SP_LOG_TRACE, "Submitted IB: %u dwords, fence=%lu", ib_size_dw, out_fence->fence);
+    sp_log(SP_LOG_INFO, "Submitted IB on ring %u: %u dwords, fence=%lu", 
+           ring_idx, ib_size_dw, out_fence->fence);
     
     free(chunks);
     free(ib_data);
@@ -788,8 +824,18 @@ int sp_submit_ib_with_bos(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
     ib_data->va_start = ib_bo->gpu_va;
     ib_data->ib_bytes = ib_size_bytes;
     ib_data->ip_type = AMDGPU_HW_IP_COMPUTE;
+    // Check for ring override
+    int ring_idx = 0;
+    const char* ring_env = getenv("PM4_COMPUTE_RING");
+    if (ring_env) {
+        ring_idx = atoi(ring_env);
+        if (ring_idx < 0 || ring_idx >= ctx->num_compute_rings) {
+            ring_idx = 0;
+        }
+    }
+    
     ib_data->ip_instance = 0;
-    ib_data->ring = 0;
+    ib_data->ring = ring_idx;
     
     chunks[0].chunk_id = AMDGPU_CHUNK_ID_IB;
     chunks[0].length_dw = sizeof(struct drm_amdgpu_cs_chunk_ib) / 4;
@@ -826,7 +872,7 @@ int sp_submit_ib_with_bos(sp_pm4_ctx* ctx, sp_bo* ib_bo, uint32_t ib_size_dw,
     // Return fence info
     out_fence->ctx_id = ctx->gpu_ctx_id;
     out_fence->ip_type = AMDGPU_HW_IP_COMPUTE;
-    out_fence->ring = 0;
+    out_fence->ring = ring_idx;
     out_fence->fence = cs_args.out.handle;
     
     sp_log(SP_LOG_TRACE, "Submitted IB with %d BOs: fence=%lu", total_bos, out_fence->fence);

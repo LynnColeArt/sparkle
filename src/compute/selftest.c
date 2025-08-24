@@ -15,14 +15,30 @@ extern uint32_t sp_build_compute_dispatch(uint32_t* ib, uint32_t max_dwords,
                                          uint32_t thread_x, uint32_t thread_y, uint32_t thread_z,
                                          uint32_t grid_x, uint32_t grid_y, uint32_t grid_z);
 
-// Simple s_endpgm shader for initial test
+// Mini's minimal lane-0 PAL probe shader
+// Guards to lane 0 and writes 0xDEADBEEF to USER_DATA address
 static const uint32_t deadbeef_shader[] = {
-    0xBEEFDEAD,  // s_mov_b32 s0, 0xDEADBEEF
-    0xBE801C00,  // s_mov_b32 s1, 0
-    0xBE821C00,  // s_mov_b32 s2, 0
-    0xBE831C00,  // s_mov_b32 s3, 0
-    0xC0828100,  // s_store_dword s0, s[2:3], 0x0
-    0xBF810000   // s_endpgm
+    // v_mbcnt_lo_u32_b32 v0, -1, 0
+    0x4C000080,  
+    // v_mbcnt_hi_u32_b32 v0, -1, v0  
+    0x4C020080,
+    // v_cmp_eq_u32 vcc, v0, 0 (check if lane 0)
+    0x7D840080,
+    // s_cbranch_vccz to skip (if not lane 0)
+    0xBF860004,
+    // Lane 0 code:
+    // v_mov_b32 v0, 0xDEADBEEF
+    0x7E0002FF, 0xDEADBEEF,
+    // v_mov_b32 v1, s0 (USER_DATA_0 low)
+    0x7E020200,
+    // v_mov_b32 v2, s1 (USER_DATA_0 high)
+    0x7E040201,
+    // global_store_dword v[1:2], v0, off
+    0xDC700000, 0x00000100,
+    // s_waitcnt vmcnt(0) lgkmcnt(0)
+    0xBF8C0070,
+    // s_endpgm
+    0xBF810000
 };
 
 // SAXPY shader: Y = alpha * X + Y
@@ -55,20 +71,39 @@ static const uint32_t saxpy_shader[] = {
     0xBF810000               // s_endpgm
 };
 
-// Run Stage A: DEADBEEF test
+// Run Stage A: DEADBEEF test with Mini's compute bootstrap
 int sp_selftest_stage_a(sp_pm4_ctx* ctx) {
-    printf("Stage A: Lane-0 DEADBEEF test\n");
+    printf("Stage A: Lane-0 DEADBEEF test (with Mini's bootstrap)\n");
+    
+    // Create scratch BO (Mini's requirement #1)
+    sp_bo* scratch_bo = sp_bo_new(ctx, 65536);  // 64KB aligned
+    if (!scratch_bo) {
+        printf("  ❌ Failed to create scratch BO\n");
+        return -1;
+    }
+    printf("  ✓ Scratch buffer allocated at VA 0x%016lX\n", sp_bo_get_va(scratch_bo));
     
     // Create shader BO
     sp_bo* shader_bo = sp_bo_new(ctx, sizeof(deadbeef_shader));
     if (!shader_bo) {
         printf("  ❌ Failed to create shader BO\n");
+        sp_bo_free(scratch_bo);
         return -1;
     }
     
-    // Upload shader
+    // Upload shader with endian swap (GPU expects little-endian)
     void* shader_ptr = sp_bo_map(shader_bo);
-    memcpy(shader_ptr, deadbeef_shader, sizeof(deadbeef_shader));
+    uint32_t* shader_dst = (uint32_t*)shader_ptr;
+    printf("  Uploading shader (%zu dwords):\n", sizeof(deadbeef_shader)/4);
+    for (size_t i = 0; i < sizeof(deadbeef_shader)/4; i++) {
+        // Swap bytes: AABBCCDD -> DDCCBBAA
+        uint32_t val = deadbeef_shader[i];
+        shader_dst[i] = ((val & 0xFF000000) >> 24) |
+                       ((val & 0x00FF0000) >> 8) |
+                       ((val & 0x0000FF00) << 8) |
+                       ((val & 0x000000FF) << 24);
+        printf("    [%02zu] 0x%08X -> 0x%08X\n", i, val, shader_dst[i]);
+    }
     sp_bo_unmap(shader_bo);
     
     // Create output BO
@@ -76,12 +111,17 @@ int sp_selftest_stage_a(sp_pm4_ctx* ctx) {
     if (!output_bo) {
         printf("  ❌ Failed to create output BO\n");
         sp_bo_free(shader_bo);
+        sp_bo_free(scratch_bo);
         return -1;
     }
     
-    // Clear output buffer
+    // Clear output buffer and set debug pattern
     uint32_t* output_ptr = (uint32_t*)sp_bo_map(output_bo);
     memset(output_ptr, 0, 4096);
+    // Set a pattern to verify memory access
+    for (int i = 0; i < 16; i++) {
+        output_ptr[i] = 0xCAFE0000 + i;
+    }
     sp_bo_unmap(output_bo);
     
     // Create IB with compute dispatch
@@ -93,26 +133,67 @@ int sp_selftest_stage_a(sp_pm4_ctx* ctx) {
         return -1;
     }
     
-    // Build IB
+    // Build IB with Mini's compute bootstrap
     uint32_t* ib = (uint32_t*)sp_bo_map(ib_bo);
-    uint32_t ib_size = sp_build_compute_dispatch(
-        ib, 1024,
-        sp_bo_get_va(shader_bo),
-        1, 1, 1,   // thread dimensions
-        1, 1, 1    // grid dimensions
-    );
+    uint32_t idx = 0;
+    
+    // Standard preamble
+    extern uint32_t sp_build_compute_preamble(uint32_t* ib, uint32_t max_dwords);
+    idx += sp_build_compute_preamble(ib, 1024);
+    
+    // Mini's compute bootstrap
+    extern uint32_t sp_build_compute_bootstrap(uint32_t* ib, uint64_t scratch_va);
+    idx += sp_build_compute_bootstrap(ib + idx, sp_bo_get_va(scratch_bo));
+    
+    // Set user data with output buffer address
+    extern uint32_t sp_set_user_data(uint32_t* ib, uint32_t start_reg, uint64_t* values, uint32_t count);
+    uint64_t user_data[1] = { sp_bo_get_va(output_bo) };
+    idx += sp_set_user_data(ib + idx, 0, user_data, 1);
+    
+    // Shader setup with Mini's requirements
+    extern uint32_t sp_set_shader_address(uint32_t* ib, uint64_t shader_va);
+    extern uint32_t sp_set_shader_resources(uint32_t* ib, uint32_t vgprs, uint32_t sgprs);
+    extern uint32_t sp_set_thread_dimensions(uint32_t* ib, uint32_t x, uint32_t y, uint32_t z);
+    idx += sp_set_shader_address(ib + idx, sp_bo_get_va(shader_bo));
+    idx += sp_set_shader_resources(ib + idx, 4, 2);  // 4 VGPRs, 2 SGPRs (Mini's PAL probe)
+    idx += sp_set_thread_dimensions(ib + idx, 64, 1, 1);  // Mini recommends 64 threads
+    
+    // Dispatch with Mini's settings
+    extern uint32_t sp_build_dispatch_direct(uint32_t* ib, uint32_t dim_x, uint32_t dim_y, uint32_t dim_z);
+    idx += sp_build_dispatch_direct(ib + idx, 1, 1, 1);  // 1 workgroup
+    
+    uint32_t ib_size = idx;
+    
+    // Debug: Print IB contents
+    printf("  IB contents (%d dwords):\n", ib_size);
+    printf("  Shader VA: 0x%016lX\n", sp_bo_get_va(shader_bo));
+    printf("  Output VA: 0x%016lX\n", sp_bo_get_va(output_bo));
+    for (uint32_t i = 0; i < ib_size; i++) {
+        printf("    [%02d] 0x%08X", i, ib[i]);
+        if (i == 12) printf(" <- USER_DATA_0 reg offset");
+        else if (i == 13) printf(" <- Output buffer VA low");
+        else if (i == 14) printf(" <- Output buffer VA high");
+        else if (i == 16) printf(" <- COMPUTE_PGM_LO reg");
+        else if (i == 17) printf(" <- Shader addr bits [39:8]");
+        else if (i == 18) printf(" <- Shader addr bits [47:40]");
+        else if (i == 28) printf(" <- DISPATCH_DIRECT opcode");
+        else if (i == 32) printf(" <- Initiator");
+        printf("\n");
+    }
+    
     sp_bo_unmap(ib_bo);
     
-    // Submit with all BOs
-    sp_bo* data_bos[] = {shader_bo, output_bo};
+    // Submit with all BOs (including scratch)
+    sp_bo* data_bos[] = {shader_bo, output_bo, scratch_bo};
     sp_fence fence;
     
-    int ret = sp_submit_ib_with_bos(ctx, ib_bo, ib_size, data_bos, 2, &fence);
+    int ret = sp_submit_ib_with_bos(ctx, ib_bo, ib_size, data_bos, 3, &fence);
     if (ret < 0) {
         printf("  ❌ Submit failed: %d\n", ret);
         sp_bo_free(ib_bo);
         sp_bo_free(shader_bo);
         sp_bo_free(output_bo);
+        sp_bo_free(scratch_bo);
         return -1;
     }
     
@@ -123,11 +204,20 @@ int sp_selftest_stage_a(sp_pm4_ctx* ctx) {
         sp_bo_free(ib_bo);
         sp_bo_free(shader_bo);
         sp_bo_free(output_bo);
+        sp_bo_free(scratch_bo);
         return -1;
     }
     
     // Check result
     output_ptr = (uint32_t*)sp_bo_map(output_bo);
+    printf("  First 16 dwords of output buffer:\n");
+    for (int i = 0; i < 16; i++) {
+        printf("    [%02d] 0x%08X", i, output_ptr[i]);
+        if (output_ptr[i] == 0xDEADBEEF) printf(" <- FOUND!");
+        else if (output_ptr[i] == (0xCAFE0000 + i)) printf(" <- Unchanged");
+        printf("\n");
+    }
+    
     if (output_ptr[0] == 0xDEADBEEF) {
         printf("  ✅ DEADBEEF found at output[0]\n");
         ret = 0;
@@ -141,6 +231,7 @@ int sp_selftest_stage_a(sp_pm4_ctx* ctx) {
     sp_bo_free(ib_bo);
     sp_bo_free(shader_bo);
     sp_bo_free(output_bo);
+    sp_bo_free(scratch_bo);
     
     return ret;
 }
@@ -199,6 +290,13 @@ int sp_selftest_stage_b(sp_pm4_ctx* ctx) {
 // Main selftest entry point
 int sp_pm4_selftest(sp_pm4_ctx* ctx) {
     printf("=== PM4 Compute Self-Test ===\n");
+    
+    // First, document what GFX preamble would be needed
+    extern int sp_submit_gfx_preamble(sp_pm4_ctx* ctx);
+    extern void sp_check_cu_status(void);
+    
+    sp_submit_gfx_preamble(ctx);
+    sp_check_cu_status();
     
     // Stage A: Basic functionality
     if (sp_selftest_stage_a(ctx) != 0) {

@@ -51,9 +51,11 @@ int sp_fence_get_status(sp_pm4_ctx* ctx, sp_fence* fence);
 
 // Preamble Builders (from pm4/preamble.c)
 uint32_t sp_build_compute_preamble(uint32_t* ib, uint32_t max_dwords);
+uint32_t sp_build_compute_bootstrap(uint32_t* ib, uint64_t scratch_va);
 uint32_t sp_set_shader_address(uint32_t* ib, uint64_t shader_va);
 uint32_t sp_set_shader_resources(uint32_t* ib, uint32_t vgprs, uint32_t sgprs);
 uint32_t sp_set_thread_dimensions(uint32_t* ib, uint32_t x, uint32_t y, uint32_t z);
+uint32_t sp_set_user_data(uint32_t* ib, uint32_t start_reg, uint64_t* values, uint32_t count);
 uint32_t sp_build_dispatch_direct(uint32_t* ib, uint32_t dim_x, uint32_t dim_y, uint32_t dim_z);
 uint32_t sp_build_compute_dispatch(uint32_t* ib, uint32_t max_dwords,
                                    uint64_t shader_va,
@@ -86,5 +88,9 @@ struct sp_fence {
     uint32_t ring;
     uint64_t fence;
 };
+
+// GFX preamble for enabling CUs (one-time per context)
+int sp_submit_gfx_preamble(sp_pm4_ctx* ctx);
+void sp_check_cu_status(void);
 
 #endif // SP_COMPUTE_SUBMIT_H
